@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
-  PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ReferenceLine, ResponsiveContainer
+  ReferenceLine, ResponsiveContainer, LabelList, Cell,
+  ComposedChart
 } from 'recharts'
 
 // ── Scroll Reveal Hook ───────────────────────────────────────────────────────
@@ -54,42 +54,6 @@ const heroData = Array.from({ length: 26 }, (_, i) => ({
   best: 58000 + i * 1100 + Math.sin(i * 0.5) * 2000,
   worst: 41000 + i * 300 + Math.sin(i * 0.5) * 2000,
 }))
-
-const demandData = [
-  { w: 'S1', base: 42000, promo: 52000 },
-  { w: 'S2', base: 43000, promo: 56000 },
-  { w: 'S3', base: 44000, promo: 58000 },
-  { w: 'S4', base: 44000, promo: 55000 },
-  { w: 'S5', base: 45000, promo: 53000 },
-  { w: 'S6', base: 45000, promo: 54000 },
-  { w: 'S7', base: 46000, promo: 57000 },
-  { w: 'S8', base: 46000, promo: 58000 },
-]
-
-const roiData = [
-  { w: 'S1', roi: -85 }, { w: 'S2', roi: -65 }, { w: 'S3', roi: -40 },
-  { w: 'S4', roi: -18 }, { w: 'S5', roi: 5 }, { w: 'S6', roi: 28 },
-  { w: 'S7', roi: 48 }, { w: 'S8', roi: 65 }, { w: 'S9', roi: 80 },
-  { w: 'S10', roi: 92 }, { w: 'S11', roi: 105 }, { w: 'S12', roi: 118 },
-]
-
-const marketData = [
-  { name: 'Tu plataforma', value: 38 },
-  { name: 'Competidor A', value: 30 },
-  { name: 'Competidor B', value: 22 },
-  { name: 'Otros', value: 10 },
-]
-
-const PIE_COLORS = ['#3b82f6', '#f87171', '#fb923c', '#6b7280']
-
-const waterfallData = [
-  { name: 'Base', value: 45000, fill: '#6b7280', start: 0 },
-  { name: '+Promos', value: 12000, fill: '#3b82f6', start: 45000 },
-  { name: '+Adquisición', value: 8000, fill: '#8b5cf6', start: 57000 },
-  { name: '-Canibalización', value: -4000, fill: '#f87171', start: 65000 },
-  { name: '×Estacionalidad', value: 3500, fill: '#f59e0b', start: 61000 },
-  { name: 'Total Neto', value: 64500, fill: '#34d399', start: 0 },
-]
 
 const countries = [
   {
@@ -162,6 +126,64 @@ const countries = [
   },
 ]
 
+// ── Hardcoded Chile Seasonal Data (52 weeks) ────────────────────────────────
+
+const CL_SEASONAL = [
+  1.02, 1.05, 1.03, 1.01, 0.98, 0.97, 0.95, 0.94, 0.96, 0.99,
+  0.98, 0.97, 1.00, 1.03, 1.05, 1.04, 1.02, 1.00, 0.99, 0.98,
+  0.97, 0.96, 0.98, 1.00, 1.02, 1.04, 1.06, 1.08, 1.05, 1.03,
+  1.01, 0.99, 0.97, 0.98, 1.00, 1.02, 1.04, 1.45, 1.40, 1.20,
+  1.10, 1.05, 1.02, 1.00, 0.98, 0.97, 0.96, 0.95, 0.98, 1.02,
+  1.10, 0.72,
+]
+
+const MX_SEASONAL = [
+  1.02, 1.00, 0.98, 0.97, 0.95, 0.96, 0.98, 1.00, 1.02, 1.05,
+  1.08, 1.10, 1.07, 1.04, 1.05, 1.03, 1.00, 0.98, 0.97, 1.00,
+  1.35, 1.15, 1.05, 1.02, 1.00, 0.98, 0.97, 0.96, 0.98, 1.00,
+  1.02, 1.04, 1.05, 1.04, 1.02, 1.00, 0.99, 0.98, 0.97, 0.98,
+  1.00, 1.02, 1.04, 1.06, 1.08, 1.06, 1.04, 1.08, 1.10, 1.15,
+  1.25, 0.78,
+]
+
+const CO_SEASONAL = [
+  1.00, 0.98, 0.97, 0.96, 0.97, 0.98, 1.00, 1.02, 1.04, 1.05,
+  1.03, 1.00, 0.97, 0.95, 0.94, 0.96, 0.98, 1.00, 1.02, 1.04,
+  1.05, 1.04, 1.02, 1.00, 0.99, 0.98, 0.97, 0.98, 1.00, 1.02,
+  1.04, 1.06, 1.08, 1.07, 1.06, 1.05, 1.08, 1.12, 1.15, 1.30,
+  1.20, 1.10, 1.05, 1.02, 1.00, 0.99, 0.98, 0.97, 0.99, 1.05,
+  1.12, 0.80,
+]
+
+const AR_SEASONAL = [
+  1.05, 1.08, 1.10, 1.08, 1.05, 1.02, 1.00, 0.98, 0.97, 0.96,
+  0.97, 0.99, 1.01, 1.03, 1.04, 1.03, 1.02, 1.00, 0.99, 1.20,
+  1.10, 1.05, 1.02, 1.00, 0.98, 0.97, 0.96, 0.97, 0.99, 1.01,
+  1.03, 1.05, 1.06, 1.05, 1.04, 1.02, 1.00, 0.99, 0.98, 0.97,
+  0.99, 1.02, 1.05, 1.08, 1.10, 1.08, 1.05, 1.02, 1.05, 1.10,
+  1.20, 0.82,
+]
+
+const BR_SEASONAL = [
+  0.92, 0.85, 0.78, 1.00, 1.02, 1.04, 1.05, 1.04, 1.02, 1.00,
+  0.99, 0.98, 0.97, 0.98, 1.00, 1.02, 1.04, 1.06, 1.05, 1.03,
+  1.01, 1.00, 0.99, 0.98, 0.97, 0.98, 1.00, 1.02, 1.04, 1.06,
+  1.08, 1.07, 1.05, 1.04, 1.02, 1.00, 0.99, 0.98, 1.00, 1.02,
+  1.04, 1.06, 1.08, 1.10, 1.12, 1.60, 1.30, 1.10, 1.05, 1.08,
+  1.15, 0.75,
+]
+
+const PE_SEASONAL = [
+  1.00, 0.98, 0.97, 0.96, 0.97, 0.98, 1.00, 1.02, 1.04, 1.05,
+  1.04, 1.02, 1.00, 0.99, 0.98, 0.97, 0.98, 1.00, 1.02, 1.04,
+  1.06, 1.05, 1.03, 1.02, 1.01, 1.00, 0.99, 1.40, 1.35, 1.20,
+  1.10, 1.05, 1.02, 1.00, 0.99, 0.98, 0.97, 0.98, 1.00, 1.02,
+  1.04, 1.05, 1.04, 1.02, 1.00, 0.99, 0.98, 0.97, 1.00, 1.06,
+  1.12, 0.76,
+]
+
+const SEASONAL_BY_COUNTRY = { CL: CL_SEASONAL, MX: MX_SEASONAL, CO: CO_SEASONAL, AR: AR_SEASONAL, BR: BR_SEASONAL, PE: PE_SEASONAL }
+
 // ── Custom Tooltip ────────────────────────────────────────────────────────────
 
 function HeroTooltip({ active, payload, label }) {
@@ -177,30 +199,6 @@ function HeroTooltip({ active, payload, label }) {
         </div>
       ))}
     </div>
-  )
-}
-
-// ── Waterfall Chart Helpers ───────────────────────────────────────────────────
-
-function WaterfallLabel({ x, y, width, value, index }) {
-  if (!value) return null
-  const item = waterfallData[index]
-  const isTotal = item.name === 'Total Neto'
-  const isNeg = item.value < 0
-  const display = isTotal
-    ? Math.round(item.value).toLocaleString('es-MX')
-    : (isNeg ? '-' : '+') + Math.abs(item.value).toLocaleString('es-MX')
-  return (
-    <text
-      x={x + width / 2}
-      y={isNeg ? y + 16 : y - 6}
-      fill={isTotal ? '#34d399' : isNeg ? '#f87171' : '#d1d5db'}
-      textAnchor="middle"
-      fontSize={10}
-      fontFamily="monospace"
-    >
-      {display}
-    </text>
   )
 }
 
@@ -221,15 +219,901 @@ function Sparkline({ data }) {
   )
 }
 
-// ── ROI Dual Line ─────────────────────────────────────────────────────────────
+// ── Waterfall Builder ─────────────────────────────────────────────────────────
 
-function ROITooltip({ active, payload, label }) {
-  if (!active || !payload || !payload.length) return null
-  const val = payload[0]?.value
+function buildWaterfall(drivers) {
+  let cum = 0
+  const rows = drivers.map(d => {
+    const start = d.delta >= 0 ? cum : cum + d.delta
+    const abs = Math.abs(d.delta)
+    const row = { name: d.name, spacer: start, bar: abs, delta: d.delta, type: d.type }
+    if (d.type !== 'total') cum += d.delta
+    return row
+  })
+  // last row is total: spacer=0, bar=cum
+  rows[rows.length - 1].spacer = 0
+  rows[rows.length - 1].bar = cum
+  return rows
+}
+
+// ── Slider Component ──────────────────────────────────────────────────────────
+
+function ModelSlider({ label, value, min, max, step = 1, format, explanation, onChange }) {
+  const display = format ? format(value) : value.toLocaleString('es-MX')
+  const minDisplay = format ? format(min) : min.toLocaleString('es-MX')
+  const maxDisplay = format ? format(max) : max.toLocaleString('es-MX')
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl text-xs font-mono">
-      <div className="text-gray-400 mb-1">{label}</div>
-      <div style={{ color: val < 0 ? '#f87171' : '#34d399' }}>ROI: {val > 0 ? '+' : ''}{val}%</div>
+    <div className="ds-card p-4 mb-3">
+      <div className="flex justify-between items-center mb-2">
+        <label className="text-gray-300 text-sm font-medium">{label}</label>
+        <span className="text-blue-400 font-mono text-lg font-bold">{display}</span>
+      </div>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none bg-gray-700 accent-blue-500 cursor-pointer mb-2"
+      />
+      <div className="flex justify-between text-xs text-gray-600 mb-2">
+        <span>{minDisplay}</span>
+        <span>{maxDisplay}</span>
+      </div>
+      {explanation && <p className="text-xs text-gray-500 italic">{explanation}</p>}
+    </div>
+  )
+}
+
+// ── Result Callout ────────────────────────────────────────────────────────────
+
+function ResultCallout({ results }) {
+  return (
+    <div className="ds-card p-4 bg-blue-950/30 border-blue-800/50">
+      <p className="text-xs text-gray-400 uppercase font-mono mb-2 tracking-widest">RESULTADO CLAVE</p>
+      {results.map(r => (
+        <div key={r.label} className="flex justify-between items-center py-1.5 border-b border-gray-800 last:border-0">
+          <span className="text-gray-400 text-sm">{r.label}</span>
+          <span className={`font-mono font-bold text-sm ${r.color || (r.positive !== false ? 'text-emerald-400' : 'text-red-400')}`}>{r.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Model A1: Promo Uplift ────────────────────────────────────────────────────
+
+function ModelA1({ inputs, onChange }) {
+  const { base, uplift, duracion } = inputs
+  const fatigue = [1, 1, 0.9, 0.9, 0.75, 0.75, 0.75, 0.75, 0.6, 0.6, 0.6, 0.6]
+  const residualCurve = [0.30, 0.20, 0.10, 0.10]
+
+  const data = Array.from({ length: 12 }, (_, w) => {
+    const inPromo = w < duracion
+    const postPromo = !inPromo && w < duracion + 4
+    const sinPromo = base
+    const conPromo = inPromo ? Math.round(base * (1 + (uplift / 100) * fatigue[w])) : null
+    const residual = postPromo ? Math.round(base * (1 + (uplift / 100) * residualCurve[w - duracion])) : null
+    return { w: `S${w + 1}`, sinPromo, conPromo, residual }
+  })
+
+  const totalIncremental = data.reduce((acc, d) => {
+    const orders = d.conPromo || d.residual || 0
+    return acc + Math.max(0, orders - base)
+  }, 0)
+
+  const estimatedCost = totalIncremental * 2.5
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Calcula las órdenes adicionales que genera una campaña promocional semana a semana, incluyendo la fatiga (el efecto se reduce si la promo dura mucho) y lo que queda después de que termina.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Tienes un set de restaurantes activos y vas a lanzar una promo. Quieres saber cuántas órdenes incrementales esperar.</p>
+        </div>
+        <ModelSlider
+          label="Órdenes base/semana"
+          value={base} min={10000} max={100000} step={1000}
+          format={v => v.toLocaleString('es-MX')}
+          explanation="Tu volumen actual sin ninguna promo activa. Míralo en tu dashboard operacional como las últimas 2-4 semanas sin campaña."
+          onChange={v => onChange({ ...inputs, base: v })}
+        />
+        <ModelSlider
+          label="Uplift esperado (%)"
+          value={uplift} min={5} max={60} step={1}
+          format={v => `${v}%`}
+          explanation="Cuánto más del normal esperas vender. Un descuento del 20% típicamente genera 15-30% uplift. Un 2x1 puede llegar a 40-50%."
+          onChange={v => onChange({ ...inputs, uplift: v })}
+        />
+        <ModelSlider
+          label="Duración (semanas)"
+          value={duracion} min={1} max={12} step={1}
+          format={v => `${v} sem`}
+          explanation="Promos largas (>4 semanas) pierden efectividad por fatiga: usuarios se acostumbran y dejan de percibir el beneficio como especial."
+          onChange={v => onChange({ ...inputs, duracion: v })}
+        />
+        <ResultCallout results={[
+          { label: 'Órdenes incrementales totales', value: totalIncremental.toLocaleString('es-MX'), color: 'text-emerald-400' },
+          { label: 'Costo estimado ($2.5 subsidio/orden)', value: `$${Math.round(estimatedCost).toLocaleString('es-MX')}`, color: 'text-amber-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES SEMANALES — 12 SEMANAS</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="w" tick={{ fontSize: 10 }} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(v, n) => [v ? v.toLocaleString('es-MX') : null, n]}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Line type="monotone" dataKey="sinPromo" name="Sin promo" stroke="#6b7280" strokeDasharray="4 4" dot={false} strokeWidth={2} isAnimationActive={false} />
+            <Line type="monotone" dataKey="conPromo" name="Con promo" stroke="#3b82f6" dot={false} strokeWidth={2.5} isAnimationActive={false} connectNulls={false} />
+            <Line type="monotone" dataKey="residual" name="Residual post-promo" stroke="#34d399" strokeDasharray="3 3" dot={false} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model A2: Restaurant Acquisition ─────────────────────────────────────────
+
+function ModelA2({ inputs, onChange }) {
+  const { restosPerWeek, steadyState, tipo } = inputs
+  const matCurves = {
+    dark_kitchen: [0.15, 0.30, 0.50, 0.65, 0.75, 0.83, 0.89, 0.94, 0.97, 1.0, 1.0, 1.0],
+    tradicional:  [0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.73, 0.80, 0.87, 0.93, 1.0],
+    grocery:      [0.20, 0.38, 0.55, 0.68, 0.78, 0.86, 0.91, 0.95, 0.98, 1.0, 1.0, 1.0],
+  }
+  const curve = matCurves[tipo]
+
+  const data = Array.from({ length: 16 }, (_, W) => {
+    let total = 0
+    for (let c = 0; c <= W; c++) {
+      const age = W - c
+      const matFactor = age < curve.length ? curve[age] : 1.0
+      total += restosPerWeek * steadyState * matFactor
+    }
+    return { w: `S${W + 1}`, ordenes: Math.round(total) }
+  })
+
+  const week16 = data[15].ordenes
+  const matureWeeks = curve.length - 1
+  const matureCount = Math.max(0, 16 - matureWeeks) * restosPerWeek
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Proyecta las órdenes que generarán los restaurantes nuevos que estás onboarding. Cada restaurante arranca lento y tarda varias semanas en llegar a su potencial máximo.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Tienes un plan de adquisición (X restaurantes por mes) y necesitas saber cuándo verás el impacto en órdenes.</p>
+        </div>
+        <ModelSlider
+          label="Restaurantes nuevos por semana"
+          value={restosPerWeek} min={1} max={50} step={1}
+          format={v => `${v} restos`}
+          explanation="¿Cuántos restaurantes nuevos activarás cada semana? 10/semana = ~40/mes = ~500/año."
+          onChange={v => onChange({ ...inputs, restosPerWeek: v })}
+        />
+        <ModelSlider
+          label="Steady-state órdenes/semana por restaurante"
+          value={steadyState} min={40} max={250} step={5}
+          format={v => v.toLocaleString('es-MX')}
+          explanation="Cuántas órdenes hace un restaurante maduro (después de 12 semanas). Dark kitchen grande: 180-250. Restaurante tradicional promedio: 40-80."
+          onChange={v => onChange({ ...inputs, steadyState: v })}
+        />
+        <div className="ds-card p-4 mb-3">
+          <label className="text-gray-300 text-sm font-medium block mb-2">Tipo de restaurante</label>
+          <select
+            value={tipo}
+            onChange={e => onChange({ ...inputs, tipo: e.target.value })}
+            className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+          >
+            <option value="dark_kitchen">Dark Kitchen (madura en 8 semanas)</option>
+            <option value="tradicional">Tradicional (madura en 12 semanas)</option>
+            <option value="grocery">Grocery (madura en 10 semanas)</option>
+          </select>
+          <p className="text-xs text-gray-500 italic mt-2">Las dark kitchens maduran más rápido porque nacen optimizadas para delivery. Los tradicionales necesitan ajustar menú y operación.</p>
+        </div>
+        <ResultCallout results={[
+          { label: 'Órdenes totales semana 16', value: week16.toLocaleString('es-MX'), color: 'text-emerald-400' },
+          { label: 'Restaurantes ya maduros (plateau)', value: `${matureCount.toLocaleString('es-MX')} de ${(16 * restosPerWeek).toLocaleString('es-MX')} activados`, color: 'text-blue-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES ACUMULADAS — COHORTS DE NUEVOS RESTAURANTES</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="w" tick={{ fontSize: 10 }} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(v) => [v.toLocaleString('es-MX'), 'Órdenes']}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Area type="monotone" dataKey="ordenes" name="Órdenes de nuevos restaurantes" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2.5} isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model A3: Canibalización ──────────────────────────────────────────────────
+
+function ModelA3({ inputs, onChange }) {
+  const { upliftA, upliftB, canib } = inputs
+  const BASE = 50000
+  const promoA = Math.round(BASE * upliftA / 100)
+  const promoB = Math.round(BASE * upliftB / 100)
+  const sumaBruta = promoA + promoB
+  const neto = Math.round(BASE * (upliftA / 100 + upliftB / 100 - (upliftA / 100) * (upliftB / 100) * (canib / 100)))
+  const perdidas = sumaBruta - neto
+  const eficiencia = Math.round((neto / sumaBruta) * 100)
+
+  const chartData = [
+    { name: 'Promo A sola', ordenes: promoA, fill: '#3b82f6' },
+    { name: 'Promo B sola', ordenes: promoB, fill: '#8b5cf6' },
+    { name: 'Suma sin ajuste', ordenes: sumaBruta, fill: '#6b7280' },
+    { name: 'Efecto neto real', ordenes: neto, fill: '#34d399' },
+  ]
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Cuando corres dos promos al mismo tiempo, el efecto real NO es la suma de ambas. Un usuario que ya decidió pedir por el 2x1 no genera una orden extra por el free delivery — ya estaba convencido.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Tienes múltiples promos activas simultáneamente y quieres saber el efecto neto real, no la suma optimista.</p>
+        </div>
+        <ModelSlider
+          label="Uplift Promo A (%)"
+          value={upliftA} min={5} max={50} step={1}
+          format={v => `${v}%`}
+          explanation="El uplift individual de tu primera promo, calculado como si fuera la única activa."
+          onChange={v => onChange({ ...inputs, upliftA: v })}
+        />
+        <ModelSlider
+          label="Uplift Promo B (%)"
+          value={upliftB} min={5} max={50} step={1}
+          format={v => `${v}%`}
+          explanation="El uplift individual de tu segunda promo."
+          onChange={v => onChange({ ...inputs, upliftB: v })}
+        />
+        <ModelSlider
+          label="Factor de canibalización (%)"
+          value={canib} min={0} max={70} step={1}
+          format={v => `${v}%`}
+          explanation="Qué % del uplift combinado se pierde por superposición. Promos similares para el mismo usuario: 40-60%. Promos para segmentos distintos (nuevos vs dormantes): 5-15%."
+          onChange={v => onChange({ ...inputs, canib: v })}
+        />
+        <ResultCallout results={[
+          { label: "Órdenes que 'desaparecen' por canibalización", value: perdidas.toLocaleString('es-MX'), color: 'text-red-400' },
+          { label: 'Eficiencia del gasto dual', value: `${eficiencia}%`, color: eficiencia >= 80 ? 'text-emerald-400' : 'text-amber-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">COMPARACIÓN DE ESCENARIOS — BASE 50,000 ÓRDENES</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData} margin={{ top: 20, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip formatter={v => [v.toLocaleString('es-MX'), 'Órdenes incrementales']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+            <Bar dataKey="ordenes" isAnimationActive={false} radius={[4, 4, 0, 0]}>
+              {chartData.map((d, i) => <Cell key={i} fill={d.fill} fillOpacity={0.85} />)}
+              <LabelList dataKey="ordenes" position="top" formatter={v => `+${(v / 1000).toFixed(1)}k`} style={{ fill: '#9ca3af', fontSize: 11 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model A4: Estacionalidad ──────────────────────────────────────────────────
+
+function ModelA4({ inputs, onChange }) {
+  const { pais, semana, lluvia } = inputs
+  const seasonalData = SEASONAL_BY_COUNTRY[pais] || CL_SEASONAL
+  const BASE = 50000
+  const rawFactor = seasonalData[semana - 1] || 1.0
+  const finalFactor = lluvia ? rawFactor * 1.04 : rawFactor
+  const projected = Math.round(BASE * finalFactor)
+
+  const chartData = seasonalData.map((f, i) => ({
+    semana: i + 1,
+    factor: parseFloat(f.toFixed(3)),
+    highlight: i + 1 === semana ? f : null,
+  }))
+
+  const getBarColor = (factor) => {
+    if (factor >= 1.3) return '#34d399'
+    if (factor >= 1.1) return '#86efac'
+    if (factor >= 0.95) return '#9ca3af'
+    if (factor >= 0.85) return '#fbbf24'
+    return '#f87171'
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Ajusta tu forecast por factores predecibles: qué día de la semana es, si hay feriado, si estamos en quincena, si hay lluvia. La demanda de food delivery varía ±40% solo por estos factores.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Siempre. La estacionalidad debe aplicarse a cualquier forecast — es la capa que convierte un número plano en una proyección realista.</p>
+        </div>
+        <div className="ds-card p-4 mb-3">
+          <label className="text-gray-300 text-sm font-medium block mb-2">País</label>
+          <select
+            value={pais}
+            onChange={e => onChange({ ...inputs, pais: e.target.value })}
+            className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+          >
+            <option value="CL">Chile (CL)</option>
+            <option value="MX">México (MX)</option>
+            <option value="CO">Colombia (CO)</option>
+            <option value="AR">Argentina (AR)</option>
+            <option value="BR">Brasil (BR)</option>
+            <option value="PE">Perú (PE)</option>
+          </select>
+          <p className="text-xs text-gray-500 italic mt-2">Cada país tiene su propio calendario de feriados y ciclos de pago. Chile tiene Fiestas Patrias (+40%). México tiene el Día de las Madres (+35%).</p>
+        </div>
+        <ModelSlider
+          label="Semana del año"
+          value={semana} min={1} max={52} step={1}
+          format={v => `Semana ${v}`}
+          explanation="Selecciona la semana que te interesa analizar para ver el factor combinado de todos los efectos."
+          onChange={v => onChange({ ...inputs, semana: v })}
+        />
+        <div className="ds-card p-4 mb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-gray-300 text-sm font-medium block">¿Hay lluvia intensa esa semana?</label>
+              <p className="text-xs text-gray-500 italic mt-1">Lluvia normal +5%, lluvia torrencial puede ser -15%. Aquí modelamos lluvia moderada (+4% neto).</p>
+            </div>
+            <button
+              onClick={() => onChange({ ...inputs, lluvia: !lluvia })}
+              className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ml-4 ${lluvia ? 'bg-blue-600' : 'bg-gray-700'}`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${lluvia ? 'left-6' : 'left-0.5'}`} />
+            </button>
+          </div>
+        </div>
+        <ResultCallout results={[
+          { label: 'Factor de la semana seleccionada', value: `${finalFactor.toFixed(2)}x`, color: finalFactor >= 1.1 ? 'text-emerald-400' : finalFactor < 0.9 ? 'text-red-400' : 'text-blue-400' },
+          { label: 'Proyección semana (base 50k)', value: projected.toLocaleString('es-MX') + ' órdenes', color: 'text-gray-200' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">FACTOR ESTACIONAL — 52 SEMANAS · Semana seleccionada destacada</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+            <XAxis dataKey="semana" tick={{ fontSize: 8 }} interval={7} />
+            <YAxis domain={[0.5, 1.6]} tick={{ fontSize: 10 }} tickFormatter={v => `${v.toFixed(1)}x`} />
+            <Tooltip
+              formatter={(v) => [`${v.toFixed(2)}x`, 'Factor estacional']}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <ReferenceLine y={1.0} stroke="#6b7280" strokeDasharray="4 4" label={{ value: 'Base', fill: '#9ca3af', fontSize: 10, position: 'insideRight' }} />
+            <Bar dataKey="factor" isAnimationActive={false} radius={[2, 2, 0, 0]}>
+              {chartData.map((d, i) => (
+                <Cell
+                  key={i}
+                  fill={i + 1 === semana ? '#facc15' : getBarColor(d.factor)}
+                  fillOpacity={i + 1 === semana ? 1.0 : 0.75}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model A5: Expansión Nueva Ciudad ─────────────────────────────────────────
+
+function ModelA5({ inputs, onChange }) {
+  const { tam, adopcion, couriers } = inputs
+
+  const data = Array.from({ length: 52 }, (_, t) => {
+    const targetAdoption = tam * (adopcion / 100)
+    const logistic = targetAdoption / (1 + Math.exp(-0.15 * (t - 26)))
+    const avgFrequency = 1.5 // órdenes por usuario por semana
+    const demandaPotencial = Math.round(logistic * avgFrequency)
+    const ordenesReales = Math.min(demandaPotencial, couriers)
+    return {
+      w: `S${t + 1}`,
+      demanda: demandaPotencial,
+      capacidad: couriers,
+      real: ordenesReales,
+    }
+  })
+
+  const constraintWeek = data.findIndex(d => d.demanda >= couriers)
+  const totalYr1 = data.reduce((acc, d) => acc + d.real, 0)
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el crecimiento de un mercado nuevo desde cero. Combina la curva de adopción de usuarios (S-curve) con la capacidad de supply (restaurantes y couriers). Identifica cuál de los dos es el cuello de botella.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Estás lanzando en una ciudad donde no tienes presencia. NO uses este modelo para agregar restaurantes a un mercado maduro — usa A2 para eso.</p>
+        </div>
+        <ModelSlider
+          label="TAM (usuarios potenciales)"
+          value={tam} min={50000} max={2000000} step={50000}
+          format={v => `${(v / 1000).toFixed(0)}k usuarios`}
+          explanation="Adultos con smartphone en la zona de cobertura que podrían pedir delivery. No es la ciudad completa — es tu área de entrega realista."
+          onChange={v => onChange({ ...inputs, tam: v })}
+        />
+        <ModelSlider
+          label="Objetivo de adopción a 12 meses (%)"
+          value={adopcion} min={1} max={20} step={0.5}
+          format={v => `${v}%`}
+          explanation="Qué % del TAM esperas capturar en el primer año. Mercados maduros: 15-25% de adopción. Un mercado nuevo puede aspirar a 5-10% en el año 1."
+          onChange={v => onChange({ ...inputs, adopcion: v })}
+        />
+        <ModelSlider
+          label="Capacidad de couriers (órdenes/semana)"
+          value={couriers} min={5000} max={200000} step={5000}
+          format={v => `${(v / 1000).toFixed(0)}k`}
+          explanation="El límite físico de tu flota. Si la demanda supera esto, el modelo la capea — mostrándote que necesitas más couriers antes de seguir creciendo."
+          onChange={v => onChange({ ...inputs, couriers: v })}
+        />
+        <ResultCallout results={[
+          {
+            label: 'Semana en que alcanzas capacity',
+            value: constraintWeek >= 0 ? `Semana ${constraintWeek + 1}` : 'No alcanzas el límite',
+            color: constraintWeek >= 0 ? 'text-amber-400' : 'text-emerald-400',
+          },
+          { label: 'Órdenes acumuladas año 1', value: totalYr1.toLocaleString('es-MX'), color: 'text-blue-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CRECIMIENTO DE MERCADO NUEVO — 52 SEMANAS</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="w" tick={{ fontSize: 8 }} interval={7} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(v, n) => [v.toLocaleString('es-MX'), n]}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Area type="monotone" dataKey="demanda" name="Demanda potencial" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} strokeWidth={2} isAnimationActive={false} />
+            <Area type="monotone" dataKey="real" name="Órdenes reales" stroke="#34d399" fill="#34d399" fillOpacity={0.25} strokeWidth={2.5} isAnimationActive={false} />
+            <Line type="monotone" dataKey="capacidad" name="Capacity couriers" stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={2} dot={false} isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model B1: Unit Economics ──────────────────────────────────────────────────
+
+function ModelB1({ inputs, onChange }) {
+  const { aov, commission, courierCost, subsidy } = inputs
+  const revenue = parseFloat((aov * commission / 100 + 1.5).toFixed(2))
+  const costCourier = courierCost
+  const costSupport = parseFloat((aov * 0.02).toFixed(2))
+  const costSubsidy = subsidy
+  const cm = parseFloat((revenue - costCourier - costSupport - costSubsidy).toFixed(2))
+
+  // Build waterfall for single order breakdown
+  const wfDrivers = [
+    { name: 'Revenue', delta: revenue, type: 'base' },
+    { name: '−Courier', delta: -costCourier, type: 'neg' },
+    { name: '−Soporte', delta: -costSupport, type: 'neg' },
+    { name: '−Subsidio', delta: -costSubsidy, type: 'neg' },
+    { name: 'CM', delta: cm, type: 'total' },
+  ]
+  const wfData = buildWaterfall(wfDrivers)
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Descompone el costo y el retorno de cada orden para saber si una iniciativa se paga sola. Calcula el payback: cuántas semanas tarda la contribución acumulada en superar la inversión inicial.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Antes de aprobar cualquier promo o plan de adquisición. Sin esto, puedes estar generando volumen que destruye valor.</p>
+        </div>
+        <ModelSlider
+          label="Ticket promedio — AOV ($)"
+          value={aov} min={5} max={50} step={0.5}
+          format={v => `$${v.toFixed(1)}`}
+          explanation="El valor promedio de cada orden. Restaurantes: $15-25. Grocery: $30-50. Farmacia: $20-35."
+          onChange={v => onChange({ ...inputs, aov: v })}
+        />
+        <ModelSlider
+          label="Comisión de la plataforma (%)"
+          value={commission} min={15} max={35} step={0.5}
+          format={v => `${v}%`}
+          explanation="El porcentaje del AOV que retiene la plataforma. Típicamente 20-30% para restaurantes, puede ser menor para grandes cadenas."
+          onChange={v => onChange({ ...inputs, commission: v })}
+        />
+        <ModelSlider
+          label="Costo de courier por orden ($)"
+          value={courierCost} min={1} max={8} step={0.1}
+          format={v => `$${v.toFixed(1)}`}
+          explanation="El costo variable de cada entrega. Incluye pago al courier, combustible y costo de matching. Varía mucho por ciudad y distancia promedio."
+          onChange={v => onChange({ ...inputs, courierCost: v })}
+        />
+        <ModelSlider
+          label="Subsidio de promo por orden ($)"
+          value={subsidy} min={0} max={10} step={0.1}
+          format={v => `$${v.toFixed(1)}`}
+          explanation="Cuánto le 'devuelves' al usuario por cada orden en forma de descuento, cashback o free delivery. Es tu costo directo de la promo."
+          onChange={v => onChange({ ...inputs, subsidy: v })}
+        />
+        <ResultCallout results={[
+          { label: 'Contribution margin por orden', value: `$${cm.toFixed(2)}`, color: cm >= 0 ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Revenue por orden (comisión + delivery fee)', value: `$${revenue.toFixed(2)}`, color: 'text-blue-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">WATERFALL POR ORDEN — DESGLOSE DE COSTOS</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={wfData} margin={{ top: 20, right: 20, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9ca3af' }} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `$${v.toFixed(1)}`} />
+            <Tooltip
+              formatter={(val, name, props) => {
+                if (name === 'spacer') return null
+                const d = wfData[props.dataIndex]
+                return [`$${d.delta.toFixed(2)}`, d.name]
+              }}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Bar dataKey="spacer" stackId="wf" fill="transparent" isAnimationActive={false} />
+            <Bar dataKey="bar" stackId="wf" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+              {wfData.map((d, i) => (
+                <Cell key={i} fill={
+                  d.type === 'neg' ? '#f87171' :
+                  d.type === 'total' ? (cm >= 0 ? '#34d399' : '#f87171') :
+                  d.type === 'base' ? '#3b82f6' : '#6b7280'
+                } />
+              ))}
+              <LabelList
+                dataKey="delta"
+                position="top"
+                formatter={v => v >= 0 ? `+$${v.toFixed(2)}` : `-$${Math.abs(v).toFixed(2)}`}
+                style={{ fill: '#9ca3af', fontSize: 10 }}
+              />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model B2: Escenarios ──────────────────────────────────────────────────────
+
+function ModelB2({ inputs, onChange }) {
+  const { variance, horizon } = inputs
+
+  const data = Array.from({ length: horizon }, (_, t) => {
+    const base = Math.round(50000 + t * 500 + Math.sin(t * 0.5) * 2000)
+    const best = Math.round(base * Math.pow(1 + variance / 100, t / horizon))
+    const worst = Math.round(base * Math.pow(1 - variance / 100, t / horizon))
+    return { w: `S${t + 1}`, base, best, worst }
+  })
+
+  const lastBase = data[data.length - 1].base
+  const lastBest = data[data.length - 1].best
+  const lastWorst = data[data.length - 1].worst
+  const amplitude = Math.round(((lastBest - lastWorst) / lastBase) * 100)
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Toma tu forecast base y genera automáticamente un caso optimista y uno pesimista, variando los inputs clave. Te da un rango de confianza para presentar a liderazgo.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando necesitas presentar un forecast a dirección o finanzas. Nunca presentes un solo número — siempre con rangos.</p>
+        </div>
+        <ModelSlider
+          label="Variación de escenarios (%)"
+          value={variance} min={10} max={40} step={1}
+          format={v => `±${v}%`}
+          explanation="Cuánto varía cada input entre el caso base y los extremos. ±20% es conservador pero creíble. ±30% cubre escenarios más disruptivos."
+          onChange={v => onChange({ ...inputs, variance: v })}
+        />
+        <ModelSlider
+          label="Horizonte de forecast (semanas)"
+          value={horizon} min={4} max={26} step={1}
+          format={v => `${v} semanas`}
+          explanation="A más semanas, mayor es la divergencia entre escenarios. Esto es matemáticamente inevitable: la incertidumbre se acumula."
+          onChange={v => onChange({ ...inputs, horizon: v })}
+        />
+        <ResultCallout results={[
+          { label: `Rango semana ${horizon}`, value: `${lastWorst.toLocaleString('es-MX')} – ${lastBest.toLocaleString('es-MX')}`, color: 'text-gray-200' },
+          { label: 'Amplitud del rango vs caso base', value: `${amplitude}%`, color: amplitude < 25 ? 'text-emerald-400' : amplitude < 50 ? 'text-amber-400' : 'text-red-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ESCENARIOS — LAS LÍNEAS DIVERGEN CON EL TIEMPO</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="w" tick={{ fontSize: 9 }} interval={Math.floor(horizon / 5)} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(v, n) => [v.toLocaleString('es-MX'), n]}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Area type="monotone" dataKey="best" name="Mejor caso" stroke="#34d399" fill="#34d399" fillOpacity={0.05} strokeDasharray="4 4" strokeWidth={2} isAnimationActive={false} />
+            <Area type="monotone" dataKey="base" name="Caso base" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2.5} isAnimationActive={false} />
+            <Area type="monotone" dataKey="worst" name="Peor caso" stroke="#f87171" fill="#f87171" fillOpacity={0.05} strokeDasharray="4 4" strokeWidth={2} isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Model C1: Market Share ────────────────────────────────────────────────────
+
+function ModelC1({ inputs, onChange }) {
+  const { marketSize, share, evento, growth } = inputs
+
+  const eventEffects = {
+    none: { shareChange: 0, marketMultiplier: 1.0, label: 'Sin cambio' },
+    comp_exits: { shareChange: 15, marketMultiplier: 1.0, label: 'Comp. sale: tu share sube +15pp' },
+    new_comp: { shareChange: -5, marketMultiplier: 1.0, label: 'Nuevo competidor: -5pp' },
+    price_war: { shareChange: 0, marketMultiplier: 1.15, label: 'Guerra de precios: mercado +15%' },
+  }
+
+  const effect = eventEffects[evento] || eventEffects.none
+  const growthPerWeek = Math.pow(1 + growth / 100, 1 / 4) - 1
+
+  const data = Array.from({ length: 24 }, (_, t) => {
+    const totalMercado = Math.round(marketSize * Math.pow(1 + growthPerWeek, t) * (evento !== 'none' && t >= 12 ? effect.marketMultiplier : 1.0))
+    const shareTransition = evento !== 'none' && t >= 4 && t < 12 ? (t - 4) / 8 : evento !== 'none' && t >= 12 ? 1 : 0
+    const currentShare = (share + effect.shareChange * shareTransition) / 100
+    const tusPlatforma = Math.round(totalMercado * currentShare)
+    return { w: `S${t + 1}`, totalMercado, tusPlatforma }
+  })
+
+  const week24 = data[23]
+  const week1 = data[0]
+  const delta = week24.tusPlatforma - week1.tusPlatforma
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Estima tus órdenes como porcentaje de un mercado total que crece. Modela el impacto de eventos competitivos: si un competidor sale, si entra uno nuevo, si hay guerra de precios.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando tu estrategia no opera en un vacío — cuando hay movimientos de competidores que afectan tu volumen.</p>
+        </div>
+        <ModelSlider
+          label="Tamaño total del mercado (órdenes/sem)"
+          value={marketSize} min={50000} max={1000000} step={25000}
+          format={v => `${(v / 1000).toFixed(0)}k`}
+          explanation="El total de órdenes de delivery de TODAS las plataformas en tu zona. Puedes estimarlo dividiendo tu volumen por tu share estimado."
+          onChange={v => onChange({ ...inputs, marketSize: v })}
+        />
+        <ModelSlider
+          label="Tu market share actual (%)"
+          value={share} min={5} max={80} step={1}
+          format={v => `${v}%`}
+          explanation="Tu porcentaje del mercado total. En mercados LATAM, el líder típicamente tiene 35-60% de share."
+          onChange={v => onChange({ ...inputs, share: v })}
+        />
+        <div className="ds-card p-4 mb-3">
+          <label className="text-gray-300 text-sm font-medium block mb-2">Evento competitivo</label>
+          <select
+            value={evento}
+            onChange={e => onChange({ ...inputs, evento: e.target.value })}
+            className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+          >
+            <option value="none">Ninguno</option>
+            <option value="comp_exits">Competidor sale (+15pp share a repartir)</option>
+            <option value="new_comp">Nuevo competidor entra (-5pp)</option>
+            <option value="price_war">Guerra de precios (+15% mercado total)</option>
+          </select>
+          <p className="text-xs text-gray-500 italic mt-2">Los eventos competitivos no son instantáneos — el share se ajusta gradualmente en 4-8 semanas.</p>
+        </div>
+        <ModelSlider
+          label="Crecimiento del mercado (%/mes)"
+          value={growth} min={0} max={5} step={0.1}
+          format={v => `${v.toFixed(1)}%/mes`}
+          explanation="La adopción general de food delivery en la zona crece independientemente de las acciones de las plataformas."
+          onChange={v => onChange({ ...inputs, growth: v })}
+        />
+        <ResultCallout results={[
+          { label: 'Tus órdenes semana 24', value: week24.tusPlatforma.toLocaleString('es-MX'), color: 'text-emerald-400' },
+          { label: 'Ganancia/pérdida vs semana 1', value: `${delta >= 0 ? '+' : ''}${delta.toLocaleString('es-MX')} órdenes/sem`, color: delta >= 0 ? 'text-emerald-400' : 'text-red-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">MERCADO TOTAL VS TU PLATAFORMA — 24 SEMANAS</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="w" tick={{ fontSize: 9 }} interval={4} />
+            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              formatter={(v, n) => [v.toLocaleString('es-MX'), n]}
+              contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Area type="monotone" dataKey="totalMercado" name="Total mercado" stroke="#6b7280" fill="#6b7280" fillOpacity={0.1} strokeWidth={1.5} isAnimationActive={false} />
+            <Area type="monotone" dataKey="tusPlatforma" name="Tu plataforma" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} strokeWidth={2.5} isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+// ── Models Registry ───────────────────────────────────────────────────────────
+
+const MODEL_IDS = ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'C1']
+const MODEL_SHORT_NAMES = {
+  A1: 'Promo Uplift',
+  A2: 'Restaurantes',
+  A3: 'Canibalización',
+  A4: 'Estacionalidad',
+  A5: 'Ciudad Nueva',
+  B1: 'Unit Economics',
+  B2: 'Escenarios',
+  C1: 'Market Share',
+}
+
+// ── Interactive Waterfall Section ─────────────────────────────────────────────
+
+function InteractiveWaterfall() {
+  const [wf, setWf] = useState({
+    base: 45000,
+    promos: 12000,
+    acquisition: 8000,
+    canib: 4000,
+    seasonal: 3500,
+  })
+
+  const drivers = [
+    { name: '📦 Base', delta: wf.base, type: 'base' },
+    { name: '🎯 Promos', delta: wf.promos, type: 'pos' },
+    { name: '🏪 Restaurantes', delta: wf.acquisition, type: 'pos' },
+    { name: '⚡ Canibalización', delta: -wf.canib, type: 'neg' },
+    { name: '🌡️ Estacional', delta: wf.seasonal, type: wf.seasonal >= 0 ? 'pos' : 'neg' },
+    { name: '= Total', delta: 0, type: 'total' },
+  ]
+
+  const wfData = buildWaterfall(drivers)
+  const totalNeto = wf.base + wf.promos + wf.acquisition - wf.canib + wf.seasonal
+  const vsBase = ((totalNeto - wf.base) / wf.base * 100).toFixed(1)
+  const promoPct = ((wf.promos + wf.acquisition - wf.canib) / totalNeto * 100).toFixed(0)
+  const estimatedCost = wf.promos * 2.5
+
+  return (
+    <div>
+      {/* Result chips */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-900/30 border border-emerald-800/50">
+          <span className="text-xs text-gray-400 font-mono">Total Neto</span>
+          <span className="text-emerald-400 font-mono font-bold text-sm">{totalNeto.toLocaleString('es-MX')} órdenes</span>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-900/30 border border-blue-800/50">
+          <span className="text-xs text-gray-400 font-mono">vs Base</span>
+          <span className="text-blue-400 font-mono font-bold text-sm">{vsBase >= 0 ? '+' : ''}{vsBase}%</span>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-900/30 border border-amber-800/50">
+          <span className="text-xs text-gray-400 font-mono">Costo est. promo</span>
+          <span className="text-amber-400 font-mono font-bold text-sm">~${Math.round(estimatedCost).toLocaleString('es-MX')}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sliders */}
+        <div className="space-y-3">
+          {[
+            {
+              key: 'base', icon: '📦', label: 'Órdenes Base',
+              min: 10000, max: 100000, step: 1000,
+              hint: 'Tu volumen semanal sin ninguna iniciativa',
+            },
+            {
+              key: 'promos', icon: '🎯', label: '+Uplift de Promos',
+              min: 0, max: 30000, step: 500,
+              hint: 'Órdenes adicionales de campañas activas esta semana',
+            },
+            {
+              key: 'acquisition', icon: '🏪', label: '+Nuevos Restaurantes',
+              min: 0, max: 20000, step: 500,
+              hint: 'Órdenes de restaurantes en curva de maduración',
+            },
+            {
+              key: 'canib', icon: '⚡', label: '−Canibalización',
+              min: 0, max: 10000, step: 200,
+              hint: 'Pedidos que se pierden por superposición de promos',
+            },
+            {
+              key: 'seasonal', icon: '🌡️', label: '×Ajuste Estacional',
+              min: -10000, max: 10000, step: 100,
+              hint: 'Factor por feriados, lluvia, quincena (puede ser negativo)',
+            },
+          ].map(({ key, icon, label, min, max, step, hint }) => (
+            <div key={key} className="ds-card p-4">
+              <div className="flex justify-between items-center mb-2">
+                <div>
+                  <span className="text-sm font-medium text-gray-300">{icon} {label}</span>
+                  <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
+                </div>
+                <span className="text-blue-400 font-mono font-bold text-sm ml-4 flex-shrink-0">
+                  {wf[key] >= 0 ? '+' : ''}{wf[key].toLocaleString('es-MX')}
+                </span>
+              </div>
+              <input
+                type="range" min={min} max={max} step={step} value={wf[key]}
+                onChange={e => setWf(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                className="w-full h-1.5 rounded-full appearance-none bg-gray-700 accent-blue-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-xs text-gray-600 mt-1">
+                <span>{min >= 0 ? min.toLocaleString('es-MX') : min.toLocaleString('es-MX')}</span>
+                <span>{max.toLocaleString('es-MX')}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Waterfall chart */}
+        <div className="ds-card p-4">
+          <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CONTRIBUCIÓN POR DRIVER — WATERFALL DE ÓRDENES</p>
+          <ResponsiveContainer width="100%" height={360}>
+            <BarChart data={wfData} margin={{ top: 30, right: 20, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#9ca3af' }} />
+              <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip
+                formatter={(val, name, props) => {
+                  if (name === 'spacer') return null
+                  const d = wfData[props.dataIndex]
+                  const sign = d.delta >= 0 ? '+' : ''
+                  return [`${sign}${d.delta.toLocaleString('es-MX')} órdenes`, d.name]
+                }}
+                contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
+              />
+              <Bar dataKey="spacer" stackId="wf" fill="transparent" isAnimationActive={false} />
+              <Bar dataKey="bar" stackId="wf" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                {wfData.map((d, i) => (
+                  <Cell key={i} fill={
+                    d.type === 'neg' ? '#f87171' :
+                    d.type === 'total' ? '#34d399' :
+                    d.type === 'base' ? '#6b7280' : '#3b82f6'
+                  } />
+                ))}
+                <LabelList
+                  dataKey="delta"
+                  position="top"
+                  formatter={v => v > 0 ? `+${(v / 1000).toFixed(0)}k` : `${(v / 1000).toFixed(0)}k`}
+                  style={{ fill: '#9ca3af', fontSize: 11 }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   )
 }
@@ -237,8 +1121,18 @@ function ROITooltip({ active, payload, label }) {
 // ── Main HomePage ─────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [waterfallKey, setWaterfallKey] = useState(0)
   const [excelToast, setExcelToast] = useState(false)
+  const [activeModel, setActiveModel] = useState('A1')
+  const [modelInputs, setModelInputs] = useState({
+    A1: { base: 45000, uplift: 25, duracion: 4 },
+    A2: { restosPerWeek: 10, steadyState: 120, tipo: 'dark_kitchen' },
+    A3: { upliftA: 25, upliftB: 20, canib: 30 },
+    A4: { pais: 'CL', semana: 38, lluvia: false },
+    A5: { tam: 500000, adopcion: 8, couriers: 30000 },
+    B1: { aov: 18, commission: 27, courierCost: 3.5, subsidy: 2.5 },
+    B2: { variance: 20, horizon: 12 },
+    C1: { marketSize: 200000, share: 35, evento: 'none', growth: 1.5 },
+  })
 
   // Scroll reveal refs
   const statsRef = useRef(null)
@@ -268,12 +1162,25 @@ export default function HomePage() {
     setTimeout(() => setExcelToast(false), 3000)
   }
 
-  // Prepare waterfall: spacer + actual value
-  const waterfallFormatted = waterfallData.map(d => ({
-    ...d,
-    spacer: d.name === 'Total Neto' ? 0 : Math.min(d.start, d.start + d.value),
-    bar: Math.abs(d.value),
-  }))
+  const updateModelInputs = (id, vals) => {
+    setModelInputs(prev => ({ ...prev, [id]: vals }))
+  }
+
+  const renderActiveModel = () => {
+    const inp = modelInputs[activeModel]
+    const upd = (vals) => updateModelInputs(activeModel, vals)
+    switch (activeModel) {
+      case 'A1': return <ModelA1 inputs={inp} onChange={upd} />
+      case 'A2': return <ModelA2 inputs={inp} onChange={upd} />
+      case 'A3': return <ModelA3 inputs={inp} onChange={upd} />
+      case 'A4': return <ModelA4 inputs={inp} onChange={upd} />
+      case 'A5': return <ModelA5 inputs={inp} onChange={upd} />
+      case 'B1': return <ModelB1 inputs={inp} onChange={upd} />
+      case 'B2': return <ModelB2 inputs={inp} onChange={upd} />
+      case 'C1': return <ModelC1 inputs={inp} onChange={upd} />
+      default: return null
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -299,12 +1206,10 @@ export default function HomePage() {
 
       {/* ── SECTION 2: Hero ───────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-950/20 via-gray-950 to-gray-950 pt-16 pb-20">
-        {/* Background glow */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-emerald-600/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left: text */}
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-800/50 text-blue-400 text-xs font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -332,7 +1237,6 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* Stats row */}
             <div className="flex flex-wrap gap-6 pt-2 border-t border-gray-800">
               {[
                 { value: '8', label: 'Modelos' },
@@ -348,7 +1252,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right: chart */}
+          {/* Right: hero chart */}
           <div className="ds-card p-4 shadow-xl shadow-blue-900/10">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-mono text-gray-400">Forecast · 26 semanas · Escenarios</span>
@@ -361,28 +1265,10 @@ export default function HomePage() {
                 <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip content={<HeroTooltip />} />
                 <Legend iconType="line" wrapperStyle={{ fontSize: 10 }} />
-                <Area
-                  type="monotone" dataKey="worst" name="Peor caso"
-                  stroke="#f87171" fill="#f87171" fillOpacity={0.05}
-                  strokeDasharray="4 4"
-                  isAnimationActive={true} animationDuration={1200}
-                />
-                <Area
-                  type="monotone" dataKey="base" name="Base"
-                  stroke="#6b7280" fill="#6b7280" fillOpacity={0.3}
-                  isAnimationActive={true} animationDuration={1200} animationBegin={100}
-                />
-                <Area
-                  type="monotone" dataKey="withPromos" name="Base + Promos"
-                  stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3}
-                  isAnimationActive={true} animationDuration={1200} animationBegin={200}
-                />
-                <Area
-                  type="monotone" dataKey="best" name="Mejor caso"
-                  stroke="#34d399" fill="#34d399" fillOpacity={0.05}
-                  strokeDasharray="4 4"
-                  isAnimationActive={true} animationDuration={1200} animationBegin={300}
-                />
+                <Area type="monotone" dataKey="worst" name="Peor caso" stroke="#f87171" fill="#f87171" fillOpacity={0.05} strokeDasharray="4 4" isAnimationActive={true} animationDuration={1200} />
+                <Area type="monotone" dataKey="base" name="Base" stroke="#6b7280" fill="#6b7280" fillOpacity={0.3} isAnimationActive={true} animationDuration={1200} animationBegin={100} />
+                <Area type="monotone" dataKey="withPromos" name="Base + Promos" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} isAnimationActive={true} animationDuration={1200} animationBegin={200} />
+                <Area type="monotone" dataKey="best" name="Mejor caso" stroke="#34d399" fill="#34d399" fillOpacity={0.05} strokeDasharray="4 4" isAnimationActive={true} animationDuration={1200} animationBegin={300} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -415,7 +1301,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 4: Model Categories ───────────────────────────────────── */}
+      {/* ── SECTION 4: Models — interactive tabs ─────────────────────────── */}
       <section
         id="modelos"
         ref={modelsRef}
@@ -424,165 +1310,52 @@ export default function HomePage() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">8 modelos en 3 categorías</h2>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">Los 8 modelos — explicados con datos reales</h2>
             <p className="text-gray-400 max-w-xl mx-auto">
-              Cada categoría cubre una dimensión del negocio. Activa solo los modelos que necesitas.
+              Mueve los sliders para ver cómo cada input cambia el forecast en tiempo real
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Tab bar */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {MODEL_IDS.map(id => (
+              <button
+                key={id}
+                onClick={() => setActiveModel(id)}
+                className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition-all ${
+                  activeModel === id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {id} {MODEL_SHORT_NAMES[id]}
+              </button>
+            ))}
+          </div>
 
-            {/* Card A: Demanda */}
-            <div
-              className="rounded-xl border border-blue-800/50 bg-blue-950/30 p-5 hover:border-blue-600/70 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/20"
-              style={{ animationDelay: '0ms' }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">📈</span>
-                <h3 className="font-semibold text-gray-100">Modelos de Demanda</h3>
-              </div>
-              <div className="flex flex-wrap gap-1 mb-4">
-                {['A1 Promo Uplift', 'A2 Adquisición', 'A3 Canibalización', 'A4 Estacionalidad', 'A5 Expansión'].map(m => (
-                  <span key={m} className="ds-badge-blue text-[10px]">{m}</span>
-                ))}
-              </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={demandData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
-                  <XAxis dataKey="w" tick={{ fontSize: 9 }} />
-                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={v => v.toLocaleString('es-MX')} contentStyle={{ background: '#0f172a', border: '1px solid #1e3a5f', borderRadius: 6, fontSize: 11 }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="base" name="Base" fill="#6b7280" fillOpacity={0.8} isAnimationActive={true} animationDuration={800} />
-                  <Bar dataKey="promo" name="Con Promos" fill="#3b82f6" fillOpacity={0.9} isAnimationActive={true} animationDuration={800} animationBegin={100} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Card B: Financiero */}
-            <div
-              className="rounded-xl border border-emerald-800/50 bg-emerald-950/30 p-5 hover:border-emerald-600/70 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-900/20"
-              style={{ animationDelay: '150ms' }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">💰</span>
-                <h3 className="font-semibold text-gray-100">Unit Economics & ROI</h3>
-              </div>
-              <div className="flex flex-wrap gap-1 mb-4">
-                {['B1 Unit Economics', 'B2 Escenarios Best/Base/Worst'].map(m => (
-                  <span key={m} className="ds-badge-green text-[10px]">{m}</span>
-                ))}
-              </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart data={roiData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#064e3b" />
-                  <XAxis dataKey="w" tick={{ fontSize: 9 }} />
-                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${v}%`} />
-                  <Tooltip content={<ROITooltip />} />
-                  <ReferenceLine y={0} stroke="#34d399" strokeDasharray="4 4" label={{ value: 'Payback', fill: '#34d399', fontSize: 9 }} />
-                  <Line
-                    type="monotone" dataKey="roi" name="ROI acum."
-                    stroke="#34d399" strokeWidth={2} dot={false}
-                    isAnimationActive={true} animationDuration={1000}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Card C: Mercado */}
-            <div
-              className="rounded-xl border border-purple-800/50 bg-purple-950/30 p-5 hover:border-purple-600/70 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20"
-              style={{ animationDelay: '300ms' }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🏆</span>
-                <h3 className="font-semibold text-gray-100">Dinámica Competitiva</h3>
-              </div>
-              <div className="flex flex-wrap gap-1 mb-4">
-                {['C1 Market Share'].map(m => (
-                  <span key={m} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-purple-900/50 text-purple-400 border border-purple-800">{m}</span>
-                ))}
-              </div>
-              <ResponsiveContainer width="100%" height={140}>
-                <PieChart>
-                  <Pie
-                    data={marketData} cx="50%" cy="50%"
-                    innerRadius={35} outerRadius={60}
-                    dataKey="value" nameKey="name"
-                    isAnimationActive={true} animationDuration={800}
-                  >
-                    {marketData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v, n) => [`${v}%`, n]} contentStyle={{ background: '#0f172a', border: '1px solid #4b2d7f', borderRadius: 6, fontSize: 11 }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: 9 }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-3 flex items-center gap-2 p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-800/40">
-                <span className="text-xs text-gray-400 flex-1">Escenario: Comp. B sale del mercado</span>
-                <span className="font-mono text-xs text-emerald-400 font-semibold">↑ +8pp share</span>
-              </div>
-            </div>
-
+          {/* Active model panel */}
+          <div>
+            {renderActiveModel()}
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 5: Waterfall Demo ─────────────────────────────────────── */}
+      {/* ── SECTION 5: Interactive Waterfall ─────────────────────────────── */}
       <section
         ref={waterfallRef}
         className={`py-20 bg-gray-900/20 border-y border-gray-800 transition-all duration-700 ${
           waterfallVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <div className="max-w-5xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">El modelo combinado</h2>
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">Modelo Combinado — construye tu forecast capa por capa</h2>
             <p className="text-gray-400 max-w-xl mx-auto">
-              Cada driver se suma (o resta) para llegar al total neto. Visualiza la contribución de cada componente.
+              Cada iniciativa agrega (o resta) órdenes al total. Mueve los sliders para ver el impacto de cada driver.
             </p>
           </div>
-
-          <div className="ds-card p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono text-gray-400">Contribución por driver · semana ejemplo</span>
-              <button
-                onClick={() => setWaterfallKey(k => k + 1)}
-                className="btn-ghost text-xs border border-gray-700 px-3 py-1.5"
-              >
-                ↺ Animar
-              </button>
-            </div>
-            <ResponsiveContainer width="100%" height={300} key={waterfallKey}>
-              <BarChart data={waterfallFormatted} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  formatter={(val, name, props) => {
-                    const orig = waterfallData[props.dataIndex]
-                    if (name === 'spacer') return null
-                    return [
-                      `${orig.value > 0 ? '+' : ''}${orig.value.toLocaleString('es-MX')} órdenes`,
-                      orig.name
-                    ]
-                  }}
-                  contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
-                />
-                <ReferenceLine y={45000} stroke="#6b7280" strokeDasharray="4 4" label={{ value: 'Base', fill: '#9ca3af', fontSize: 10 }} />
-                {/* Spacer bar (invisible) */}
-                <Bar dataKey="spacer" stackId="a" fill="transparent" isAnimationActive={true} animationDuration={600} />
-                {/* Actual value bar */}
-                <Bar dataKey="bar" stackId="a" isAnimationActive={true} animationDuration={900} label={<WaterfallLabel />}>
-                  {waterfallFormatted.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={0.85} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <InteractiveWaterfall />
         </div>
       </section>
 
@@ -647,14 +1420,12 @@ export default function HomePage() {
             {/* Excel mockup */}
             <div className="lg:col-span-2">
               <div className="rounded-xl border border-gray-700 overflow-hidden shadow-2xl">
-                {/* Window chrome */}
                 <div className="bg-gray-800 px-4 py-2 flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500/70" />
                   <div className="w-3 h-3 rounded-full bg-amber-500/70" />
                   <div className="w-3 h-3 rounded-full bg-emerald-500/70" />
                   <span className="ml-3 text-xs text-gray-400 font-mono">forecast_mx_2025.xlsx</span>
                 </div>
-                {/* Spreadsheet area */}
                 <div className="bg-gray-950 overflow-x-auto">
                   <table className="w-full text-[10px] font-mono">
                     <thead>
@@ -694,7 +1465,6 @@ export default function HomePage() {
                           <td className="px-2 py-1.5 text-right text-emerald-300">{row.cm}</td>
                         </tr>
                       ))}
-                      {/* Totals row */}
                       <tr className="bg-blue-950/60 border-t border-blue-800">
                         <td className="px-2 py-1.5 text-blue-300 font-bold border-r border-blue-900" colSpan={2}>TOTAL 5W</td>
                         <td className="px-2 py-1.5 text-right text-gray-200 font-bold border-r border-blue-900">230,000</td>
@@ -710,7 +1480,6 @@ export default function HomePage() {
                     </tbody>
                   </table>
                 </div>
-                {/* Sheet tabs */}
                 <div className="bg-gray-900 border-t border-gray-700 px-2 py-1 flex gap-1 overflow-x-auto">
                   {['Cover', 'Exec Summary', 'Weekly Detail', 'Monthly Rollup', 'Cohort Waterfall', 'Promo Detail', 'Scenarios', 'Unit Economics', 'Assumptions Log'].map((tab) => (
                     <div
