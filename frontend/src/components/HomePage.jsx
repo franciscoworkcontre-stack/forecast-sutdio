@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -1005,6 +1005,130 @@ const MODEL_SHORT_NAMES = {
   C1: 'Market Share',
 }
 
+// ── Taxonomy Data (McKinsey Framework) ────────────────────────────────────────
+
+const COLOR_STYLES = {
+  blue:    { headerBg: 'bg-blue-950/30',    text: 'text-blue-400',    active: 'bg-blue-900/20 border-blue-700' },
+  emerald: { headerBg: 'bg-emerald-950/30', text: 'text-emerald-400', active: 'bg-emerald-900/20 border-emerald-700' },
+  purple:  { headerBg: 'bg-purple-950/30',  text: 'text-purple-400',  active: 'bg-purple-900/20 border-purple-700' },
+}
+
+const TAXONOMY = {
+  D: {
+    label: 'Demanda', sublabel: 'El usuario como driver de órdenes', color: 'blue',
+    models: [
+      {
+        id: 'D1', name: 'User Lifecycle Markov',
+        question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?',
+        context: 'Usuarios en estados discretos (nuevos, activos, baja/alta frecuencia, dormidos, churned). Cada semana transicionan entre estados con probabilidades medibles. Las iniciativas modifican esas probabilidades.',
+        insight: 'Descompone "+20% en órdenes" en acciones concretas: mueve 3k usuarios de baja a alta frecuencia, reduce churn 5pp, atrae 2k nuevos por semana. Cada iniciativa tiene un costo y un ROI separado.',
+        status: 'full', demoId: null, link: '/markov', linkLabel: 'Abrir Wizard de 7 pasos →',
+      },
+      {
+        id: 'D2', name: 'Cohort Retention & LTV',
+        question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?',
+        context: 'Cada cohort semanal tiene curva de retención y frecuencia propia. El LTV total en cualquier semana es la suma de contribuciones de todos los cohorts activos.',
+        insight: 'Una mejora de 5pp en retención W4 no solo añade usuarios ese día, sino indefinidamente. El NPV es siempre mayor de lo que parece. Este modelo produce el argumento cuantitativo para redirigir budget de adquisición a retención.',
+        status: 'roadmap', demoId: null,
+      },
+      {
+        id: 'D3', name: 'Funnel Conversion',
+        question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?',
+        context: 'Apertura de app → búsqueda → menú → carrito → checkout → repetición. Cada paso tiene una tasa de conversión medible vs benchmark de industria.',
+        insight: 'Si tu checkout está en 55% y el benchmark es 75%, eso equivale a +36% más órdenes sin adquirir un solo usuario nuevo. El constraint de conversión es el lever más capital-eficiente de resolver.',
+        status: 'demo', demoId: 'A1',
+      },
+      {
+        id: 'D4', name: 'Frequency & Wallet Share',
+        question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?',
+        context: 'Punto de partida: 21 ocasiones de comida por semana. ¿Cuántas son addressables para delivery? ¿Cuántas captura tu plataforma? El gap es el upside de frecuencia.',
+        insight: 'En LATAM, delivery captura solo 5-8% de las ocasiones de comida. El techo teórico es 4-5x el nivel actual. Cada lever (desayunos, late-night, suscripción) cierra una fracción de ese gap.',
+        status: 'roadmap', demoId: null,
+      },
+      {
+        id: 'D5', name: 'Reactivation & Winback',
+        question: '¿Cuántas órdenes puedo recuperar de mi base dormida?',
+        context: 'El 40-60% de usuarios registrados están dormidos. Tienen probabilidad de reactivación decayente. Campañas de winback aumentan esa probabilidad a diferentes costos.',
+        insight: 'La ventana dorada es semanas 4-8 post-último pedido. Antes vuelven solos. Después de 26 semanas, el costo de reactivación supera el LTV esperado del usuario reactivado.',
+        status: 'roadmap', demoId: null,
+      },
+    ],
+  },
+  S: {
+    label: 'Oferta', sublabel: 'El restaurante como driver de órdenes', color: 'emerald',
+    models: [
+      {
+        id: 'S1', name: 'Restaurant Onboarding & Maturation',
+        question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?',
+        context: 'Cada restaurante sigue una curva de maduración (% del steady-state por semana de vida). La velocidad depende del tipo: dark kitchen madura en 8 semanas, tradicional en 12-16.',
+        insight: 'El métrico predictivo clave es "órdenes en Semana 4". Un restaurante por debajo del mínimo en W4 tiene >80% de probabilidad de churnar antes de W12. Establece un checkpoint W4 y duplica soporte para los que están rezagados.',
+        status: 'demo', demoId: 'A2',
+      },
+      {
+        id: 'S2', name: 'Portfolio & Selection Effect',
+        question: '¿Más restaurantes o mejores restaurantes? ¿Volumen o variedad de categorías?',
+        context: 'La demanda responde al número de restaurantes con rendimientos decrecientes por categoría. El restaurante #100 de pizza genera mucho menos demanda incremental que el primero de comida árabe.',
+        insight: 'Dos puntos de inflexión: "mínimo viable" (~15-20 restaurantes, 5+ categorías) y "techo de variedad" (~80-120). Entre ellos, cada restaurante tiene ROI medible. Fuera de ese rango, el equipo de BD no debería priorizar más unidades.',
+        status: 'roadmap', demoId: null,
+      },
+      {
+        id: 'S3', name: 'Restaurant Engagement & Performance',
+        question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?',
+        context: 'Levers gratuitos para la plataforma: fotos de menú, optimización de tiempos de preparación, promos auto-financiadas por el restaurante, extensión de horarios, ads dentro de la app.',
+        insight: 'Un restaurante que optimiza menú + operaciones + promos auto-financiadas ve 40-80% más órdenes. Es el lever de crecimiento más capital-eficiente en un marketplace maduro.',
+        status: 'roadmap', demoId: null,
+      },
+      {
+        id: 'S4', name: 'Restaurant Health Score',
+        question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?',
+        context: 'Score 0-100 basado en tendencia de órdenes (4 semanas), engagement con la plataforma, métricas operacionales (acceptance rate, cancelaciones) y exposición competitiva.',
+        insight: 'No todo churn de restaurante vale lo mismo. Perder un restaurante de 300 órdenes/semana con usuarios leales cuesta 5-10x más que perder uno de 20 órdenes genéricas. Focaliza retención en los 10-15 restaurantes ancla por ciudad por trimestre.',
+        status: 'roadmap', demoId: null,
+      },
+    ],
+  },
+  P: {
+    label: 'Plataforma', sublabel: 'Efectos emergentes de la interacción oferta-demanda', color: 'purple',
+    models: [
+      {
+        id: 'P1', name: 'Network Effects & Liquidity',
+        question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?',
+        context: 'Cuatro fases: pre-liquidez (supply-led), liquidez temprana (balanced), madurez (demand-led), saturación (eficiencia). La estrategia de inversión correcta depende de la fase actual.',
+        insight: 'El error más caro en food delivery: invertir en adquisición de usuarios en un mercado Fase 1. Los usuarios bajan la app, ven 5 restaurantes con 50 minutos de entrega, y nunca vuelven. Regla: nunca >20% del presupuesto de ciudad en demanda antes de 15 restaurantes/km².',
+        status: 'demo', demoId: 'A5',
+      },
+      {
+        id: 'P2', name: 'Incrementality & Cannibalization',
+        question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?',
+        context: 'Descompone órdenes observadas en: orgánicas (sin promo), verdaderamente incrementales, adelantadas de la semana siguiente, y canibalizadas entre promos activas.',
+        insight: 'Todas las empresas sobreestiman el impacto de sus promos en 40-70%. Cupones broadcast tienen 80%+ de canibalización orgánica. El ROI real de promos es 2-3x más bajo que el análisis naive. La solución: promos trigger-based y segmentadas.',
+        status: 'demo', demoId: 'A3',
+      },
+      {
+        id: 'P3', name: 'Delivery Economics & Capacity',
+        question: '¿En qué punto la flota de couriers se convierte en el cuello de botella de crecimiento?',
+        context: 'Loop de equilibrio: supply de couriers → tiempo de entrega → conversión → demanda → earnings → supply. Tiene dos equilibrios posibles: virtuoso y colapso (doom loop).',
+        insight: '10 minutos menos en entrega promedio = +15-25% en órdenes, sin promo alguna. En la mayoría de mercados LATAM, este impacto supera el de todo el presupuesto combinado de marketing.',
+        status: 'roadmap', demoId: null,
+      },
+      {
+        id: 'P4', name: 'Competitive Dynamics',
+        question: '¿Qué pasa con mis órdenes si entra o sale un competidor?',
+        context: 'Modela el share de mercado bajo cuatro escenarios: entrada de competidor, salida de competidor, guerra de precios, y expansión de categoría (ej: grocery).',
+        insight: 'Cuando un competidor sale, capturas 40-70% de sus órdenes en 3 meses. El 20-30% restante se pierde permanentemente — esos usuarios dejan de pedir delivery. Esta es la justificación cuantitativa para participar en M&A defensivo.',
+        status: 'demo', demoId: 'C1',
+      },
+      {
+        id: 'P5', name: 'Marketplace Equilibrium',
+        question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?',
+        context: 'Test simultáneo de los tres lados: usuarios (retención orgánica, NPS), restaurantes (churn, promos auto-financiadas), couriers (earnings vs alternativas). Más unit economics de la plataforma.',
+        insight: 'La prueba definitiva: ¿qué pasa si eliminas todas las promos mañana? Empresa saludable: -10-20% de órdenes. Empresa no-saludable: -30-50%. La brecha es la "burbuja de subsidios" — no es un marketplace real.',
+        status: 'demo', demoId: 'B1',
+      },
+    ],
+  },
+}
+
 // ── Interactive Waterfall Section ─────────────────────────────────────────────
 
 function InteractiveWaterfall() {
@@ -1145,11 +1269,28 @@ function InteractiveWaterfall() {
   )
 }
 
+// ── Render Demo by ID ─────────────────────────────────────────────────────────
+
+function renderDemoById(demoId, inputs, onChange) {
+  switch (demoId) {
+    case 'A1': return <ModelA1 inputs={inputs} onChange={onChange} />
+    case 'A2': return <ModelA2 inputs={inputs} onChange={onChange} />
+    case 'A3': return <ModelA3 inputs={inputs} onChange={onChange} />
+    case 'A4': return <ModelA4 inputs={inputs} onChange={onChange} />
+    case 'A5': return <ModelA5 inputs={inputs} onChange={onChange} />
+    case 'B1': return <ModelB1 inputs={inputs} onChange={onChange} />
+    case 'B2': return <ModelB2 inputs={inputs} onChange={onChange} />
+    case 'C1': return <ModelC1 inputs={inputs} onChange={onChange} />
+    default: return null
+  }
+}
+
 // ── Main HomePage ─────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const [excelToast, setExcelToast] = useState(false)
-  const [activeModel, setActiveModel] = useState('A1')
+  const [selectedModel, setSelectedModel] = useState(null)
   const [modelInputs, setModelInputs] = useState({
     A1: { base: 45000, uplift: 25, duracion: 4 },
     A2: { restosPerWeek: 10, steadyState: 120, tipo: 'dark_kitchen' },
@@ -1179,7 +1320,7 @@ export default function HomePage() {
   const ctaVisible = useScrollReveal(ctaRef)
 
   // Counters
-  const c1 = useCounter(8, statsVisible)
+  const c1 = useCounter(14, statsVisible)
   const c2 = useCounter(17, statsVisible)
   const c3 = useCounter(52, statsVisible)
   const c4 = useCounter(9, statsVisible)
@@ -1193,20 +1334,21 @@ export default function HomePage() {
     setModelInputs(prev => ({ ...prev, [id]: vals }))
   }
 
-  const renderActiveModel = () => {
-    const inp = modelInputs[activeModel]
-    const upd = (vals) => updateModelInputs(activeModel, vals)
-    switch (activeModel) {
-      case 'A1': return <ModelA1 inputs={inp} onChange={upd} />
-      case 'A2': return <ModelA2 inputs={inp} onChange={upd} />
-      case 'A3': return <ModelA3 inputs={inp} onChange={upd} />
-      case 'A4': return <ModelA4 inputs={inp} onChange={upd} />
-      case 'A5': return <ModelA5 inputs={inp} onChange={upd} />
-      case 'B1': return <ModelB1 inputs={inp} onChange={upd} />
-      case 'B2': return <ModelB2 inputs={inp} onChange={upd} />
-      case 'C1': return <ModelC1 inputs={inp} onChange={upd} />
-      default: return null
+  const handleModelSelect = (model) => {
+    if (model.status === 'full' && model.link) {
+      navigate(model.link)
+    } else {
+      setSelectedModel(prev => prev === model.id ? null : model.id)
     }
+  }
+
+  // Find a taxonomy model by its id
+  const findTaxonomyModel = (id) => {
+    for (const [key, persp] of Object.entries(TAXONOMY)) {
+      const found = persp.models.find(m => m.id === id)
+      if (found) return { model: found, persp, key }
+    }
+    return null
   }
 
   return (
@@ -1240,7 +1382,7 @@ export default function HomePage() {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-800/50 text-blue-400 text-xs font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              8 modelos cuantitativos · LATAM-first
+              14 modelos · 3 perspectivas · LATAM-first
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-50">
@@ -1313,7 +1455,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { count: c1, label: 'Modelos cuantitativos', suffix: '' },
+              { count: c1, label: 'Modelos (14 en total)', suffix: '' },
               { count: c2, label: 'Países LATAM', suffix: '' },
               { count: c3, label: 'Semanas de horizonte', suffix: '' },
               { count: c4, label: 'Tabs Excel McKinsey', suffix: '' },
@@ -1329,7 +1471,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 4: Models — interactive tabs ─────────────────────────── */}
+      {/* ── SECTION 4: Model Taxonomy ─────────────────────────────────────── */}
       <section
         id="modelos"
         ref={modelsRef}
@@ -1339,33 +1481,113 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Los 8 modelos — explicados con datos reales</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              Mueve los sliders para ver cómo cada input cambia el forecast en tiempo real
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400 text-xs font-mono mb-4">
+              McKinsey Digital & Analytics · 14 modelos cuantitativos · 3 perspectivas
+            </div>
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">¿Cuál es tu pregunta de negocio?</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
+              Cada modelo responde una pregunta específica. Selecciona el modelo que se alinea
+              con tu decisión — los marcados con <span className="text-blue-400 font-mono">DEMO</span> tienen
+              una simulación interactiva, y <span className="text-purple-400 font-mono">WIZARD</span> tiene
+              un wizard completo de 7 pasos.
             </p>
           </div>
 
-          {/* Tab bar */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {MODEL_IDS.map(id => (
-              <button
-                key={id}
-                onClick={() => setActiveModel(id)}
-                className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition-all ${
-                  activeModel === id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                {id} {MODEL_SHORT_NAMES[id]}
-              </button>
-            ))}
+          {/* 3-column taxonomy grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            {Object.entries(TAXONOMY).map(([key, persp]) => {
+              const cs = COLOR_STYLES[persp.color]
+              return (
+                <div key={key} className="rounded-xl border border-gray-800 overflow-hidden">
+                  <div className={`px-4 py-3 ${cs.headerBg} border-b border-gray-800`}>
+                    <div className={`${cs.text} font-mono font-bold text-sm tracking-wide`}>{key} — {persp.label}</div>
+                    <div className="text-gray-500 text-xs mt-0.5">{persp.sublabel}</div>
+                  </div>
+                  {persp.models.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => handleModelSelect(model)}
+                      className={`w-full text-left px-4 py-3 border-b border-gray-800/60 last:border-0 transition-all hover:bg-gray-800/40 ${
+                        selectedModel === model.id ? 'bg-gray-800/70' : ''
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className={`font-mono text-[11px] font-bold ${cs.text} flex-shrink-0`}>{model.id}</span>
+                            <span className="text-gray-200 text-xs font-semibold leading-tight">{model.name}</span>
+                          </div>
+                          <p className="text-gray-500 text-[11px] leading-snug">{model.question}</p>
+                        </div>
+                        <div className="flex-shrink-0 mt-0.5">
+                          {model.status === 'full' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-purple-900/50 text-purple-300 border-purple-800">WIZARD</span>
+                          )}
+                          {model.status === 'demo' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-900/50 text-blue-400 border-blue-800">DEMO</span>
+                          )}
+                          {model.status === 'roadmap' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-gray-800 text-gray-600 border-gray-700">PRONTO</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            })}
           </div>
 
-          {/* Active model panel */}
-          <div>
-            {renderActiveModel()}
-          </div>
+          {/* Detail / Demo panel */}
+          {selectedModel ? (() => {
+            const found = findTaxonomyModel(selectedModel)
+            if (!found) return null
+            const { model, persp } = found
+            const cs = COLOR_STYLES[persp.color]
+            const demoInputs = model.demoId ? (modelInputs[model.demoId] || {}) : {}
+            const demoOnChange = model.demoId ? (vals) => updateModelInputs(model.demoId, vals) : null
+
+            return (
+              <div className="rounded-xl border border-gray-700 overflow-hidden">
+                {/* Header */}
+                <div className={`px-5 py-4 ${cs.headerBg} border-b border-gray-700`}>
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`font-mono text-sm font-bold ${cs.text}`}>{model.id}</span>
+                        <span className="text-gray-100 font-semibold">{model.name}</span>
+                      </div>
+                      <p className={`text-xs font-semibold ${cs.text} mb-1`}>{model.question}</p>
+                      <p className="text-gray-400 text-xs leading-relaxed max-w-xl">{model.context}</p>
+                    </div>
+                    <div className="lg:max-w-xs px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-700 flex-shrink-0">
+                      <div className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1.5">💡 Insight clave</div>
+                      <p className={`text-xs leading-relaxed ${cs.text}`}>{model.insight}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {model.status === 'demo' && model.demoId && (
+                  <div className="p-6">
+                    {renderDemoById(model.demoId, demoInputs, demoOnChange)}
+                  </div>
+                )}
+
+                {model.status === 'roadmap' && (
+                  <div className="p-12 text-center">
+                    <div className="text-gray-700 text-3xl mb-3">⏳</div>
+                    <p className="text-gray-400 text-sm font-semibold mb-1">Modelo en roadmap</p>
+                    <p className="text-gray-600 text-xs max-w-md mx-auto leading-relaxed">{model.context}</p>
+                  </div>
+                )}
+              </div>
+            )
+          })() : (
+            <div className="border border-dashed border-gray-800 rounded-xl p-8 text-center">
+              <p className="text-gray-600 text-sm">Selecciona un modelo de la tabla para ver su descripción detallada y demo interactiva</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1587,12 +1809,12 @@ export default function HomePage() {
             <pre className="text-sm leading-loose">
               <span className="text-gray-400">{'Forecast Final[W] ='}</span>{'\n'}
               {'  '}<span className="text-blue-400">[Órdenes_base]</span>{'\n'}
-              {'  + Σ '}<span className="text-blue-400">promo_uplift</span><span className="text-gray-400">[w]</span>{' × '}<span className="text-blue-400">fatigue</span><span className="text-gray-400">[w]</span>{' × '}<span className="text-blue-400">penetration</span><span className="text-gray-400">[segment]</span>{'    '}<span className="text-amber-500">{'← A1'}</span>{'\n'}
-              {'  + Σ '}<span className="text-blue-400">cohort</span><span className="text-gray-400">[c][w]</span>{' × '}<span className="text-blue-400">maturation</span><span className="text-gray-400">[w]</span>{' × ('}<span className="text-emerald-400">1</span>{' - '}<span className="text-blue-400">churn</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(10)}<span className="text-amber-500">{'← A2'}</span>{'\n'}
-              {'  - '}<span className="text-blue-400">cannibalization</span>{'('}<span className="text-blue-400">promos_activas</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(25)}<span className="text-amber-500">{'← A3'}</span>{'\n'}
-              {'  × '}<span className="text-blue-400">seasonal_factor</span><span className="text-gray-400">[w]</span>{' '.repeat(37)}<span className="text-amber-500">{'← A4'}</span>{'\n'}
-              {'  '}<span className="text-emerald-400">min</span>{'('}<span className="text-blue-400">supply_capacity</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(33)}<span className="text-amber-500">{'← A5'}</span>{'\n'}
-              {'  × '}<span className="text-blue-400">market_share</span><span className="text-gray-400">[w]</span>{' '.repeat(40)}<span className="text-amber-500">{'← C1'}</span>
+              {'  + Σ '}<span className="text-blue-400">promo_uplift</span><span className="text-gray-400">[w]</span>{' × '}<span className="text-blue-400">fatigue</span><span className="text-gray-400">[w]</span>{' × '}<span className="text-blue-400">penetration</span><span className="text-gray-400">[segment]</span>{'    '}<span className="text-amber-500">{'← D3/P2'}</span>{'\n'}
+              {'  + Σ '}<span className="text-blue-400">cohort</span><span className="text-gray-400">[c][w]</span>{' × '}<span className="text-blue-400">maturation</span><span className="text-gray-400">[w]</span>{' × ('}<span className="text-emerald-400">1</span>{' - '}<span className="text-blue-400">churn</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(10)}<span className="text-amber-500">{'← S1/D2'}</span>{'\n'}
+              {'  - '}<span className="text-blue-400">cannibalization</span>{'('}<span className="text-blue-400">promos_activas</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(25)}<span className="text-amber-500">{'← P2'}</span>{'\n'}
+              {'  × '}<span className="text-blue-400">seasonal_factor</span><span className="text-gray-400">[w]</span>{' '.repeat(37)}<span className="text-amber-500">{'← D1'}</span>{'\n'}
+              {'  '}<span className="text-emerald-400">min</span>{'('}<span className="text-blue-400">supply_capacity</span><span className="text-gray-400">[w]</span>{')'}{' '.repeat(33)}<span className="text-amber-500">{'← P3'}</span>{'\n'}
+              {'  × '}<span className="text-blue-400">market_share</span><span className="text-gray-400">[w]</span>{' '.repeat(40)}<span className="text-amber-500">{'← P4'}</span>
             </pre>
           </div>
 
@@ -1627,39 +1849,6 @@ export default function HomePage() {
                 <code className="text-xs font-mono text-blue-400 bg-gray-950 px-2 py-1 rounded border border-gray-800">{badge}</code>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 8b: Featured — Markov Model ──────────────────────────── */}
-      <section className="py-16 border-y border-gray-800 bg-gray-900/10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <span className="ds-badge-blue text-xs mb-3 inline-block">NUEVO MODELO</span>
-            <h2 className="text-2xl font-bold text-gray-100 mb-2">Markov + Funnel — el modelo más completo</h2>
-            <p className="text-gray-400 max-w-lg mx-auto text-sm">
-              Cadena de Markov con perfiles de usuario, funnel P1×P2 por entry point, levers con ramp-up configurable y P&L detallado. Para equipos con datos reales.
-            </p>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <Link to="/markov" className="ds-card p-5 border-purple-800/60 bg-purple-950/20 hover:border-purple-600 transition-all block">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🧬</span>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-gray-200">Modelo Markov v3</span>
-                    <span className="ds-badge bg-purple-900/50 text-purple-400 border border-purple-800 text-[10px]">NUEVO</span>
-                  </div>
-                  <p className="text-xs text-gray-400">Cadena de Markov + Traffic Funnel + Levers + Acquisition Loop + P&L. El modelo más completo para equipos con datos reales de usuarios.</p>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {['Markov', 'Funnel P1×P2', 'Levers', 'Flywheel', 'P&L'].map(t => (
-                      <span key={t} className="ds-badge-gray text-[10px]">{t}</span>
-                    ))}
-                  </div>
-                  <div className="mt-3 text-xs text-purple-400 font-mono">→ Abrir wizard de 7 pasos</div>
-                </div>
-              </div>
-            </Link>
           </div>
         </div>
       </section>
