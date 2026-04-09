@@ -1,0 +1,102 @@
+{
+  "promo_uplift": {
+    "discount_pct": {"low": 0.15, "mid": 0.275, "high": 0.40, "unit": "fraction", "description": "% discount on order total"},
+    "discount_fixed": {"low": 0.10, "mid": 0.20, "high": 0.30, "unit": "fraction", "description": "Fixed amount discount"},
+    "bogo": {"low": 0.25, "mid": 0.375, "high": 0.50, "unit": "fraction", "description": "Buy one get one free"},
+    "free_delivery": {"low": 0.20, "mid": 0.275, "high": 0.35, "unit": "fraction", "description": "Free delivery fee waiver"},
+    "cashback": {"low": 0.08, "mid": 0.14, "high": 0.20, "unit": "fraction", "description": "Cashback / wallet credit"},
+    "bundle": {"low": 0.12, "mid": 0.185, "high": 0.25, "unit": "fraction", "description": "Bundle deal (e.g., meal + drink)"}
+  },
+  "steady_state_orders_per_week": {
+    "dark_kitchen_large": {"low": 180, "mid": 215, "high": 250, "unit": "orders/week", "description": "Large dark kitchen at maturity"},
+    "dark_kitchen_small": {"low": 80, "mid": 100, "high": 130, "unit": "orders/week", "description": "Small dark kitchen at maturity"},
+    "traditional_top": {"low": 110, "mid": 140, "high": 180, "unit": "orders/week", "description": "Top traditional restaurant"},
+    "traditional_avg": {"low": 40, "mid": 60, "high": 90, "unit": "orders/week", "description": "Average traditional restaurant"},
+    "grocery": {"low": 60, "mid": 80, "high": 110, "unit": "orders/week", "description": "Grocery store partner"}
+  },
+  "churn_rate": {
+    "dark_kitchen_large": {"low": 0.05, "mid": 0.10, "high": 0.15},
+    "dark_kitchen_small": {"low": 0.10, "mid": 0.15, "high": 0.25},
+    "traditional_top": {"low": 0.08, "mid": 0.12, "high": 0.20},
+    "traditional_avg": {"low": 0.15, "mid": 0.20, "high": 0.30},
+    "grocery": {"low": 0.03, "mid": 0.07, "high": 0.12},
+    "overall": {"low": 0.10, "mid": 0.20, "high": 0.30}
+  },
+  "onboarding_promo_uplift": {
+    "low": 0.20,
+    "mid": 0.40,
+    "high": 0.65,
+    "unit": "fraction",
+    "description": "Uplift during first weeks on platform"
+  },
+  "commission_pct": {
+    "low": 0.22,
+    "mid": 0.27,
+    "high": 0.32,
+    "unit": "fraction",
+    "description": "Platform commission on GMV"
+  },
+  "avg_order_value": {
+    "MX": {"low": 10.0, "mid": 15.0, "high": 22.0, "currency": "USD"},
+    "BR": {"low": 8.0, "mid": 12.0, "high": 18.0, "currency": "USD"},
+    "CO": {"low": 7.0, "mid": 11.0, "high": 16.0, "currency": "USD"},
+    "AR": {"low": 6.0, "mid": 10.0, "high": 15.0, "currency": "USD"},
+    "CL": {"low": 9.0, "mid": 14.0, "high": 20.0, "currency": "USD"},
+    "default": {"low": 8.0, "mid": 13.0, "high": 20.0, "currency": "USD"}
+  },
+  "delivery_fee": {
+    "low": 1.5,
+    "mid": 2.5,
+    "high": 4.0,
+    "unit": "USD",
+    "description": "Delivery fee charged to consumer"
+  },
+  "courier_cost_per_order": {
+    "low": 3.0,
+    "mid": 4.0,
+    "high": 6.0,
+    "unit": "USD",
+    "description": "Total courier payout per order"
+  },
+  "ad_revenue_per_order": {
+    "low": 0.05,
+    "mid": 0.10,
+    "high": 0.20,
+    "unit": "USD",
+    "description": "Restaurant ads / sponsored listings revenue"
+  },
+  "contribution_margin_pct": {
+    "low": -0.05,
+    "mid": 0.08,
+    "high": 0.18,
+    "unit": "fraction",
+    "description": "CM / GMV at platform level"
+  },
+  "trend_weekly_growth": {
+    "low": -0.005,
+    "mid": 0.002,
+    "high": 0.010,
+    "unit": "fraction per week",
+    "description": "Underlying weekly organic trend"
+  },
+  "market_penetration": {
+    "MX": {"urban": 0.12, "suburban": 0.05, "rural": 0.01},
+    "BR": {"urban": 0.15, "suburban": 0.06, "rural": 0.01},
+    "CO": {"urban": 0.10, "suburban": 0.04, "rural": 0.01},
+    "CL": {"urban": 0.18, "suburban": 0.08, "rural": 0.02},
+    "default": {"urban": 0.10, "suburban": 0.04, "rural": 0.01}
+  },
+  "cannibalization_rate": {
+    "dark_kitchen_large": {"low": 0.05, "mid": 0.08, "high": 0.12},
+    "dark_kitchen_small": {"low": 0.06, "mid": 0.10, "high": 0.15},
+    "traditional_top": {"low": 0.08, "mid": 0.15, "high": 0.22},
+    "traditional_avg": {"low": 0.07, "mid": 0.12, "high": 0.18},
+    "grocery": {"low": 0.02, "mid": 0.05, "high": 0.09}
+  },
+  "segment_penetration": {
+    "all": 1.0,
+    "new_users": {"low": 0.10, "mid": 0.15, "high": 0.22},
+    "dormant": {"low": 0.12, "mid": 0.20, "high": 0.30},
+    "high_value": {"low": 0.15, "mid": 0.20, "high": 0.28}
+  }
+}

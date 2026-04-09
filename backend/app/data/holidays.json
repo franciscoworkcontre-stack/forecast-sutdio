@@ -1,0 +1,330 @@
+{
+  "MX": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.95, "fri": 1.18, "sat": 1.22, "sun": 1.08},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.325, "duration_days": 1, "notes": "Mayoría de restaurantes cerrados"},
+      {"name": "Día de la Constitución", "month": 2, "day_type": "first_monday", "effect": 0.05, "duration_days": 1},
+      {"name": "Natalicio de Benito Juárez", "month": 3, "day_type": "third_monday", "effect": 0.04, "duration_days": 1},
+      {"name": "Semana Santa - Jueves Santo", "month": 4, "day": 17, "effect": 0.12, "duration_days": 1},
+      {"name": "Semana Santa - Viernes Santo", "month": 4, "day": 18, "effect": 0.08, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.06, "duration_days": 1},
+      {"name": "Día de las Madres", "month": 5, "day_type": "second_sunday", "effect": 0.375, "duration_days": 2, "notes": "Biggest food order day of year"},
+      {"name": "Día de la Independencia", "month": 9, "day": 16, "effect": 0.18, "duration_days": 2, "notes": "Antojitos mexicanos demand surge"},
+      {"name": "Día de Muertos", "month": 11, "day": 2, "effect": 0.15, "duration_days": 2},
+      {"name": "Día de la Revolución", "month": 11, "day_type": "third_monday", "effect": 0.05, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.20, "duration_days": 1},
+      {"name": "Nochebuena", "month": 12, "day": 24, "effect": 0.25, "duration_days": 1},
+      {"name": "Año Nuevo Eve", "month": 12, "day": 31, "effect": 0.20, "duration_days": 1},
+      {"name": "Buen Fin", "month": 11, "day": 18, "effect": 0.12, "duration_days": 4, "notes": "Mexican Black Friday"},
+      {"name": "Día de los Reyes Magos", "month": 1, "day": 6, "effect": 0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [6, 7, 8, 9, 10], "demand_effect": 0.115, "supply_effect": -0.15, "net_normal": 0.075, "net_extreme": -0.10},
+    "pay_cycles": {"type": "quincena", "days": [1, 15], "uplift": 0.125},
+    "temperature": {"hot_months": [4, 5], "hot_effect": 0.04, "cold_months": [], "cold_effect": 0},
+    "aguinaldo_month": 12,
+    "aguinaldo_uplift": 0.25
+  },
+  "BR": {
+    "weekly_pattern": {"mon": 0.80, "tue": 0.85, "wed": 0.88, "thu": 0.92, "fri": 1.20, "sat": 1.25, "sun": 1.10},
+    "holidays": [
+      {"name": "Ano Novo", "month": 1, "day": 1, "effect": -0.30, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.20, "duration_days": 5, "notes": "Major food delivery surge"},
+      {"name": "Sexta-feira Santa", "month": 4, "day": 18, "effect": 0.10, "duration_days": 1},
+      {"name": "Tiradentes", "month": 4, "day": 21, "effect": 0.05, "duration_days": 1},
+      {"name": "Dia do Trabalho", "month": 5, "day": 1, "effect": 0.08, "duration_days": 1},
+      {"name": "Corpus Christi", "month": 5, "day": 30, "effect": 0.05, "duration_days": 1},
+      {"name": "Dia do Pai", "month": 8, "day_type": "second_sunday", "effect": 0.22, "duration_days": 1},
+      {"name": "Independência do Brasil", "month": 9, "day": 7, "effect": 0.15, "duration_days": 1},
+      {"name": "Nossa Senhora Aparecida", "month": 10, "day": 12, "effect": 0.08, "duration_days": 1},
+      {"name": "Finados", "month": 11, "day": 2, "effect": 0.04, "duration_days": 1},
+      {"name": "Proclamação da República", "month": 11, "day": 15, "effect": 0.05, "duration_days": 1},
+      {"name": "Natal", "month": 12, "day": 25, "effect": -0.18, "duration_days": 1},
+      {"name": "Véspera de Ano Novo", "month": 12, "day": 31, "effect": 0.15, "duration_days": 1},
+      {"name": "Dia das Mães", "month": 5, "day_type": "second_sunday", "effect": 0.35, "duration_days": 2},
+      {"name": "Black Friday BR", "month": 11, "day": 29, "effect": 0.08, "duration_days": 1}
+    ],
+    "rain_season": {"months": [11, 12, 1, 2, 3], "demand_effect": 0.08, "supply_effect": -0.12, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "monthly", "days": [5, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.05, "cold_months": [6, 7], "cold_effect": 0.08}
+  },
+  "CO": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.86, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.13},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.28, "duration_days": 1},
+      {"name": "Reyes Magos", "month": 1, "day_type": "first_monday", "effect": 0.08, "duration_days": 1},
+      {"name": "Día de San José", "month": 3, "day_type": "third_monday", "effect": 0.04, "duration_days": 1},
+      {"name": "Jueves Santo", "month": 4, "day": 17, "effect": 0.10, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.08, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Día de las Madres", "month": 5, "day_type": "second_sunday", "effect": 0.32, "duration_days": 2},
+      {"name": "Sagrado Corazón", "month": 6, "day_type": "third_friday", "effect": 0.05, "duration_days": 1},
+      {"name": "San Pedro y San Pablo", "month": 6, "day_type": "fourth_monday", "effect": 0.04, "duration_days": 1},
+      {"name": "Independencia de Colombia", "month": 7, "day": 20, "effect": 0.18, "duration_days": 2},
+      {"name": "Batalla de Boyacá", "month": 8, "day": 7, "effect": 0.12, "duration_days": 1},
+      {"name": "Asunción de la Virgen", "month": 8, "day_type": "third_monday", "effect": 0.04, "duration_days": 1},
+      {"name": "Día de la Raza", "month": 10, "day_type": "second_monday", "effect": 0.06, "duration_days": 1},
+      {"name": "Todos los Santos", "month": 11, "day_type": "first_monday", "effect": 0.04, "duration_days": 1},
+      {"name": "Independencia de Cartagena", "month": 11, "day_type": "second_monday", "effect": 0.05, "duration_days": 1},
+      {"name": "Inmaculada Concepción", "month": 12, "day": 8, "effect": 0.08, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.15, "duration_days": 1}
+    ],
+    "rain_season": {"months": [4, 5, 6, 10, 11], "demand_effect": 0.09, "supply_effect": -0.13, "net_normal": 0.06, "net_extreme": -0.09},
+    "pay_cycles": {"type": "quincena", "days": [1, 15], "uplift": 0.115},
+    "temperature": {"hot_months": [], "hot_effect": 0, "cold_months": [], "cold_effect": 0}
+  },
+  "AR": {
+    "weekly_pattern": {"mon": 0.80, "tue": 0.84, "wed": 0.88, "thu": 0.94, "fri": 1.18, "sat": 1.24, "sun": 1.12},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.28, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.15, "duration_days": 2},
+      {"name": "Día de la Memoria", "month": 3, "day": 24, "effect": -0.05, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.08, "duration_days": 1},
+      {"name": "Día de las Malvinas", "month": 4, "day": 2, "effect": 0.04, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Revolución de Mayo", "month": 5, "day": 25, "effect": 0.15, "duration_days": 1},
+      {"name": "Día de las Madres", "month": 10, "day_type": "third_sunday", "effect": 0.30, "duration_days": 2},
+      {"name": "Día de la Independencia", "month": 7, "day": 9, "effect": 0.18, "duration_days": 1},
+      {"name": "Día de San Martín", "month": 8, "day_type": "third_monday", "effect": 0.05, "duration_days": 1},
+      {"name": "Día de la Raza", "month": 10, "day": 12, "effect": 0.06, "duration_days": 1},
+      {"name": "Día de la Soberanía", "month": 11, "day": 20, "effect": 0.05, "duration_days": 1},
+      {"name": "Inmaculada Concepción", "month": 12, "day": 8, "effect": 0.07, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.12, "duration_days": 1},
+      {"name": "Noche Buena", "month": 12, "day": 24, "effect": 0.22, "duration_days": 1}
+    ],
+    "rain_season": {"months": [10, 11, 12], "demand_effect": 0.06, "supply_effect": -0.10, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "monthly", "days": [25], "uplift": 0.12},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.04, "cold_months": [6, 7, 8], "cold_effect": 0.10}
+  },
+  "CL": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.16, "sat": 1.22, "sun": 1.11},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.25, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.08, "duration_days": 1},
+      {"name": "Sábado Santo", "month": 4, "day": 19, "effect": 0.06, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.08, "duration_days": 1},
+      {"name": "Día de las Glorias Navales", "month": 5, "day": 21, "effect": 0.06, "duration_days": 1},
+      {"name": "San Pedro y San Pablo", "month": 6, "day": 29, "effect": 0.05, "duration_days": 1},
+      {"name": "Asunción de la Virgen", "month": 8, "day": 15, "effect": 0.05, "duration_days": 1},
+      {"name": "Fiestas Patrias", "month": 9, "day": 18, "effect": 0.40, "duration_days": 4, "notes": "Biggest holiday of year, huge food demand"},
+      {"name": "Día de las Glorias del Ejército", "month": 9, "day": 19, "effect": 0.35, "duration_days": 1},
+      {"name": "Día de la Raza", "month": 10, "day": 12, "effect": 0.06, "duration_days": 1},
+      {"name": "Día de las Iglesias Evangélicas", "month": 10, "day": 31, "effect": 0.04, "duration_days": 1},
+      {"name": "Todos los Santos", "month": 11, "day": 1, "effect": 0.04, "duration_days": 1},
+      {"name": "Inmaculada Concepción", "month": 12, "day": 8, "effect": 0.08, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1},
+      {"name": "Día de las Madres", "month": 5, "day_type": "second_sunday", "effect": 0.28, "duration_days": 2}
+    ],
+    "rain_season": {"months": [6, 7, 8], "demand_effect": 0.10, "supply_effect": -0.15, "net_normal": 0.07, "net_extreme": -0.10},
+    "pay_cycles": {"type": "monthly", "days": [25, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.03, "cold_months": [6, 7], "cold_effect": 0.09}
+  },
+  "PE": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.25, "duration_days": 1},
+      {"name": "Jueves Santo", "month": 4, "day": 17, "effect": 0.08, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Día de las Madres", "month": 5, "day_type": "second_sunday", "effect": 0.32, "duration_days": 2},
+      {"name": "Fiestas Patrias", "month": 7, "day": 28, "effect": 0.30, "duration_days": 2},
+      {"name": "Batalla de Junín", "month": 8, "day": 6, "effect": 0.05, "duration_days": 1},
+      {"name": "Santa Rosa de Lima", "month": 8, "day": 30, "effect": 0.05, "duration_days": 1},
+      {"name": "Combate de Angamos", "month": 10, "day": 8, "effect": 0.04, "duration_days": 1},
+      {"name": "Todos los Santos", "month": 11, "day": 1, "effect": 0.08, "duration_days": 1},
+      {"name": "Inmaculada Concepción", "month": 12, "day": 8, "effect": 0.07, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.12, "duration_days": 1}
+    ],
+    "rain_season": {"months": [12, 1, 2, 3], "demand_effect": 0.08, "supply_effect": -0.12, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [1, 15], "uplift": 0.11},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.04, "cold_months": [6, 7], "cold_effect": 0.06}
+  },
+  "EC": {
+    "weekly_pattern": {"mon": 0.83, "tue": 0.86, "wed": 0.90, "thu": 0.94, "fri": 1.14, "sat": 1.20, "sun": 1.13},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.25, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.15, "duration_days": 2},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Batalla de Pichincha", "month": 5, "day": 24, "effect": 0.08, "duration_days": 1},
+      {"name": "Primer Grito de Independencia", "month": 8, "day": 10, "effect": 0.10, "duration_days": 1},
+      {"name": "Independencia de Guayaquil", "month": 10, "day": 9, "effect": 0.08, "duration_days": 1},
+      {"name": "Día de los Difuntos", "month": 11, "day": 2, "effect": 0.12, "duration_days": 1},
+      {"name": "Independencia de Cuenca", "month": 11, "day": 3, "effect": 0.06, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.12, "duration_days": 1}
+    ],
+    "rain_season": {"months": [1, 2, 3, 4], "demand_effect": 0.07, "supply_effect": -0.11, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "monthly", "days": [28], "uplift": 0.10},
+    "temperature": {"hot_months": [], "hot_effect": 0, "cold_months": [], "cold_effect": 0}
+  },
+  "UY": {
+    "weekly_pattern": {"mon": 0.81, "tue": 0.85, "wed": 0.90, "thu": 0.95, "fri": 1.17, "sat": 1.22, "sun": 1.10},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.25, "duration_days": 1},
+      {"name": "Día de Reyes", "month": 1, "day": 6, "effect": 0.08, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.18, "duration_days": 2},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Desembarco de los 33 Orientales", "month": 4, "day": 19, "effect": 0.05, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Batalla de Las Piedras", "month": 5, "day": 18, "effect": 0.05, "duration_days": 1},
+      {"name": "Natalicio de Artigas", "month": 6, "day": 19, "effect": 0.05, "duration_days": 1},
+      {"name": "Jura de la Constitución", "month": 7, "day": 18, "effect": 0.05, "duration_days": 1},
+      {"name": "Día de la Independencia", "month": 8, "day": 25, "effect": 0.10, "duration_days": 1},
+      {"name": "Día de la Raza", "month": 10, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Día de los Difuntos", "month": 11, "day": 2, "effect": 0.06, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [6, 7, 8], "demand_effect": 0.07, "supply_effect": -0.10, "net_normal": 0.05, "net_extreme": -0.07},
+    "pay_cycles": {"type": "monthly", "days": [25], "uplift": 0.10},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.03, "cold_months": [6, 7], "cold_effect": 0.08}
+  },
+  "CR": {
+    "weekly_pattern": {"mon": 0.83, "tue": 0.86, "wed": 0.90, "thu": 0.95, "fri": 1.16, "sat": 1.20, "sun": 1.10},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Jueves Santo", "month": 4, "day": 17, "effect": 0.08, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día Juan Santamaría", "month": 4, "day": 11, "effect": 0.05, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.06, "duration_days": 1},
+      {"name": "Anexión del Partido de Nicoya", "month": 7, "day": 25, "effect": 0.06, "duration_days": 1},
+      {"name": "Día de la Madre", "month": 8, "day": 15, "effect": 0.28, "duration_days": 1},
+      {"name": "Independencia de Costa Rica", "month": 9, "day": 15, "effect": 0.15, "duration_days": 1},
+      {"name": "Día de las Culturas", "month": 10, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10], "demand_effect": 0.09, "supply_effect": -0.14, "net_normal": 0.06, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  },
+  "PA": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.95, "fri": 1.17, "sat": 1.22, "sun": 1.09},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.18, "duration_days": 4},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Grito de la Villa de Los Santos", "month": 11, "day": 10, "effect": 0.08, "duration_days": 1},
+      {"name": "Independencia de Panamá de España", "month": 11, "day": 28, "effect": 0.10, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10, 11], "demand_effect": 0.08, "supply_effect": -0.13, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  },
+  "DO": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.16, "sat": 1.22, "sun": 1.11},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Día de los Reyes Magos", "month": 1, "day": 6, "effect": 0.08, "duration_days": 1},
+      {"name": "Día de la Altagracia", "month": 1, "day": 21, "effect": 0.05, "duration_days": 1},
+      {"name": "Día de la Independencia", "month": 2, "day": 27, "effect": 0.15, "duration_days": 2},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Restauración Dominicana", "month": 8, "day": 16, "effect": 0.12, "duration_days": 1},
+      {"name": "Día de las Mercedes", "month": 9, "day": 24, "effect": 0.04, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8], "demand_effect": 0.07, "supply_effect": -0.12, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [6, 7, 8], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  },
+  "GT": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Jueves Santo", "month": 4, "day": 17, "effect": 0.08, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Sábado Santo", "month": 4, "day": 19, "effect": 0.05, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Ejército", "month": 6, "day": 30, "effect": 0.04, "duration_days": 1},
+      {"name": "Asunción de la Virgen", "month": 8, "day": 15, "effect": 0.05, "duration_days": 1},
+      {"name": "Independencia de Guatemala", "month": 9, "day": 15, "effect": 0.15, "duration_days": 1},
+      {"name": "Día de la Revolución", "month": 10, "day": 20, "effect": 0.05, "duration_days": 1},
+      {"name": "Todos los Santos", "month": 11, "day": 1, "effect": 0.10, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10], "demand_effect": 0.08, "supply_effect": -0.13, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4, 5], "hot_effect": 0.04, "cold_months": [], "cold_effect": 0}
+  },
+  "HN": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Jueves Santo", "month": 4, "day": 17, "effect": 0.08, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Independencia de Honduras", "month": 9, "day": 15, "effect": 0.15, "duration_days": 1},
+      {"name": "Día del Soldado", "month": 10, "day": 3, "effect": 0.04, "duration_days": 1},
+      {"name": "Día de las Américas", "month": 10, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10], "demand_effect": 0.08, "supply_effect": -0.13, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4, 5], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  },
+  "SV": {
+    "weekly_pattern": {"mon": 0.83, "tue": 0.86, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.12},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Independencia de El Salvador", "month": 9, "day": 15, "effect": 0.15, "duration_days": 1},
+      {"name": "Día de Colón", "month": 10, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Día de los Difuntos", "month": 11, "day": 2, "effect": 0.06, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10], "demand_effect": 0.08, "supply_effect": -0.12, "net_normal": 0.05, "net_extreme": -0.08},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4, 5], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  },
+  "BO": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.15, "duration_days": 2},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Corpus Christi", "month": 5, "day": 30, "effect": 0.05, "duration_days": 1},
+      {"name": "Independencia de Bolivia", "month": 8, "day": 6, "effect": 0.18, "duration_days": 2},
+      {"name": "Día de los Difuntos", "month": 11, "day": 2, "effect": 0.12, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [11, 12, 1, 2, 3], "demand_effect": 0.07, "supply_effect": -0.12, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "monthly", "days": [28], "uplift": 0.10},
+    "temperature": {"hot_months": [], "hot_effect": 0, "cold_months": [6, 7], "cold_effect": 0.07}
+  },
+  "PY": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Día de los Héroes", "month": 3, "day": 1, "effect": 0.05, "duration_days": 1},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Día de la Independencia", "month": 5, "day": 15, "effect": 0.15, "duration_days": 1},
+      {"name": "Paz del Chaco", "month": 6, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Fundación de Asunción", "month": 8, "day": 15, "effect": 0.08, "duration_days": 1},
+      {"name": "Batalla de Boquerón", "month": 9, "day": 29, "effect": 0.05, "duration_days": 1},
+      {"name": "Día de los Difuntos", "month": 11, "day": 2, "effect": 0.06, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [10, 11, 12, 1, 2], "demand_effect": 0.06, "supply_effect": -0.10, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "monthly", "days": [28], "uplift": 0.10},
+    "temperature": {"hot_months": [12, 1, 2], "hot_effect": 0.04, "cold_months": [6, 7], "cold_effect": 0.08}
+  },
+  "VE": {
+    "weekly_pattern": {"mon": 0.82, "tue": 0.85, "wed": 0.90, "thu": 0.94, "fri": 1.15, "sat": 1.20, "sun": 1.14},
+    "holidays": [
+      {"name": "Año Nuevo", "month": 1, "day": 1, "effect": -0.22, "duration_days": 1},
+      {"name": "Carnaval", "month": 2, "day": 10, "effect": 0.15, "duration_days": 2},
+      {"name": "Viernes Santo", "month": 4, "day": 18, "effect": 0.07, "duration_days": 1},
+      {"name": "Día del Trabajo", "month": 5, "day": 1, "effect": 0.07, "duration_days": 1},
+      {"name": "Independencia de Venezuela", "month": 7, "day": 5, "effect": 0.12, "duration_days": 1},
+      {"name": "Natalicio de Simón Bolívar", "month": 7, "day": 24, "effect": 0.08, "duration_days": 1},
+      {"name": "Día de la Resistencia Indígena", "month": 10, "day": 12, "effect": 0.05, "duration_days": 1},
+      {"name": "Navidad", "month": 12, "day": 25, "effect": -0.10, "duration_days": 1}
+    ],
+    "rain_season": {"months": [5, 6, 7, 8, 9, 10, 11], "demand_effect": 0.07, "supply_effect": -0.12, "net_normal": 0.04, "net_extreme": -0.07},
+    "pay_cycles": {"type": "quincena", "days": [15, 30], "uplift": 0.10},
+    "temperature": {"hot_months": [3, 4, 5], "hot_effect": 0.03, "cold_months": [], "cold_effect": 0}
+  }
+}
