@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
 import Wizard from './components/Wizard'
+import HomePage from './components/HomePage'
 import ResultsDashboard from './components/ResultsDashboard'
 import { fmtOrders, fmtPct, formatDate } from './utils/formatters'
 
@@ -34,7 +35,7 @@ function ForecastsList() {
             <h1 className="text-sm font-semibold text-gray-200 font-mono">Forecast Studio</h1>
           </div>
           <div className="flex gap-2">
-            <Link to="/" className="btn-primary text-xs">+ New Forecast</Link>
+            <Link to="/new" className="btn-primary text-xs">+ New Forecast</Link>
           </div>
         </div>
       </header>
@@ -61,7 +62,7 @@ function ForecastsList() {
           <div className="ds-card p-12 text-center">
             <div className="text-4xl mb-4">📁</div>
             <p className="text-gray-500">No saved forecasts yet.</p>
-            <Link to="/" className="btn-primary mt-4 inline-block">Create First Forecast</Link>
+            <Link to="/new" className="btn-primary mt-4 inline-block">Create First Forecast</Link>
           </div>
         )}
 
@@ -175,7 +176,7 @@ function ForecastDetail() {
               {forecast?.name || 'Loading...'}
             </span>
           </div>
-          <Link to="/" className="btn-primary text-xs">+ New Forecast</Link>
+          <Link to="/new" className="btn-primary text-xs">+ New Forecast</Link>
         </div>
       </header>
 
@@ -268,7 +269,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Wizard />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/new" element={<Wizard />} />
         <Route path="/forecasts" element={<ForecastsList />} />
         <Route path="/forecast/:id" element={<ForecastDetail />} />
         <Route path="/settings" element={<SettingsPage />} />
