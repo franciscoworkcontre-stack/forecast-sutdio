@@ -223,17 +223,35 @@ function Sparkline({ data }) {
 
 function buildWaterfall(drivers) {
   let cum = 0
-  const rows = drivers.map(d => {
-    const start = d.delta >= 0 ? cum : cum + d.delta
-    const abs = Math.abs(d.delta)
-    const row = { name: d.name, spacer: start, bar: abs, delta: d.delta, type: d.type }
-    if (d.type !== 'total') cum += d.delta
-    return row
-  })
-  // last row is total: spacer=0, bar=cum
-  rows[rows.length - 1].spacer = 0
-  rows[rows.length - 1].bar = cum
+  const rows = []
+  for (const d of drivers) {
+    if (d.type === 'total') {
+      // Total bar always starts from 0; bar height = |cum|; negative cum → bar goes downward
+      rows.push({ name: d.name, spacer: cum >= 0 ? 0 : cum, bar: Math.abs(cum), delta: cum, type: d.type })
+      break
+    }
+    // Positive delta: bar floats up from cum. Negative delta: bar hangs down (spacer = lower edge).
+    const spacer = d.delta >= 0 ? cum : cum + d.delta
+    const bar = Math.abs(d.delta)
+    rows.push({ name: d.name, spacer, bar, delta: d.delta, type: d.type })
+    cum += d.delta
+  }
   return rows
+}
+
+// ── Error Boundary ────────────────────────────────────────────────────────────
+
+class ChartErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null } }
+  static getDerivedStateFromError(e) { return { error: e.message } }
+  render() {
+    if (this.state.error) return (
+      <div className="flex items-center justify-center h-48 text-red-400 text-xs font-mono bg-red-950/20 rounded border border-red-900">
+        Error en chart: {this.state.error}
+      </div>
+    )
+    return this.props.children
+  }
 }
 
 // ── Slider Component ──────────────────────────────────────────────────────────
@@ -338,7 +356,8 @@ function ModelA1({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES SEMANALES — 12 SEMANAS</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="w" tick={{ fontSize: 10 }} />
@@ -353,7 +372,7 @@ function ModelA1({ inputs, onChange }) {
             <Line type="monotone" dataKey="residual" name="Residual post-promo" stroke="#34d399" strokeDasharray="3 3" dot={false} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -426,7 +445,8 @@ function ModelA2({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES ACUMULADAS — COHORTS DE NUEVOS RESTAURANTES</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="w" tick={{ fontSize: 10 }} />
@@ -438,7 +458,7 @@ function ModelA2({ inputs, onChange }) {
             <Area type="monotone" dataKey="ordenes" name="Órdenes de nuevos restaurantes" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2.5} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -499,7 +519,8 @@ function ModelA3({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">COMPARACIÓN DE ESCENARIOS — BASE 50,000 ÓRDENES</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData} margin={{ top: 20, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 9 }} />
@@ -511,7 +532,7 @@ function ModelA3({ inputs, onChange }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -593,7 +614,8 @@ function ModelA4({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">FACTOR ESTACIONAL — 52 SEMANAS · Semana seleccionada destacada</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
             <XAxis dataKey="semana" tick={{ fontSize: 8 }} interval={7} />
@@ -614,7 +636,7 @@ function ModelA4({ inputs, onChange }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -682,7 +704,8 @@ function ModelA5({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CRECIMIENTO DE MERCADO NUEVO — 52 SEMANAS</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="w" tick={{ fontSize: 8 }} interval={7} />
@@ -697,7 +720,7 @@ function ModelA5({ inputs, onChange }) {
             <Line type="monotone" dataKey="capacidad" name="Capacity couriers" stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={2} dot={false} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -766,16 +789,16 @@ function ModelB1({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">WATERFALL POR ORDEN — DESGLOSE DE COSTOS</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <BarChart data={wfData} margin={{ top: 20, right: 20, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9ca3af' }} />
-            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `$${v.toFixed(1)}`} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} tickFormatter={v => `$${v.toFixed(1)}`} />
             <Tooltip
-              formatter={(val, name, props) => {
+              formatter={(val, name) => {
                 if (name === 'spacer') return null
-                const d = wfData[props.dataIndex]
-                return [`$${d.delta.toFixed(2)}`, d.name]
+                return [`$${val.toFixed(2)}`, name]
               }}
               contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
             />
@@ -797,7 +820,7 @@ function ModelB1({ inputs, onChange }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -849,7 +872,8 @@ function ModelB2({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ESCENARIOS — LAS LÍNEAS DIVERGEN CON EL TIEMPO</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="w" tick={{ fontSize: 9 }} interval={Math.floor(horizon / 5)} />
@@ -864,7 +888,7 @@ function ModelB2({ inputs, onChange }) {
             <Area type="monotone" dataKey="worst" name="Peor caso" stroke="#f87171" fill="#f87171" fillOpacity={0.05} strokeDasharray="4 4" strokeWidth={2} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -947,7 +971,8 @@ function ModelC1({ inputs, onChange }) {
       </div>
       <div className="ds-card p-4">
         <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">MERCADO TOTAL VS TU PLATAFORMA — 24 SEMANAS</p>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="w" tick={{ fontSize: 9 }} interval={4} />
@@ -961,7 +986,7 @@ function ModelC1({ inputs, onChange }) {
             <Area type="monotone" dataKey="tusPlatforma" name="Tu plataforma" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} strokeWidth={2.5} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ChartErrorBoundary></div>
     </div>
   )
 }
@@ -1080,17 +1105,19 @@ function InteractiveWaterfall() {
         {/* Waterfall chart */}
         <div className="ds-card p-4">
           <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CONTRIBUCIÓN POR DRIVER — WATERFALL DE ÓRDENES</p>
-          <ResponsiveContainer width="100%" height={360}>
+          <ChartErrorBoundary>
+            <ResponsiveContainer width="100%" height={360}>
             <BarChart data={wfData} margin={{ top: 30, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#9ca3af' }} />
-              <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
                 formatter={(val, name, props) => {
                   if (name === 'spacer') return null
-                  const d = wfData[props.dataIndex]
-                  const sign = d.delta >= 0 ? '+' : ''
-                  return [`${sign}${d.delta.toLocaleString('es-MX')} órdenes`, d.name]
+                  const entry = props?.payload
+                  if (!entry) return [val, name]
+                  const sign = entry.delta >= 0 ? '+' : ''
+                  return [`${sign}${(entry.delta || 0).toLocaleString('es-MX')} órdenes`, entry.name]
                 }}
                 contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
               />
@@ -1112,7 +1139,7 @@ function InteractiveWaterfall() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </ChartErrorBoundary></div>
       </div>
     </div>
   )
@@ -1258,7 +1285,8 @@ export default function HomePage() {
               <span className="text-xs font-mono text-gray-400">Forecast · 26 semanas · Escenarios</span>
               <span className="ds-badge-blue text-[10px]">LIVE PREVIEW</span>
             </div>
-            <ResponsiveContainer width="100%" height={280}>
+            <ChartErrorBoundary>
+              <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={heroData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
                 <XAxis dataKey="week" tick={{ fontSize: 9 }} interval={4} />
@@ -1271,7 +1299,7 @@ export default function HomePage() {
                 <Area type="monotone" dataKey="best" name="Mejor caso" stroke="#34d399" fill="#34d399" fillOpacity={0.05} strokeDasharray="4 4" isAnimationActive={true} animationDuration={1200} animationBegin={300} />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+          </ChartErrorBoundary></div>
         </div>
       </section>
 
