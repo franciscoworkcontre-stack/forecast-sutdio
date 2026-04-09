@@ -1631,6 +1631,39 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── SECTION 8b: Featured — Markov Model ──────────────────────────── */}
+      <section className="py-16 border-y border-gray-800 bg-gray-900/10">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <span className="ds-badge-blue text-xs mb-3 inline-block">NUEVO MODELO</span>
+            <h2 className="text-2xl font-bold text-gray-100 mb-2">Markov + Funnel — el modelo más completo</h2>
+            <p className="text-gray-400 max-w-lg mx-auto text-sm">
+              Cadena de Markov con perfiles de usuario, funnel P1×P2 por entry point, levers con ramp-up configurable y P&L detallado. Para equipos con datos reales.
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <Link to="/markov" className="ds-card p-5 border-purple-800/60 bg-purple-950/20 hover:border-purple-600 transition-all block">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🧬</span>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-gray-200">Modelo Markov v3</span>
+                    <span className="ds-badge bg-purple-900/50 text-purple-400 border border-purple-800 text-[10px]">NUEVO</span>
+                  </div>
+                  <p className="text-xs text-gray-400">Cadena de Markov + Traffic Funnel + Levers + Acquisition Loop + P&L. El modelo más completo para equipos con datos reales de usuarios.</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {['Markov', 'Funnel P1×P2', 'Levers', 'Flywheel', 'P&L'].map(t => (
+                      <span key={t} className="ds-badge-gray text-[10px]">{t}</span>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-xs text-purple-400 font-mono">→ Abrir wizard de 7 pasos</div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 9: CTA Footer ─────────────────────────────────────────── */}
       <section
         ref={ctaRef}

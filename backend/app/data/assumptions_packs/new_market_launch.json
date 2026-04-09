@@ -1,0 +1,66 @@
+{
+  "pack_name": "New Market Launch",
+  "pack_description": "Supuestos para lanzamiento en nuevo mercado: base mínima, alto porcentaje EFO, inversión agresiva en adquisición y ramp-up extendido",
+  "profiles_default": {
+    "count": 4,
+    "profiles": [
+      {"id": "A", "name": "EFO (1ra orden)", "initial_users": 15000},
+      {"id": "B", "name": "2da Orden", "initial_users": 3000},
+      {"id": "D", "name": "Baja Frecuencia", "initial_users": 2000},
+      {"id": "F", "name": "Inactivo", "initial_users": 1000}
+    ]
+  },
+  "transition_matrix_presets": {
+    "launch": {
+      "description": "Transiciones típicas de mercado nuevo con alta deserción inicial",
+      "matrix": [
+        [0.00, 0.55, 0.20, 0.15, 0.10, 0.00],
+        [0.00, 0.00, 0.20, 0.55, 0.25, 0.00],
+        [0.05, 0.00, 0.65, 0.20, 0.05, 0.05],
+        [0.00, 0.00, 0.25, 0.60, 0.10, 0.05],
+        [0.00, 0.00, 0.08, 0.20, 0.68, 0.04],
+        [0.00, 0.00, 0.15, 0.05, 0.00, 0.80]
+      ]
+    },
+    "optimistic": {
+      "description": "Mejor retención por buen ajuste de producto-mercado",
+      "matrix": [
+        [0.00, 0.65, 0.12, 0.15, 0.08, 0.00],
+        [0.00, 0.00, 0.12, 0.52, 0.36, 0.00],
+        [0.07, 0.00, 0.55, 0.26, 0.09, 0.03],
+        [0.00, 0.00, 0.18, 0.62, 0.16, 0.04],
+        [0.00, 0.00, 0.04, 0.15, 0.77, 0.04],
+        [0.00, 0.00, 0.10, 0.04, 0.00, 0.86]
+      ]
+    }
+  },
+  "funnel_benchmarks": {
+    "A": {"open_app": 0.65, "sessions": 1.5, "see_vertical": 0.35, "entry_topic": 0.50, "entry_feed": 0.35, "entry_filter": 0.15, "p1_topic": 0.40, "p1_feed": 0.35, "p1_filter": 0.28, "p2_topic": 0.22, "p2_feed": 0.18, "p2_filter": 0.14},
+    "B": {"open_app": 0.55, "sessions": 1.1, "see_vertical": 0.28, "entry_topic": 0.42, "entry_feed": 0.38, "entry_filter": 0.20, "p1_topic": 0.35, "p1_feed": 0.30, "p1_filter": 0.25, "p2_topic": 0.18, "p2_feed": 0.15, "p2_filter": 0.12},
+    "D": {"open_app": 0.35, "sessions": 0.8, "see_vertical": 0.18, "entry_topic": 0.42, "entry_feed": 0.40, "entry_filter": 0.18, "p1_topic": 0.28, "p1_feed": 0.24, "p1_filter": 0.20, "p2_topic": 0.14, "p2_feed": 0.11, "p2_filter": 0.09},
+    "F": {"open_app": 0.06, "sessions": 0.15, "see_vertical": 0.04, "entry_topic": 0.52, "entry_feed": 0.33, "entry_filter": 0.15, "p1_topic": 0.12, "p1_feed": 0.09, "p1_filter": 0.08, "p2_topic": 0.07, "p2_feed": 0.05, "p2_filter": 0.04}
+  },
+  "lever_benchmarks": {
+    "free_delivery": {"type": "conversion", "uplift": 0.18, "name": "DDC Free — Oferta de Lanzamiento"},
+    "coupon": {"type": "conversion", "uplift": 0.22, "name": "Cupón de Bienvenida"},
+    "push_comms": {"type": "traffic", "uplift": 0.12, "name": "Comms / Push Notifications"},
+    "popup": {"type": "traffic", "uplift": 0.20, "name": "Food Pop-Up (Home)"},
+    "referral": {"type": "both", "uplift": 0.15, "name": "Referral de Lanzamiento"},
+    "influencer": {"type": "traffic", "uplift": 0.10, "name": "Influencer / Brand Awareness"}
+  },
+  "acquisition": {
+    "efo_share": 0.60, "alpha": 0.55, "new_user_orders_ratio": 0.70,
+    "wow_cap": 0.80, "profile_split": {"A": 0.90, "B": 0.10}
+  },
+  "costs": {
+    "aov_by_country": {"MX": 250, "BR": 45, "CO": 28000, "CL": 10000, "AR": 7000, "PE": 38},
+    "take_rate": 0.18,
+    "default_profile_costs": {
+      "pct_w_coupon": 0.55, "coupon_p2c": 45, "coupon_redeem": 0.75,
+      "pct_w_ddc": 0.40, "ddc_p2c": 35,
+      "pct_w_bxsy": 0.10, "bxsy_b2c": 38, "bxsy_redeem": 0.70
+    }
+  },
+  "ramp_up": {"default_weeks": 16, "curve_type": "logarithmic"},
+  "overlap_factor": 0.10
+}

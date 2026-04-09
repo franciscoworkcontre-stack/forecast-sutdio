@@ -241,3 +241,77 @@ async def run_scenarios(request: ForecastRequest):
         "scenarios": result.scenarios.model_dump() if result.scenarios else None,
         "sensitivity_tornado": [t.model_dump() for t in result.sensitivity_tornado] if result.sensitivity_tornado else [],
     }
+
+
+# ── Markov v3 Routes ───────────────────────────────────────────────────────────
+
+from .models.markov_schemas import MarkovForecastRequest, MarkovForecastResult
+from .models.markov_engine import run_markov_forecast
+
+
+@app.post("/api/markov/calculate", response_model=MarkovForecastResult)
+async def markov_calculate(request: MarkovForecastRequest):
+    """Run the Markov + Funnel v3 forecast model."""
+    try:
+        result = run_markov_forecast(request)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/markov/save", response_model=SaveForecastResponse)
+async def markov_save(request: MarkovForecastRequest):
+    """Run Markov forecast and save to SQLite."""
+    try:
+        result = run_markov_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    forecast_id = str(uuid.uuid4())
+    created_at = datetime.utcnow().isoformat() + "Z"
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO forecasts (id, name, created_at, config_json, results_json) VALUES (?, ?, ?, ?, ?)",
+        (forecast_id, request.name, created_at, request.model_dump_json(), result.model_dump_json()),
+    )
+    conn.commit()
+    conn.close()
+    return SaveForecastResponse(id=forecast_id, name=request.name, created_at=created_at)
+
+
+@app.get("/api/markov/assumptions-packs")
+async def get_assumptions_packs():
+    """List available assumptions packs."""
+    import glob
+    packs_dir = os.path.join(os.path.dirname(__file__), "data", "assumptions_packs")
+    packs = []
+    for path in glob.glob(os.path.join(packs_dir, "*.json")):
+        with open(path) as f:
+            p = json.load(f)
+            packs.append({
+                "id": os.path.basename(path).replace(".json", ""),
+                "name": p.get("pack_name", ""),
+                "description": p.get("pack_description", ""),
+            })
+    return packs
+
+
+@app.get("/api/markov/assumptions-packs/{pack_id}")
+async def get_assumptions_pack(pack_id: str):
+    """Get a specific assumptions pack."""
+    path = os.path.join(os.path.dirname(__file__), "data", "assumptions_packs", f"{pack_id}.json")
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail=f"Pack '{pack_id}' not found")
+    with open(path) as f:
+        return json.load(f)
+
+
+@app.post("/api/markov/validate-matrix")
+async def validate_transition_matrix(data: dict):
+    """Validate that each row of a transition matrix sums to 1.0."""
+    matrix = data.get("matrix", [])
+    results = []
+    for i, row in enumerate(matrix):
+        s = sum(row)
+        results.append({"row": i, "sum": round(s, 4), "valid": abs(s - 1.0) <= 0.001})
+    return {"rows": results, "all_valid": all(r["valid"] for r in results)}

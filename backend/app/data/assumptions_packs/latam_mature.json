@@ -1,0 +1,71 @@
+{
+  "pack_name": "LATAM Mature Market",
+  "pack_description": "Supuestos para un mercado de delivery maduro (>2 años operando) en LATAM",
+  "profiles_default": {
+    "count": 6,
+    "profiles": [
+      {"id": "A", "name": "EFO (1ra orden)", "initial_users": 50000},
+      {"id": "B", "name": "2da Orden", "initial_users": 30000},
+      {"id": "C", "name": "Churneado", "initial_users": 80000},
+      {"id": "D", "name": "Baja Frecuencia", "initial_users": 120000},
+      {"id": "E", "name": "Alta Frecuencia", "initial_users": 60000},
+      {"id": "F", "name": "Inactivo", "initial_users": 40000}
+    ]
+  },
+  "transition_matrix_presets": {
+    "conservative": {
+      "description": "Retención conservadora",
+      "matrix": [
+        [0.00, 0.70, 0.10, 0.15, 0.05, 0.00],
+        [0.00, 0.00, 0.10, 0.60, 0.30, 0.00],
+        [0.05, 0.00, 0.60, 0.25, 0.05, 0.05],
+        [0.00, 0.00, 0.15, 0.65, 0.15, 0.05],
+        [0.00, 0.00, 0.05, 0.15, 0.75, 0.05],
+        [0.00, 0.00, 0.10, 0.05, 0.00, 0.85]
+      ]
+    },
+    "aggressive": {
+      "description": "Retención agresiva, buen producto",
+      "matrix": [
+        [0.00, 0.80, 0.05, 0.12, 0.03, 0.00],
+        [0.00, 0.00, 0.05, 0.50, 0.45, 0.00],
+        [0.08, 0.00, 0.50, 0.30, 0.10, 0.02],
+        [0.00, 0.00, 0.08, 0.60, 0.30, 0.02],
+        [0.00, 0.00, 0.02, 0.10, 0.86, 0.02],
+        [0.00, 0.00, 0.05, 0.03, 0.00, 0.92]
+      ]
+    }
+  },
+  "funnel_benchmarks": {
+    "A": {"open_app": 0.55, "sessions": 1.0, "see_vertical": 0.25, "entry_topic": 0.45, "entry_feed": 0.40, "entry_filter": 0.15, "p1_topic": 0.35, "p1_feed": 0.30, "p1_filter": 0.25, "p2_topic": 0.18, "p2_feed": 0.15, "p2_filter": 0.12},
+    "B": {"open_app": 0.60, "sessions": 1.2, "see_vertical": 0.30, "entry_topic": 0.40, "entry_feed": 0.40, "entry_filter": 0.20, "p1_topic": 0.37, "p1_feed": 0.32, "p1_filter": 0.27, "p2_topic": 0.20, "p2_feed": 0.17, "p2_filter": 0.14},
+    "C": {"open_app": 0.20, "sessions": 0.5, "see_vertical": 0.15, "entry_topic": 0.45, "entry_feed": 0.40, "entry_filter": 0.15, "p1_topic": 0.25, "p1_feed": 0.20, "p1_filter": 0.18, "p2_topic": 0.12, "p2_feed": 0.10, "p2_filter": 0.08},
+    "D": {"open_app": 0.45, "sessions": 1.0, "see_vertical": 0.22, "entry_topic": 0.40, "entry_feed": 0.40, "entry_filter": 0.20, "p1_topic": 0.32, "p1_feed": 0.28, "p1_filter": 0.22, "p2_topic": 0.16, "p2_feed": 0.13, "p2_filter": 0.11},
+    "E": {"open_app": 0.70, "sessions": 2.5, "see_vertical": 0.40, "entry_topic": 0.35, "entry_feed": 0.40, "entry_filter": 0.25, "p1_topic": 0.40, "p1_feed": 0.35, "p1_filter": 0.30, "p2_topic": 0.22, "p2_feed": 0.19, "p2_filter": 0.16},
+    "F": {"open_app": 0.08, "sessions": 0.2, "see_vertical": 0.05, "entry_topic": 0.50, "entry_feed": 0.35, "entry_filter": 0.15, "p1_topic": 0.15, "p1_feed": 0.12, "p1_filter": 0.10, "p2_topic": 0.08, "p2_feed": 0.06, "p2_filter": 0.05}
+  },
+  "lever_benchmarks": {
+    "free_delivery": {"type": "conversion", "uplift": 0.08, "name": "DDC Free (Free Delivery)"},
+    "coupon": {"type": "conversion", "uplift": 0.12, "name": "Cupón de Descuento"},
+    "bxsy": {"type": "conversion", "uplift": 0.15, "name": "BxSy (2x1 / Bundle)"},
+    "push_comms": {"type": "traffic", "uplift": 0.06, "name": "Comms / Push Notifications"},
+    "popup": {"type": "traffic", "uplift": 0.12, "name": "Food Pop-Up (Home)"},
+    "cross_sell": {"type": "traffic", "uplift": 0.05, "name": "Cross-sell (Rides/Otros)"},
+    "pgot": {"type": "traffic", "uplift": 0.08, "name": "PGoT (Personalized Gateway)"}
+  },
+  "acquisition": {
+    "efo_share": 0.20, "alpha": 0.40, "new_user_orders_ratio": 1.0,
+    "wow_cap": 0.50, "profile_split": {"A": 0.70, "B": 0.30}
+  },
+  "costs": {
+    "aov_by_country": {"MX": 290, "BR": 52, "CO": 32000, "CL": 12000, "AR": 8000, "PE": 42},
+    "take_rate": 0.22,
+    "default_profile_costs": {
+      "pct_w_coupon": 0.30, "coupon_p2c": 35, "coupon_redeem": 0.60,
+      "pct_w_ddc": 0.20, "ddc_p2c": 25,
+      "pct_w_bxsy": 0.15, "bxsy_b2c": 40, "bxsy_redeem": 0.80
+    }
+  },
+  "ramp_up": {"default_weeks": 10, "curve_type": "linear"},
+  "overlap_factor": 0.15
+}

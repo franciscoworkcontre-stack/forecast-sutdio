@@ -1,0 +1,72 @@
+{
+  "pack_name": "LATAM Growth Market",
+  "pack_description": "Supuestos para un mercado de delivery en crecimiento acelerado en LATAM (1-2 años operando, alta inversión en adquisición)",
+  "profiles_default": {
+    "count": 6,
+    "profiles": [
+      {"id": "A", "name": "EFO (1ra orden)", "initial_users": 80000},
+      {"id": "B", "name": "2da Orden", "initial_users": 40000},
+      {"id": "C", "name": "Churneado", "initial_users": 60000},
+      {"id": "D", "name": "Baja Frecuencia", "initial_users": 90000},
+      {"id": "E", "name": "Alta Frecuencia", "initial_users": 45000},
+      {"id": "F", "name": "Inactivo", "initial_users": 25000}
+    ]
+  },
+  "transition_matrix_presets": {
+    "aggressive": {
+      "description": "Retención agresiva de mercado en crecimiento con alta inversión",
+      "matrix": [
+        [0.00, 0.82, 0.04, 0.10, 0.04, 0.00],
+        [0.00, 0.00, 0.04, 0.48, 0.48, 0.00],
+        [0.10, 0.00, 0.45, 0.32, 0.12, 0.01],
+        [0.00, 0.00, 0.06, 0.55, 0.37, 0.02],
+        [0.00, 0.00, 0.01, 0.08, 0.89, 0.02],
+        [0.00, 0.00, 0.04, 0.02, 0.00, 0.94]
+      ]
+    },
+    "moderate": {
+      "description": "Retención moderada, crecimiento sostenido",
+      "matrix": [
+        [0.00, 0.75, 0.07, 0.13, 0.05, 0.00],
+        [0.00, 0.00, 0.08, 0.55, 0.37, 0.00],
+        [0.07, 0.00, 0.55, 0.27, 0.08, 0.03],
+        [0.00, 0.00, 0.12, 0.62, 0.22, 0.04],
+        [0.00, 0.00, 0.03, 0.12, 0.81, 0.04],
+        [0.00, 0.00, 0.08, 0.04, 0.00, 0.88]
+      ]
+    }
+  },
+  "funnel_benchmarks": {
+    "A": {"open_app": 0.60, "sessions": 1.2, "see_vertical": 0.30, "entry_topic": 0.42, "entry_feed": 0.40, "entry_filter": 0.18, "p1_topic": 0.38, "p1_feed": 0.33, "p1_filter": 0.28, "p2_topic": 0.20, "p2_feed": 0.17, "p2_filter": 0.14},
+    "B": {"open_app": 0.65, "sessions": 1.4, "see_vertical": 0.35, "entry_topic": 0.38, "entry_feed": 0.42, "entry_filter": 0.20, "p1_topic": 0.40, "p1_feed": 0.35, "p1_filter": 0.29, "p2_topic": 0.22, "p2_feed": 0.19, "p2_filter": 0.16},
+    "C": {"open_app": 0.25, "sessions": 0.6, "see_vertical": 0.18, "entry_topic": 0.43, "entry_feed": 0.40, "entry_filter": 0.17, "p1_topic": 0.28, "p1_feed": 0.23, "p1_filter": 0.20, "p2_topic": 0.14, "p2_feed": 0.12, "p2_filter": 0.09},
+    "D": {"open_app": 0.50, "sessions": 1.2, "see_vertical": 0.26, "entry_topic": 0.38, "entry_feed": 0.42, "entry_filter": 0.20, "p1_topic": 0.35, "p1_feed": 0.31, "p1_filter": 0.25, "p2_topic": 0.18, "p2_feed": 0.15, "p2_filter": 0.13},
+    "E": {"open_app": 0.75, "sessions": 2.8, "see_vertical": 0.45, "entry_topic": 0.33, "entry_feed": 0.42, "entry_filter": 0.25, "p1_topic": 0.43, "p1_feed": 0.38, "p1_filter": 0.32, "p2_topic": 0.24, "p2_feed": 0.21, "p2_filter": 0.18},
+    "F": {"open_app": 0.10, "sessions": 0.3, "see_vertical": 0.07, "entry_topic": 0.48, "entry_feed": 0.35, "entry_filter": 0.17, "p1_topic": 0.18, "p1_feed": 0.14, "p1_filter": 0.12, "p2_topic": 0.10, "p2_feed": 0.08, "p2_filter": 0.06}
+  },
+  "lever_benchmarks": {
+    "free_delivery": {"type": "conversion", "uplift": 0.10, "name": "DDC Free (Free Delivery)"},
+    "coupon": {"type": "conversion", "uplift": 0.15, "name": "Cupón de Descuento"},
+    "bxsy": {"type": "conversion", "uplift": 0.18, "name": "BxSy (2x1 / Bundle)"},
+    "push_comms": {"type": "traffic", "uplift": 0.08, "name": "Comms / Push Notifications"},
+    "popup": {"type": "traffic", "uplift": 0.15, "name": "Food Pop-Up (Home)"},
+    "cross_sell": {"type": "traffic", "uplift": 0.07, "name": "Cross-sell (Rides/Otros)"},
+    "pgot": {"type": "traffic", "uplift": 0.10, "name": "PGoT (Personalized Gateway)"},
+    "referral": {"type": "both", "uplift": 0.12, "name": "Referral Program"}
+  },
+  "acquisition": {
+    "efo_share": 0.28, "alpha": 0.50, "new_user_orders_ratio": 0.85,
+    "wow_cap": 0.60, "profile_split": {"A": 0.75, "B": 0.25}
+  },
+  "costs": {
+    "aov_by_country": {"MX": 270, "BR": 48, "CO": 30000, "CL": 11000, "AR": 7500, "PE": 40},
+    "take_rate": 0.20,
+    "default_profile_costs": {
+      "pct_w_coupon": 0.38, "coupon_p2c": 38, "coupon_redeem": 0.65,
+      "pct_w_ddc": 0.25, "ddc_p2c": 28,
+      "pct_w_bxsy": 0.18, "bxsy_b2c": 42, "bxsy_redeem": 0.82
+    }
+  },
+  "ramp_up": {"default_weeks": 8, "curve_type": "logarithmic"},
+  "overlap_factor": 0.12
+}

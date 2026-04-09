@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useParams, useNavigate } from 'reac
 import Wizard from './components/Wizard'
 import HomePage from './components/HomePage'
 import ResultsDashboard from './components/ResultsDashboard'
+import MarkovWizard from './components/markov/MarkovWizard'
 import { fmtOrders, fmtPct, formatDate } from './utils/formatters'
 
 // ── Forecasts List Page ──────────────────────────────────────────────────────
@@ -274,6 +275,7 @@ export default function App() {
         <Route path="/forecasts" element={<ForecastsList />} />
         <Route path="/forecast/:id" element={<ForecastDetail />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/markov" element={<MarkovWizard />} />
       </Routes>
     </BrowserRouter>
   )
