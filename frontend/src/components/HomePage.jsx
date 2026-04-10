@@ -1029,7 +1029,7 @@ const TAXONOMY = {
         question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?',
         context: 'Cada cohort semanal tiene curva de retención y frecuencia propia. El LTV total en cualquier semana es la suma de contribuciones de todos los cohorts activos.',
         insight: 'Una mejora de 5pp en retención W4 no solo añade usuarios ese día, sino indefinidamente. El NPV es siempre mayor de lo que parece. Este modelo produce el argumento cuantitativo para redirigir budget de adquisición a retención.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'D2',
       },
       {
         id: 'D3', name: 'Funnel Conversion',
@@ -1043,14 +1043,14 @@ const TAXONOMY = {
         question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?',
         context: 'Punto de partida: 21 ocasiones de comida por semana. ¿Cuántas son addressables para delivery? ¿Cuántas captura tu plataforma? El gap es el upside de frecuencia.',
         insight: 'En LATAM, delivery captura solo 5-8% de las ocasiones de comida. El techo teórico es 4-5x el nivel actual. Cada lever (desayunos, late-night, suscripción) cierra una fracción de ese gap.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'D4',
       },
       {
         id: 'D5', name: 'Reactivation & Winback',
         question: '¿Cuántas órdenes puedo recuperar de mi base dormida?',
         context: 'El 40-60% de usuarios registrados están dormidos. Tienen probabilidad de reactivación decayente. Campañas de winback aumentan esa probabilidad a diferentes costos.',
         insight: 'La ventana dorada es semanas 4-8 post-último pedido. Antes vuelven solos. Después de 26 semanas, el costo de reactivación supera el LTV esperado del usuario reactivado.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'D5',
       },
     ],
   },
@@ -1069,21 +1069,21 @@ const TAXONOMY = {
         question: '¿Más restaurantes o mejores restaurantes? ¿Volumen o variedad de categorías?',
         context: 'La demanda responde al número de restaurantes con rendimientos decrecientes por categoría. El restaurante #100 de pizza genera mucho menos demanda incremental que el primero de comida árabe.',
         insight: 'Dos puntos de inflexión: "mínimo viable" (~15-20 restaurantes, 5+ categorías) y "techo de variedad" (~80-120). Entre ellos, cada restaurante tiene ROI medible. Fuera de ese rango, el equipo de BD no debería priorizar más unidades.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'S2',
       },
       {
         id: 'S3', name: 'Restaurant Engagement & Performance',
         question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?',
         context: 'Levers gratuitos para la plataforma: fotos de menú, optimización de tiempos de preparación, promos auto-financiadas por el restaurante, extensión de horarios, ads dentro de la app.',
         insight: 'Un restaurante que optimiza menú + operaciones + promos auto-financiadas ve 40-80% más órdenes. Es el lever de crecimiento más capital-eficiente en un marketplace maduro.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'S3',
       },
       {
         id: 'S4', name: 'Restaurant Health Score',
         question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?',
         context: 'Score 0-100 basado en tendencia de órdenes (4 semanas), engagement con la plataforma, métricas operacionales (acceptance rate, cancelaciones) y exposición competitiva.',
         insight: 'No todo churn de restaurante vale lo mismo. Perder un restaurante de 300 órdenes/semana con usuarios leales cuesta 5-10x más que perder uno de 20 órdenes genéricas. Focaliza retención en los 10-15 restaurantes ancla por ciudad por trimestre.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'S4',
       },
     ],
   },
@@ -1109,7 +1109,7 @@ const TAXONOMY = {
         question: '¿En qué punto la flota de couriers se convierte en el cuello de botella de crecimiento?',
         context: 'Loop de equilibrio: supply de couriers → tiempo de entrega → conversión → demanda → earnings → supply. Tiene dos equilibrios posibles: virtuoso y colapso (doom loop).',
         insight: '10 minutos menos en entrega promedio = +15-25% en órdenes, sin promo alguna. En la mayoría de mercados LATAM, este impacto supera el de todo el presupuesto combinado de marketing.',
-        status: 'roadmap', demoId: null,
+        status: 'demo', demoId: 'P3',
       },
       {
         id: 'P4', name: 'Competitive Dynamics',
@@ -1127,6 +1127,549 @@ const TAXONOMY = {
       },
     ],
   },
+}
+
+// ── Model D2: Cohort Retention & LTV ─────────────────────────────────────────
+
+function ModelD2({ inputs, onChange }) {
+  const { newUsersPerWeek, cac, retW4, maxFreq, contribution, horizon } = inputs
+
+  // Retention curve parametric
+  const retention = (w) => {
+    if (w === 0) return 1.0
+    if (w <= 4) return 1.0 - (1.0 - retW4 / 100) * (w / 4)
+    return (retW4 / 100) * Math.pow(0.92, w - 4)
+  }
+  // Frequency curve: starts 0.5, rises to maxFreq by week 10
+  const frequency = (w) => Math.min(maxFreq, 0.5 + (maxFreq - 0.5) * Math.min(1, w / 10))
+
+  // Build 5 cohorts (acquired at weeks 0,4,8,12,16)
+  const cohortStarts = [0, 4, 8, 12, 16]
+  const data = Array.from({ length: horizon }, (_, W) => {
+    let total = 0
+    cohortStarts.forEach(start => {
+      if (W >= start) {
+        const age = W - start
+        total += newUsersPerWeek * retention(age) * frequency(age)
+      }
+    })
+    return { w: `S${W + 1}`, orders: Math.round(total) }
+  })
+
+  // LTV calculation for single cohort
+  let ltv = 0
+  let paybackWeek = null
+  const totalCAC = newUsersPerWeek * cac
+  for (let w = 0; w < horizon; w++) {
+    const orders = newUsersPerWeek * retention(w) * frequency(w)
+    ltv += orders * contribution
+    if (!paybackWeek && ltv >= totalCAC) paybackWeek = w + 1
+  }
+  const ltvPerUser = ltv / newUsersPerWeek
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Rastrea cohortes de usuarios semana a semana. Cada grupo adquirido tiene su propia curva de retención y frecuencia. El total de órdenes en cualquier semana es la suma de contribuciones de todos los cohortes activos.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Inviertes en adquisición y el CFO pregunta cuándo recuperas el CAC. O necesitas comparar la calidad de usuarios por canal.</p>
+        </div>
+        <ModelSlider label="Nuevos usuarios/semana" value={newUsersPerWeek} min={500} max={20000} step={500} format={v => v.toLocaleString('es-MX')} explanation="Cuántos usuarios nuevos adquieres cada semana. Este número se repite para cada cohorte." onChange={v => onChange({ ...inputs, newUsersPerWeek: v })} />
+        <ModelSlider label="CAC por usuario ($)" value={cac} min={1} max={30} step={0.5} format={v => `$${v.toFixed(1)}`} explanation="Costo de adquisición promedio por usuario. Incluye marketing, promos de primer pedido y costo de onboarding." onChange={v => onChange({ ...inputs, cac: v })} />
+        <ModelSlider label="Retención en Semana 4 (%)" value={retW4} min={10} max={70} step={1} format={v => `${v}%`} explanation="El % de usuarios del cohorte que siguen activos en la semana 4. Benchmark LATAM: 25-40%. Usuarios adquiridos con cupón: 15-25%." onChange={v => onChange({ ...inputs, retW4: v })} />
+        <ModelSlider label="Frecuencia máxima (órd/usuario/sem)" value={maxFreq} min={0.5} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="La frecuencia a la que converge un usuario habituado. Power users: 3-4x. Usuarios ocasionales: 0.5-1x." onChange={v => onChange({ ...inputs, maxFreq: v })} />
+        <ModelSlider label="Contribución por orden ($)" value={contribution} min={0.5} max={15} step={0.5} format={v => `$${v.toFixed(1)}`} explanation="Ingresos netos por orden después de costos de courier y soporte. El punto de equilibrio de unit economics." onChange={v => onChange({ ...inputs, contribution: v })} />
+        <ResultCallout results={[
+          { label: 'LTV por usuario (acumulado)', value: `$${ltvPerUser.toFixed(2)}`, color: ltvPerUser >= cac ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Semana de payback del CAC', value: paybackWeek ? `Semana ${paybackWeek}` : `No recuperas en ${horizon} semanas`, color: paybackWeek ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Ratio LTV / CAC', value: `${(ltvPerUser / cac).toFixed(2)}x`, color: ltvPerUser / cac >= 3 ? 'text-emerald-400' : ltvPerUser / cac >= 1 ? 'text-amber-400' : 'text-red-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES TOTALES — 5 COHORTES ACUMULADOS</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <XAxis dataKey="w" tick={{ fontSize: 9 }} interval={Math.floor(horizon / 6)} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={v => [v.toLocaleString('es-MX'), 'Órdenes totales']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Area type="monotone" dataKey="orders" name="Órdenes (5 cohortes)" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} strokeWidth={2.5} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model D4: Frequency & Wallet Share ───────────────────────────────────────
+
+function ModelD4({ inputs, onChange }) {
+  const { usuarios, frecActual, desayuno, latNight, suscripcion, precio } = inputs
+
+  const DAYPARTS = [
+    { name: 'Desayunos', addressablePct: 0.12, currentSharePct: 0.04, active: desayuno, color: '#f59e0b' },
+    { name: 'Almuerzo', addressablePct: 0.35, currentSharePct: 0.18, active: true, color: '#3b82f6' },
+    { name: 'Cena', addressablePct: 0.50, currentSharePct: 0.22, active: true, color: '#8b5cf6' },
+    { name: 'Late Night', addressablePct: 0.18, currentSharePct: 0.03, active: latNight, color: '#6366f1' },
+  ]
+
+  const LEVERS = [
+    { name: 'Desayunos', active: desayuno, uplift: 0.25, desc: '+0.25 órd/usuario/sem' },
+    { name: 'Late-Night', active: latNight, uplift: 0.15, desc: '+0.15 órd/usuario/sem' },
+    { name: 'Suscripción/Membership', active: suscripcion, uplift: 0.40, desc: '+0.40 órd/usuario/sem (suscriptores)' },
+    { name: 'Reducción de precio/distancia mín.', active: precio, uplift: 0.20, desc: '+0.20 órd/usuario/sem' },
+  ]
+
+  const activeUplift = LEVERS.filter(l => l.active).reduce((acc, l) => acc + l.uplift, 0)
+  const freqNew = Math.min(frecActual + activeUplift, 7.0)
+  const incrementalOrdenes = Math.round(usuarios * (freqNew - frecActual))
+  const TOTAL_OCCASIONS = 21
+  const shareActual = (frecActual / TOTAL_OCCASIONS * 100).toFixed(1)
+  const shareNew = (freqNew / TOTAL_OCCASIONS * 100).toFixed(1)
+
+  const chartData = DAYPARTS.map(dp => ({
+    name: dp.name,
+    actual: Math.round(usuarios * dp.addressablePct * dp.currentSharePct),
+    potencial: Math.round(usuarios * dp.addressablePct * (dp.active ? dp.currentSharePct * 2.0 : dp.currentSharePct * 1.2)),
+  }))
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Mapea cuántas de las 21 ocasiones de comida semanales captura tu plataforma por daypart. Calcula el upside si activas nuevos momentos (desayunos, late-night) o lanzas membresía.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Mercado maduro donde adquisición es cara. El crecimiento debe venir de más órdenes por usuario, no de más usuarios.</p>
+        </div>
+        <ModelSlider label="Usuarios activos/semana" value={usuarios} min={10000} max={1000000} step={10000} format={v => `${(v / 1000).toFixed(0)}k`} explanation="Usuarios que hacen al menos una apertura de la app por semana. No es la base total registrada." onChange={v => onChange({ ...inputs, usuarios: v })} />
+        <ModelSlider label="Frecuencia actual (órd/usuario/sem)" value={frecActual} min={0.5} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="Órdenes reales divididas por usuarios activos. En LATAM: 1.0-2.0x. Captura el 7-10% de ocasiones de comida." onChange={v => onChange({ ...inputs, frecActual: v })} />
+        <div className="ds-card p-4 mb-3">
+          <p className="text-gray-300 text-sm font-medium mb-3">Levers de frecuencia a activar</p>
+          {[
+            { key: 'desayuno', label: 'Desayunos / Morning', uplift: '+0.25 órd/sem', hint: 'Requiere supply en horas 6-10am. Bajo take-rate inicial pero alta frecuencia potencial.' },
+            { key: 'latNight', label: 'Late Night (>9pm)', uplift: '+0.15 órd/sem', hint: 'Segmento joven urbano. Requiere couriers nocturnos y restaurantes con horario extendido.' },
+            { key: 'suscripcion', label: 'Membresía / Suscripción', uplift: '+0.40 órd/sem', hint: 'El lever de frecuencia más potente. Suscriptores piden 1.5-2x más que no-suscriptores.' },
+            { key: 'precio', label: 'Reducción precio/min. order', uplift: '+0.20 órd/sem', hint: 'Desbloquea ocasiones de monto bajo (snacks, café). Reduce barrera de entrada por conveniencia.' },
+          ].map(({ key, label, uplift, hint }) => (
+            <div key={key} className="flex items-start gap-3 mb-3 last:mb-0">
+              <button onClick={() => onChange({ ...inputs, [key]: !inputs[key] })} className={`w-11 h-6 rounded-full transition-colors flex-shrink-0 mt-0.5 relative ${inputs[key] ? 'bg-blue-600' : 'bg-gray-700'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${inputs[key] ? 'left-6' : 'left-1'}`} />
+              </button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2"><span className="text-gray-200 text-sm">{label}</span><span className="text-emerald-400 text-xs font-mono">{uplift}</span></div>
+                <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <ResultCallout results={[
+          { label: 'Share de ocasiones de comida ACTUAL', value: `${shareActual}%`, color: 'text-gray-300' },
+          { label: 'Share de ocasiones CON levers', value: `${shareNew}%`, color: 'text-emerald-400' },
+          { label: 'Órdenes incrementales/semana', value: `+${incrementalOrdenes.toLocaleString('es-MX')}`, color: 'text-blue-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES POR DAYPART — ACTUAL VS POTENCIAL</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
+              <Tooltip formatter={v => [v.toLocaleString('es-MX'), '']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Bar dataKey="actual" name="Actual" fill="#6b7280" radius={[0, 3, 3, 0]} isAnimationActive={false} />
+              <Bar dataKey="potencial" name="Potencial (con levers)" fill="#3b82f6" radius={[0, 3, 3, 0]} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model D5: Reactivation & Winback ─────────────────────────────────────────
+
+function ModelD5({ inputs, onChange }) {
+  const { dormidos, semanasDormidos, campaña, ventana } = inputs
+
+  const CAMPAIGN_UPLIFTS = { organic: 0, push: 0.03, email: 0.06, coupon: 0.11 }
+  const CAMPAIGN_COSTS = { organic: 0, push: 0.5, email: 1.5, coupon: 8.0 }
+  const CAMPAIGN_LABELS = { organic: 'Sin campaña (orgánico)', push: 'Push notification', email: 'Email con oferta', coupon: 'Cupón grande ($8+ off)' }
+
+  // Decay curve data (4 to 52 weeks dormant)
+  const decayData = Array.from({ length: 12 }, (_, i) => {
+    const w = 4 + i * 4
+    const base = 0.045 * Math.exp(-0.10 * (w - 4))
+    const withCampaign = Math.min(0.30, base + CAMPAIGN_UPLIFTS[campaña])
+    return { w: `${w}sem`, organic: parseFloat((base * 100).toFixed(2)), campaign: parseFloat((withCampaign * 100).toFixed(2)) }
+  })
+
+  const baseRate = 0.045 * Math.exp(-0.10 * (semanasDormidos - 4))
+  const campaignRate = Math.min(0.30, baseRate + CAMPAIGN_UPLIFTS[campaña])
+  const reactivated = Math.round(dormidos * campaignRate)
+  const campaignCost = reactivated * CAMPAIGN_COSTS[campaña]
+  const postRetention = campaña === 'coupon' ? 0.28 : 0.42
+  const ordersW4 = Math.round(reactivated * postRetention * 1.0)
+  const ordersTotal4W = Math.round(reactivated * 1.1 * 3.5)
+  const roi = campaignCost > 0 ? ((ordersTotal4W * 3.5 - campaignCost) / campaignCost * 100) : 0
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela la probabilidad de reactivar usuarios dormidos con campañas de winback. La probabilidad de reactivación decae exponencialmente con el tiempo. Cada tipo de campaña añade un uplift diferente — a diferente costo.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando tu base dormida supera el 40% del total registrado. Antes de lanzar winback, compara el LTV esperado del reactivado vs el costo de adquirir uno nuevo.</p>
+        </div>
+        <ModelSlider label="Usuarios dormidos" value={dormidos} min={10000} max={2000000} step={10000} format={v => `${(v / 1000).toFixed(0)}k`} explanation="Usuarios registrados que no han pedido en las últimas 4+ semanas. Típicamente el 40-60% de la base total." onChange={v => onChange({ ...inputs, dormidos: v })} />
+        <ModelSlider label="Semanas promedio sin pedir" value={semanasDormidos} min={4} max={52} step={1} format={v => `${v} semanas`} explanation="El tiempo promedio de inactividad de tu segmento dormido. Más semanas = menor probabilidad de reactivación." onChange={v => onChange({ ...inputs, semanasDormidos: v })} />
+        <div className="ds-card p-4 mb-3">
+          <label className="text-gray-300 text-sm font-medium block mb-2">Tipo de campaña de winback</label>
+          {Object.entries(CAMPAIGN_LABELS).map(([key, label]) => (
+            <button key={key} onClick={() => onChange({ ...inputs, campaña: key })} className={`w-full text-left px-3 py-2 rounded mb-1.5 text-sm transition-all border ${campaña === key ? 'border-blue-500 bg-blue-950/40 text-gray-200' : 'border-gray-700 text-gray-400 hover:border-gray-600'}`}>
+              <div className="flex justify-between">
+                <span>{label}</span>
+                <span className="text-xs text-emerald-400 font-mono">+{(CAMPAIGN_UPLIFTS[key] * 100).toFixed(0)}pp · ${CAMPAIGN_COSTS[key].toFixed(1)}/user</span>
+              </div>
+            </button>
+          ))}
+          <p className="text-xs text-gray-500 mt-1 italic">Cupones grandes reactivan más pero los usuarios reactivados con cupón tienen 35% menos retención post-reactivación.</p>
+        </div>
+        <ResultCallout results={[
+          { label: 'Usuarios reactivados estimados', value: reactivated.toLocaleString('es-MX'), color: 'text-emerald-400' },
+          { label: 'Costo total de campaña', value: `$${campaignCost.toLocaleString('es-MX', { maximumFractionDigits: 0 })}`, color: 'text-amber-400' },
+          { label: 'Órdenes esperadas (4 semanas post-reactivación)', value: ordersTotal4W.toLocaleString('es-MX'), color: 'text-blue-400' },
+          { label: 'ROI estimado (4 semanas)', value: `${roi.toFixed(0)}%`, color: roi >= 100 ? 'text-emerald-400' : roi >= 0 ? 'text-amber-400' : 'text-red-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">TASA DE REACTIVACIÓN VS SEMANAS DORMIDO</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={decayData} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <XAxis dataKey="w" tick={{ fontSize: 9 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}%`} />
+              <Tooltip formatter={(v, n) => [`${v.toFixed(2)}%`, n]} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Line type="monotone" dataKey="organic" name="Orgánico (sin campaña)" stroke="#6b7280" strokeDasharray="4 4" strokeWidth={2} dot={false} isAnimationActive={false} />
+              <Line type="monotone" dataKey="campaign" name={`Con ${CAMPAIGN_LABELS[campaña]}`} stroke="#3b82f6" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model S2: Portfolio & Selection Effect ────────────────────────────────────
+
+function ModelS2({ inputs, onChange }) {
+  const { categoria, nRestaurants, usuarios, propension } = inputs
+
+  const K_VALUES = { pizza: 0.15, sushi: 0.08, saludable: 0.06, grocery: 0.04 }
+  const CAT_LABELS = { pizza: 'Pizza / Burgers (satura rápido)', sushi: 'Sushi / Japonesa', saludable: 'Saludable / Ensaladas (nicho)', grocery: 'Grocery / Supermercado (muy lento)' }
+  const k = K_VALUES[categoria]
+  const potential = usuarios * (propension / 100) * 1.5
+
+  const chartData = Array.from({ length: 20 }, (_, i) => {
+    const n = i * 5 + 1
+    const demand = Math.round(potential * (1 - Math.exp(-k * n)))
+    return { n: `${n}`, demand }
+  })
+
+  const currentDemand = Math.round(potential * (1 - Math.exp(-k * nRestaurants)))
+  const nextDemand = Math.round(potential * (1 - Math.exp(-k * (nRestaurants + 1))))
+  const marginalImpact = nextDemand - currentDemand
+  const saturationN = Math.round(-Math.log(0.05) / k)
+  const saturationDemand = Math.round(potential * 0.95)
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el efecto de rendimientos decrecientes al agregar restaurantes por categoría. El restaurante #50 de pizza genera mucho menos demanda incremental que el primero. La velocidad de saturación varía dramáticamente por categoría.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">El equipo de BD pregunta en qué categoría priorizar. La respuesta depende de cuántos restaurantes ya hay y dónde estás en la curva de saturación.</p>
+        </div>
+        <div className="ds-card p-4 mb-3">
+          <label className="text-gray-300 text-sm font-medium block mb-2">Categoría</label>
+          <select value={categoria} onChange={e => onChange({ ...inputs, categoria: e.target.value })} className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+            {Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+          <p className="text-xs text-gray-500 italic mt-2">k={k.toFixed(2)} — Velocidad de saturación. Pizza satura en ~20 restaurantes. Grocery puede seguir creciendo con 150+.</p>
+        </div>
+        <ModelSlider label="Restaurantes actuales en esta categoría" value={nRestaurants} min={1} max={100} step={1} format={v => `${v} restos`} explanation="Cuántos restaurantes de esta categoría ya tienes activos en la zona que analizas." onChange={v => onChange({ ...inputs, nRestaurants: v })} />
+        <ModelSlider label="Usuarios en la zona" value={usuarios} min={10000} max={500000} step={10000} format={v => `${(v / 1000).toFixed(0)}k`} explanation="Usuarios activos de delivery en el área de cobertura de los restaurantes de esta categoría." onChange={v => onChange({ ...inputs, usuarios: v })} />
+        <ModelSlider label="Propensión a esta categoría (%)" value={propension} min={5} max={60} step={1} format={v => `${v}%`} explanation="% de usuarios que tienen interés en este tipo de comida. Pizza: ~40%. Sushi: ~20%. Saludable: ~15%." onChange={v => onChange({ ...inputs, propension: v })} />
+        <ResultCallout results={[
+          { label: 'Demanda actual (con tus restaurantes)', value: `${currentDemand.toLocaleString('es-MX')} órd/sem`, color: 'text-gray-200' },
+          { label: 'Impacto marginal del próximo restaurante', value: `+${marginalImpact.toLocaleString('es-MX')} órd/sem`, color: marginalImpact > 10 ? 'text-emerald-400' : 'text-amber-400' },
+          { label: `Saturación al 95% (requiere ~${saturationN} restaurantes)`, value: `${saturationDemand.toLocaleString('es-MX')} órd/sem máx`, color: 'text-blue-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CURVA DE SATURACIÓN — DEMANDA VS # DE RESTAURANTES</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <XAxis dataKey="n" tick={{ fontSize: 9 }} label={{ value: 'Restaurantes', position: 'insideBottom', offset: -2, fill: '#6b7280', fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={v => [v.toLocaleString('es-MX'), 'Órdenes/sem']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <ReferenceLine x={String(Math.min(nRestaurants, 96))} stroke="#facc15" strokeWidth={2} label={{ value: 'Hoy', fill: '#facc15', fontSize: 10 }} />
+              <Area type="monotone" dataKey="demand" name="Demanda" stroke="#34d399" fill="#34d399" fillOpacity={0.2} strokeWidth={2.5} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model S3: Restaurant Engagement & Performance ─────────────────────────────
+
+function ModelS3({ inputs, onChange }) {
+  const { baseOrders, fotos, horarios, prepTime, promoRestaurant, ads, menuComplete } = inputs
+
+  const LEVERS = [
+    { key: 'fotos', label: 'Fotos profesionales de menú', uplift: 0.22, cost: 'Costo bajo', hint: 'El lever más subestimado. Un menú con fotos profesionales genera 22% más clics. Sin costo para la plataforma.' },
+    { key: 'horarios', label: 'Extensión de horarios', uplift: 0.18, cost: 'Sin costo plataforma', hint: 'Abrir desayunos o late-night agrega nuevas sesiones de demanda que antes no existían.' },
+    { key: 'prepTime', label: 'Optimización tiempo de preparación', uplift: 0.09, cost: 'Sin costo plataforma', hint: 'Reducir 5 minutos de prep tiempo mejora ranking algorítmico y experiencia de usuario.' },
+    { key: 'promoRestaurant', label: 'Promo auto-financiada (20% off)', uplift: 0.35, cost: 'Lo paga el restaurante', hint: 'El restaurante asume el descuento. Alta visibilidad en la plataforma. Roi claro para el restaurante.' },
+    { key: 'ads', label: 'Anuncio patrocinado en la app', uplift: 0.22, cost: 'Lo paga el restaurante', hint: 'Aumenta impresiones 40-60%. El restaurante paga por click/conversión.' },
+    { key: 'menuComplete', label: 'Completitud de menú (descripciones, alérgenos, personalización)', uplift: 0.09, cost: 'Sin costo', hint: 'Menús completos aumentan add-to-cart rate. Reduce abandono por falta de información.' },
+  ]
+
+  const activeLevers = LEVERS.filter(l => inputs[l.key])
+  // Compound with slight overlap (not additive)
+  let mult = 1.0
+  activeLevers.forEach((l, i) => {
+    const overlapFactor = Math.pow(0.85, i)
+    mult *= (1 + l.uplift * overlapFactor)
+  })
+  const finalOrders = Math.round(baseOrders * mult)
+  const upliftPct = ((mult - 1) * 100).toFixed(1)
+
+  const wfDrivers = [{ name: 'Base', delta: baseOrders, type: 'base' }, ...activeLevers.map((l, i) => ({ name: l.label.split(' ')[0], delta: Math.round(baseOrders * l.uplift * Math.pow(0.85, i)), type: 'pos' })), { name: '= Total', delta: 0, type: 'total' }]
+  const wfData = buildWaterfall(wfDrivers)
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Cuantifica el impacto de mejorar la performance de restaurantes existentes sin costo para la plataforma. La mayoría de los levers los paga el restaurante o no tienen costo directo.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando el mercado tiene suficientes restaurantes pero están subutilizados. El "Restaurant Success Program" típicamente da 15-25% de crecimiento en órdenes de same-store.</p>
+        </div>
+        <ModelSlider label="Órdenes base del restaurante/semana" value={baseOrders} min={10} max={500} step={5} format={v => `${v} órd/sem`} explanation="El volumen actual del restaurante sin mejoras. Mediana en LATAM: 60-80. Cadenas grandes: 200-400." onChange={v => onChange({ ...inputs, baseOrders: v })} />
+        <div className="ds-card p-4 mb-3">
+          <p className="text-gray-300 text-sm font-medium mb-3">Levers a activar</p>
+          {LEVERS.map(lever => (
+            <div key={lever.key} className="flex items-start gap-3 mb-2.5 last:mb-0">
+              <button onClick={() => onChange({ ...inputs, [lever.key]: !inputs[lever.key] })} className={`w-11 h-6 rounded-full transition-colors flex-shrink-0 mt-0.5 relative ${inputs[lever.key] ? 'bg-emerald-600' : 'bg-gray-700'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${inputs[lever.key] ? 'left-6' : 'left-1'}`} />
+              </button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap"><span className="text-gray-200 text-xs">{lever.label}</span><span className="text-emerald-400 text-[10px] font-mono">+{(lever.uplift*100).toFixed(0)}%</span><span className="text-gray-600 text-[10px]">{lever.cost}</span></div>
+                <p className="text-[10px] text-gray-500 mt-0.5">{lever.hint}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <ResultCallout results={[
+          { label: 'Órdenes con todos los levers seleccionados', value: `${finalOrders.toLocaleString('es-MX')} órd/sem`, color: 'text-emerald-400' },
+          { label: 'Uplift total (con overlap)', value: `+${upliftPct}%`, color: 'text-blue-400' },
+          { label: 'Levers activos', value: `${activeLevers.length} de ${LEVERS.length}`, color: 'text-gray-300' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CONTRIBUCIÓN POR LEVER — WATERFALL</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={wfData} margin={{ top: 25, right: 20, left: 5, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#9ca3af' }} angle={-25} textAnchor="end" />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}`} />
+              <Tooltip formatter={(val, name) => { if (name === 'spacer') return null; return [val, 'órdenes'] }} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Bar dataKey="spacer" stackId="wf" fill="transparent" isAnimationActive={false} />
+              <Bar dataKey="bar" stackId="wf" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                {wfData.map((d, i) => <Cell key={i} fill={d.type === 'neg' ? '#f87171' : d.type === 'total' ? '#34d399' : d.type === 'base' ? '#6b7280' : '#10b981'} />)}
+                <LabelList dataKey="delta" position="top" formatter={v => v > 0 ? `+${v}` : `${v}`} style={{ fill: '#9ca3af', fontSize: 9 }} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model S4: Restaurant Health Score ────────────────────────────────────────
+
+function ModelS4({ inputs, onChange }) {
+  const { orderTrend, acceptanceRate, cancelRate, onlineHours, multiPlatform, weeklyOrders } = inputs
+
+  // Score calculation
+  let score = 0
+  // Order trend (25 pts)
+  if (orderTrend > 5) score += 25
+  else if (orderTrend >= -5) score += 12
+  else if (orderTrend >= -15) score += 0
+  else score -= 15
+  // Operational (35 pts)
+  score += Math.round((acceptanceRate - 60) / 40 * 20) // 0-20 pts
+  score += Math.round(Math.max(0, (5 - cancelRate) / 5) * 15) // 0-15 pts
+  // Engagement (20 pts)
+  score += Math.round((onlineHours - 50) / 50 * 20) // 0-20 pts
+  // Competitive (20 pts)
+  score += multiPlatform ? 0 : 15
+  score = Math.max(0, Math.min(100, score))
+
+  const churnProb = score <= 25 ? 70 : score <= 50 ? 35 : score <= 75 ? 12 : 3
+  const lostOrders = Math.round(weeklyOrders * (1 - 0.55) * (churnProb / 100) * 12) // 12 weeks expected orders * substitution
+  const action = score <= 25 ? '🔴 Intervención inmediata' : score <= 50 ? '🟡 Outreach proactivo' : score <= 75 ? '🟢 Monitorear' : '🔵 Champion — usar como referencia'
+
+  const gaugeData = [{ name: 'Score', value: score, fill: score <= 25 ? '#f87171' : score <= 50 ? '#fbbf24' : score <= 75 ? '#34d399' : '#60a5fa' }, { name: 'Resto', value: 100 - score, fill: '#1f2937' }]
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Calcula un score de salud 0-100 para cada restaurante basado en señales de riesgo de churn. Predice la probabilidad de que el restaurante deje la plataforma y cuántas órdenes perderías.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando el churn de restaurantes supera el 20% anual. Prioriza el equipo de retención en los restaurantes con mayor "churn-adjusted order value".</p>
+        </div>
+        <ModelSlider label="Tendencia de órdenes últimas 4 semanas (%)" value={orderTrend} min={-30} max={30} step={1} format={v => `${v >= 0 ? '+' : ''}${v}%`} explanation="Crecimiento (o caída) de órdenes en las últimas 4 semanas vs las 4 anteriores. El predictor #1 de churn." onChange={v => onChange({ ...inputs, orderTrend: v })} />
+        <ModelSlider label="Acceptance rate (%)" value={acceptanceRate} min={60} max={100} step={1} format={v => `${v}%`} explanation="% de órdenes aceptadas automáticamente. Por debajo de 80% la plataforma degrada el ranking. Benchmark: >95%." onChange={v => onChange({ ...inputs, acceptanceRate: v })} />
+        <ModelSlider label="Tasa de cancelación (%)" value={cancelRate} min={0} max={15} step={0.5} format={v => `${v}%`} explanation="Órdenes canceladas post-aceptación. >5% es señal de alerta. >10% suele resultar en suspensión." onChange={v => onChange({ ...inputs, cancelRate: v })} />
+        <ModelSlider label="Horas online semanales (%)" value={onlineHours} min={50} max={100} step={1} format={v => `${v}%`} explanation="% del horario disponible en que el restaurante está activo en la plataforma. <70% indica desenganche." onChange={v => onChange({ ...inputs, onlineHours: v })} />
+        <ModelSlider label="Órdenes actuales/semana" value={weeklyOrders} min={5} max={500} step={5} format={v => `${v} órd/sem`} explanation="El volumen actual del restaurante — determina cuántas órdenes están en riesgo si churna." onChange={v => onChange({ ...inputs, weeklyOrders: v })} />
+        <div className="ds-card p-4 mb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-gray-300 text-sm font-medium block">¿Está en otras plataformas también?</label>
+              <p className="text-xs text-gray-500 mt-0.5">Restaurantes en múltiples plataformas tienen más alternativas y churnan más fácil.</p>
+            </div>
+            <button onClick={() => onChange({ ...inputs, multiPlatform: !multiPlatform })} className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ml-4 ${multiPlatform ? 'bg-amber-600' : 'bg-gray-700'}`}>
+              <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${multiPlatform ? 'left-6' : 'left-0.5'}`} />
+            </button>
+          </div>
+        </div>
+        <ResultCallout results={[
+          { label: 'Health Score', value: `${score}/100`, color: score <= 25 ? 'text-red-400' : score <= 50 ? 'text-amber-400' : score <= 75 ? 'text-emerald-400' : 'text-blue-400' },
+          { label: 'Probabilidad de churn (12 semanas)', value: `${churnProb}%`, color: churnProb >= 50 ? 'text-red-400' : churnProb >= 20 ? 'text-amber-400' : 'text-emerald-400' },
+          { label: 'Órdenes en riesgo (neto, 12 sem)', value: `${lostOrders.toLocaleString('es-MX')}`, color: 'text-red-400' },
+          { label: 'Acción recomendada', value: action, color: 'text-gray-200' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">HEALTH SCORE — DESGLOSE POR COMPONENTE</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={[
+              { component: 'Tendencia órdenes', pts: Math.max(0, orderTrend > 5 ? 25 : orderTrend >= -5 ? 12 : 0), max: 25 },
+              { component: 'Acceptance rate', pts: Math.round((acceptanceRate - 60) / 40 * 20), max: 20 },
+              { component: 'Cancelaciones', pts: Math.round(Math.max(0, (5 - cancelRate) / 5) * 15), max: 15 },
+              { component: 'Online hours', pts: Math.round((onlineHours - 50) / 50 * 20), max: 20 },
+              { component: 'Exclusividad', pts: multiPlatform ? 0 : 15, max: 15 },
+            ]} layout="vertical" margin={{ top: 5, right: 40, left: 110, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
+              <XAxis type="number" domain={[0, 30]} tick={{ fontSize: 9 }} />
+              <YAxis type="category" dataKey="component" tick={{ fontSize: 10 }} width={110} />
+              <Tooltip formatter={(v, n) => [v, n === 'pts' ? 'Puntos' : 'Máx']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Bar dataKey="max" name="Máximo posible" fill="#1f2937" radius={[0, 3, 3, 0]} isAnimationActive={false} />
+              <Bar dataKey="pts" name="Puntos obtenidos" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+                {[0,1,2,3,4].map(i => <Cell key={i} fill={score <= 25 ? '#f87171' : score <= 50 ? '#fbbf24' : '#34d399'} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
+}
+
+// ── Model P3: Delivery Economics & Capacity ───────────────────────────────────
+
+function ModelP3({ inputs, onChange }) {
+  const { couriers, onlineRate, ordersPerCourier, prepTime, transitTime, demanda } = inputs
+
+  const capacity = Math.round(couriers * (onlineRate / 100) * ordersPerCourier)
+  const actual = Math.min(demanda, capacity)
+  const lost = demanda - actual
+  const utilization = demanda / capacity
+
+  const waitTime = utilization < 0.70 ? 4 : utilization < 0.85 ? 9 : utilization < 0.95 ? 18 : 30
+  const deliveryTime = prepTime + transitTime + waitTime
+  const convFactor = deliveryTime < 20 ? 1.15 : deliveryTime < 30 ? 1.0 : deliveryTime < 40 ? 0.85 : deliveryTime < 50 ? 0.65 : 0.45
+  const adjustedDemand = Math.round(demanda * convFactor)
+  const lostPct = ((lost / demanda) * 100).toFixed(1)
+
+  // Build hourly profile data
+  const hourlyProfile = [
+    { h: '8am', demand: Math.round(demanda * 0.12), cap: capacity },
+    { h: '10am', demand: Math.round(demanda * 0.08), cap: capacity },
+    { h: '12pm', demand: Math.round(demanda * 0.28), cap: capacity },
+    { h: '2pm', demand: Math.round(demanda * 0.22), cap: capacity },
+    { h: '4pm', demand: Math.round(demanda * 0.10), cap: capacity },
+    { h: '6pm', demand: Math.round(demanda * 0.30), cap: capacity },
+    { h: '8pm', demand: Math.round(demanda * 0.35), cap: capacity },
+    { h: '10pm', demand: Math.round(demanda * 0.20), cap: capacity },
+  ].map(d => ({ ...d, actual: Math.min(d.demand, d.cap), lost: Math.max(0, d.demand - d.cap) }))
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div className="ds-card p-4 mb-4">
+          <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el equilibrio entre supply de couriers y demanda de órdenes. La capacidad limitada genera tiempos de espera que reducen la conversión, creando un "doom loop" si no se gestiona.</p>
+          <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
+          <p className="text-gray-400 text-sm">Cuando el tiempo promedio de entrega sube 2+ semanas consecutivas o cuando recibes quejas de "no hay couriers". Antes de lanzar campañas grandes en horas pico.</p>
+        </div>
+        <ModelSlider label="Couriers registrados" value={couriers} min={100} max={5000} step={50} format={v => v.toLocaleString('es-MX')} explanation="Total de couriers en la plataforma. No todos estarán online al mismo tiempo — la tasa de activación varía por hora." onChange={v => onChange({ ...inputs, couriers: v })} />
+        <ModelSlider label="Tasa online en hora pico (%)" value={onlineRate} min={50} max={100} step={1} format={v => `${v}%`} explanation="% de couriers que están activos durante la hora pico (almuerzo o cena). Benchmark: 75-90%." onChange={v => onChange({ ...inputs, onlineRate: v })} />
+        <ModelSlider label="Entregas por courier por hora" value={ordersPerCourier} min={1.0} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="Depende de la densidad de la zona. Ciudad densa: 2.5-3.5. Zona dispersa: 1.5-2.0." onChange={v => onChange({ ...inputs, ordersPerCourier: v })} />
+        <ModelSlider label="Tiempo de preparación promedio (min)" value={prepTime} min={5} max={30} step={1} format={v => `${v} min`} explanation="El tiempo que tarda el restaurante en preparar el pedido. El mayor driver de tiempo total de entrega." onChange={v => onChange({ ...inputs, prepTime: v })} />
+        <ModelSlider label="Tiempo de tránsito promedio (min)" value={transitTime} min={5} max={40} step={1} format={v => `${v} min`} explanation="De la puerta del restaurante a la del cliente. Depende de distancia media y tráfico de la ciudad." onChange={v => onChange({ ...inputs, transitTime: v })} />
+        <ModelSlider label="Demanda sin restricción (órd/hora pico)" value={demanda} min={100} max={5000} step={50} format={v => v.toLocaleString('es-MX')} explanation="Cuántas órdenes se harían si no hubiera ningún constraint de capacidad ni tiempo de espera." onChange={v => onChange({ ...inputs, demanda: v })} />
+        <ResultCallout results={[
+          { label: 'Capacidad máxima en hora pico', value: `${capacity.toLocaleString('es-MX')} órd/hora`, color: 'text-gray-300' },
+          { label: 'Órdenes perdidas por capacidad', value: `${lost.toLocaleString('es-MX')} (${lostPct}%)`, color: lost > 0 ? 'text-red-400' : 'text-emerald-400' },
+          { label: 'Tiempo de entrega estimado', value: `${deliveryTime} min`, color: deliveryTime <= 30 ? 'text-emerald-400' : deliveryTime <= 40 ? 'text-amber-400' : 'text-red-400' },
+          { label: 'Factor de conversión por tiempo de entrega', value: `${convFactor.toFixed(2)}x`, color: convFactor >= 1.0 ? 'text-emerald-400' : convFactor >= 0.75 ? 'text-amber-400' : 'text-red-400' },
+        ]} />
+      </div>
+      <div className="ds-card p-4">
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">DEMANDA VS CAPACIDAD — PERFIL DIARIO</p>
+        <ChartErrorBoundary>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={hourlyProfile} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <XAxis dataKey="h" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(1)}k`} />
+              <Tooltip formatter={(v, n) => [v.toLocaleString('es-MX'), n]} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Bar dataKey="actual" name="Órdenes reales" fill="#3b82f6" stackId="a" radius={[0,0,0,0]} isAnimationActive={false} />
+              <Bar dataKey="lost" name="Órdenes perdidas (sin capacity)" fill="#f87171" stackId="a" radius={[3,3,0,0]} isAnimationActive={false} />
+              <Line type="monotone" dataKey="cap" data={hourlyProfile} name="Capacidad" stroke="#34d399" strokeDasharray="5 5" strokeWidth={2} dot={false} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartErrorBoundary>
+      </div>
+    </div>
+  )
 }
 
 // ── Interactive Waterfall Section ─────────────────────────────────────────────
@@ -1281,6 +1824,13 @@ function renderDemoById(demoId, inputs, onChange) {
     case 'B1': return <ModelB1 inputs={inputs} onChange={onChange} />
     case 'B2': return <ModelB2 inputs={inputs} onChange={onChange} />
     case 'C1': return <ModelC1 inputs={inputs} onChange={onChange} />
+    case 'D2': return <ModelD2 inputs={inputs} onChange={onChange} />
+    case 'D4': return <ModelD4 inputs={inputs} onChange={onChange} />
+    case 'D5': return <ModelD5 inputs={inputs} onChange={onChange} />
+    case 'S2': return <ModelS2 inputs={inputs} onChange={onChange} />
+    case 'S3': return <ModelS3 inputs={inputs} onChange={onChange} />
+    case 'S4': return <ModelS4 inputs={inputs} onChange={onChange} />
+    case 'P3': return <ModelP3 inputs={inputs} onChange={onChange} />
     default: return null
   }
 }
@@ -1300,6 +1850,13 @@ export default function HomePage() {
     B1: { aov: 18, commission: 27, courierCost: 3.5, subsidy: 2.5 },
     B2: { variance: 20, horizon: 12 },
     C1: { marketSize: 200000, share: 35, evento: 'none', growth: 1.5 },
+    D2: { newUsersPerWeek: 5000, cac: 8, retW4: 35, maxFreq: 1.5, contribution: 3.5, horizon: 26 },
+    D4: { usuarios: 200000, frecActual: 1.5, desayuno: false, latNight: false, suscripcion: false, precio: false },
+    D5: { dormidos: 500000, semanasDormidos: 8, campaña: 'email', ventana: 6 },
+    S2: { categoria: 'sushi', nRestaurants: 15, usuarios: 100000, propension: 20 },
+    S3: { baseOrders: 80, fotos: false, horarios: false, prepTime: false, promoRestaurant: false, ads: false, menuComplete: false },
+    S4: { orderTrend: -8, acceptanceRate: 88, cancelRate: 4, onlineHours: 75, multiPlatform: true, weeklyOrders: 120 },
+    P3: { couriers: 800, onlineRate: 80, ordersPerCourier: 2.0, prepTime: 15, transitTime: 15, demanda: 1500 },
   })
 
   // Scroll reveal refs
