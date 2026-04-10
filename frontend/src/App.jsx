@@ -6,6 +6,126 @@ import ResultsDashboard from './components/ResultsDashboard'
 import MarkovWizard from './components/markov/MarkovWizard'
 import { fmtOrders, fmtPct, formatDate } from './utils/formatters'
 
+// ── Taxonomy data (mirrors HomePage) ────────────────────────────────────────
+
+const TAXONOMY = {
+  D: {
+    label: 'Demanda', sublabel: 'El usuario como driver de órdenes', color: 'blue',
+    models: [
+      { id: 'D1', name: 'User Lifecycle Markov', question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?', status: 'full', link: '/markov' },
+      { id: 'D2', name: 'Cohort Retention & LTV', question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?', status: 'demo' },
+      { id: 'D3', name: 'Funnel Conversion', question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?', status: 'demo' },
+      { id: 'D4', name: 'Frequency & Wallet Share', question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?', status: 'demo' },
+      { id: 'D5', name: 'Reactivation & Winback', question: '¿Cuántas órdenes puedo recuperar de mi base dormida?', status: 'demo' },
+    ],
+  },
+  S: {
+    label: 'Oferta', sublabel: 'El restaurante como driver de órdenes', color: 'emerald',
+    models: [
+      { id: 'S1', name: 'Restaurant Onboarding & Maturation', question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?', status: 'demo' },
+      { id: 'S2', name: 'Portfolio & Selection Effect', question: '¿Más restaurantes o mejores restaurantes?', status: 'demo' },
+      { id: 'S3', name: 'Restaurant Engagement & Performance', question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?', status: 'demo' },
+      { id: 'S4', name: 'Restaurant Health Score', question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?', status: 'demo' },
+    ],
+  },
+  P: {
+    label: 'Plataforma', sublabel: 'Efectos emergentes de la interacción oferta-demanda', color: 'purple',
+    models: [
+      { id: 'P1', name: 'Network Effects & Liquidity', question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?', status: 'demo' },
+      { id: 'P2', name: 'Incrementality & Cannibalization', question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?', status: 'demo' },
+      { id: 'P3', name: 'Delivery Economics & Capacity', question: '¿En qué punto la flota se convierte en el cuello de botella de crecimiento?', status: 'demo' },
+      { id: 'P4', name: 'Competitive Dynamics', question: '¿Qué pasa con mis órdenes si entra o sale un competidor?', status: 'demo' },
+      { id: 'P5', name: 'Marketplace Equilibrium', question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?', status: 'demo' },
+    ],
+  },
+}
+
+const COLOR = {
+  blue:    { badge: 'bg-blue-900/40 text-blue-300 border border-blue-800', header: 'text-blue-400', dot: 'bg-blue-500' },
+  emerald: { badge: 'bg-emerald-900/40 text-emerald-300 border border-emerald-800', header: 'text-emerald-400', dot: 'bg-emerald-500' },
+  purple:  { badge: 'bg-purple-900/40 text-purple-300 border border-purple-800', header: 'text-purple-400', dot: 'bg-purple-500' },
+}
+
+// ── New Forecast — Model Selection Page ──────────────────────────────────────
+
+function NewForecastPage() {
+  const navigate = useNavigate()
+
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <header className="border-b border-gray-800 bg-gray-900/50 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="btn-ghost text-xs">← Inicio</Link>
+            <span className="text-sm font-semibold text-gray-200 font-mono">Nuevo Forecast</span>
+          </div>
+          <Link to="/forecasts" className="btn-ghost text-xs">Mis Forecasts</Link>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-100 mb-2">Elige un modelo</h1>
+          <p className="text-gray-400 text-sm">14 modelos organizados en 3 perspectivas. Los modelos <span className="text-blue-400 font-semibold">completos</span> tienen wizard interactivo. Los de <span className="text-amber-400 font-semibold">demo</span> están disponibles en la página principal.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Object.entries(TAXONOMY).map(([key, persp]) => {
+            const c = COLOR[persp.color]
+            return (
+              <div key={key} className="ds-card overflow-hidden flex flex-col">
+                <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40">
+                  <div className={`text-xs font-mono font-bold uppercase tracking-widest mb-0.5 ${c.header}`}>{key} — {persp.label}</div>
+                  <div className="text-[11px] text-gray-500">{persp.sublabel}</div>
+                </div>
+                <div className="flex-1 divide-y divide-gray-800/60">
+                  {persp.models.map(model => {
+                    const isFull = model.status === 'full'
+                    return (
+                      <button
+                        key={model.id}
+                        onClick={() => {
+                          if (isFull && model.link) navigate(model.link)
+                          else navigate('/', { state: { openModel: model.id } })
+                        }}
+                        className={`w-full text-left px-4 py-3 transition-colors group
+                          ${isFull ? 'hover:bg-blue-900/20 cursor-pointer' : 'hover:bg-gray-800/40 cursor-pointer'}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className={`mt-0.5 flex-shrink-0 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${c.badge}`}>{model.id}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className={`text-xs font-semibold leading-tight ${isFull ? 'text-gray-100' : 'text-gray-300'}`}>{model.name}</span>
+                              {isFull && <span className="text-[9px] font-mono bg-blue-600 text-white px-1.5 py-0.5 rounded flex-shrink-0">WIZARD</span>}
+                              {!isFull && <span className="text-[9px] font-mono bg-amber-700/60 text-amber-300 px-1.5 py-0.5 rounded flex-shrink-0">DEMO</span>}
+                            </div>
+                            <p className="text-[11px] text-gray-500 leading-snug">{model.question}</p>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-8 ds-card p-4 flex items-center gap-4 bg-gray-900/30">
+          <div className="text-2xl">💡</div>
+          <div>
+            <div className="text-sm font-semibold text-gray-200 mb-0.5">¿No sabes cuál elegir?</div>
+            <p className="text-xs text-gray-400">Empieza con <span className="text-blue-400 font-semibold">D1 — User Lifecycle Markov</span>. Es el modelo más completo: integra todos los demás y produce un forecast semanal con desglose por iniciativa y costo.</p>
+          </div>
+          <button onClick={() => navigate('/markov')} className="btn-primary text-xs flex-shrink-0 ml-auto">
+            Abrir D1 Markov →
+          </button>
+        </div>
+      </main>
+    </div>
+  )
+}
+
 // ── Forecasts List Page ──────────────────────────────────────────────────────
 
 function ForecastsList() {
@@ -271,7 +391,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/new" element={<Wizard />} />
+        <Route path="/new" element={<NewForecastPage />} />
+        <Route path="/new/combined" element={<Wizard />} />
         <Route path="/forecasts" element={<ForecastsList />} />
         <Route path="/forecast/:id" element={<ForecastDetail />} />
         <Route path="/settings" element={<SettingsPage />} />

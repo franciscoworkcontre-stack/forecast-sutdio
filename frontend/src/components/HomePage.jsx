@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -1839,8 +1839,9 @@ function renderDemoById(demoId, inputs, onChange) {
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [excelToast, setExcelToast] = useState(false)
-  const [selectedModel, setSelectedModel] = useState(null)
+  const [selectedModel, setSelectedModel] = useState(location.state?.openModel || null)
   const [modelInputs, setModelInputs] = useState({
     A1: { base: 45000, uplift: 25, duracion: 4 },
     A2: { restosPerWeek: 10, steadyState: 120, tipo: 'dark_kitchen' },
@@ -1881,6 +1882,13 @@ export default function HomePage() {
   const c2 = useCounter(17, statsVisible)
   const c3 = useCounter(52, statsVisible)
   const c4 = useCounter(9, statsVisible)
+
+  // Auto-scroll to taxonomy section when arriving from model selector
+  useEffect(() => {
+    if (location.state?.openModel && modelsRef.current) {
+      setTimeout(() => modelsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200)
+    }
+  }, [])
 
   const handleExcelDemo = () => {
     setExcelToast(true)
