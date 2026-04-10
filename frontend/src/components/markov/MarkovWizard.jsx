@@ -1123,7 +1123,13 @@ export default function MarkovWizard() {
       })
       if (!resp.ok) {
         const err = await resp.json()
-        throw new Error(err.detail || 'Error calculando forecast')
+        const detail = err.detail
+        if (Array.isArray(detail)) {
+          // Pydantic v2 validation errors — format them readably
+          const msgs = detail.map(e => `${e.loc ? e.loc.slice(-2).join('.') : '?'}: ${e.msg}`).join('\n')
+          throw new Error(msgs)
+        }
+        throw new Error(typeof detail === 'string' ? detail : 'Error calculando forecast')
       }
       const data = await resp.json()
       setResult(data)
