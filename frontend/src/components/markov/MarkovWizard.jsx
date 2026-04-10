@@ -819,7 +819,7 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
 
 // ── Step 6: Results ──────────────────────────────────────────────────────────
 
-function MarkovResults({ result, config, onBack }) {
+function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) {
   const [tab, setTab] = useState('weekly')
   const { weeks, summary } = result
 
@@ -858,6 +858,18 @@ function MarkovResults({ result, config, onBack }) {
 
   return (
     <div>
+      {/* Action bar */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs text-gray-500 font-mono">Resultados del Forecast Markov v3</span>
+        <button
+          onClick={onExportExcel}
+          disabled={excelLoading}
+          className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50"
+        >
+          {excelLoading ? '⏳ Generando...' : '📥 Exportar Excel McKinsey →'}
+        </button>
+      </div>
+
       {/* KPI summary bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
         {[
@@ -1086,36 +1098,63 @@ export default function MarkovWizard() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [excelLoading, setExcelLoading] = useState(false)
+
+  const buildBody = (cfg) => ({
+    name: cfg.name,
+    country: cfg.country,
+    horizon_weeks: cfg.horizon_weeks,
+    aov: cfg.aov,
+    take_rate: cfg.take_rate,
+    currency: cfg.currency,
+    overlap_factor: cfg.overlap_factor,
+    profiles: cfg.profiles,
+    transition_matrix: {
+      profile_ids: cfg.profiles.map(p => p.id),
+      matrix: cfg.transition_matrix,
+    },
+    funnel_params: cfg.profiles.map(p => ({
+      profile_id: p.id,
+      ...cfg.funnel_params[p.id],
+    })),
+    levers: cfg.levers,
+    ramp_config: cfg.ramp_config,
+    acquisition: cfg.acquisition,
+    costs: cfg.profiles.map(p => ({
+      profile_id: p.id,
+      ...cfg.costs[p.id],
+    })),
+  })
+
+  const exportExcel = async () => {
+    setExcelLoading(true)
+    try {
+      const body = buildBody(config)
+      const resp = await fetch('/api/markov/export-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!resp.ok) throw new Error('Error generando Excel')
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `markov_${config.name.replace(/\s+/g, '_')}.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert('Error exportando Excel: ' + e.message)
+    } finally {
+      setExcelLoading(false)
+    }
+  }
 
   const runForecast = async () => {
     setLoading(true)
     setError(null)
     try {
-      const body = {
-        name: config.name,
-        country: config.country,
-        horizon_weeks: config.horizon_weeks,
-        aov: config.aov,
-        take_rate: config.take_rate,
-        currency: config.currency,
-        overlap_factor: config.overlap_factor,
-        profiles: config.profiles,
-        transition_matrix: {
-          profile_ids: config.profiles.map(p => p.id),
-          matrix: config.transition_matrix,
-        },
-        funnel_params: config.profiles.map(p => ({
-          profile_id: p.id,
-          ...config.funnel_params[p.id],
-        })),
-        levers: config.levers,
-        ramp_config: config.ramp_config,
-        acquisition: config.acquisition,
-        costs: config.profiles.map(p => ({
-          profile_id: p.id,
-          ...config.costs[p.id],
-        })),
-      }
+      const body = buildBody(config)
       const resp = await fetch('/api/markov/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1202,7 +1241,7 @@ export default function MarkovWizard() {
           <StepCosts config={config} setConfig={setConfig} onRun={runForecast} onBack={() => setStep(4)} loading={loading} error={error} />
         )}
         {step === 6 && result && (
-          <MarkovResults result={result} config={config} onBack={() => setStep(5)} />
+          <MarkovResults result={result} config={config} onBack={() => setStep(5)} onExportExcel={exportExcel} excelLoading={excelLoading} />
         )}
       </main>
     </div>

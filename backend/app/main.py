@@ -315,3 +315,23 @@ async def validate_transition_matrix(data: dict):
         s = sum(row)
         results.append({"row": i, "sum": round(s, 4), "valid": abs(s - 1.0) <= 0.001})
     return {"rows": results, "all_valid": all(r["valid"] for r in results)}
+
+
+from .excel.markov_generator import generate_markov_excel
+
+
+@app.post("/api/markov/export-excel")
+async def markov_export_excel(request: MarkovForecastRequest):
+    """Run Markov forecast and return McKinsey-style Excel."""
+    try:
+        result = run_markov_forecast(request)
+        excel_bytes = generate_markov_excel(result, request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    filename = f"markov_{request.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(
+        content=excel_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
