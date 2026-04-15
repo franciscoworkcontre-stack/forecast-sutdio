@@ -1,10 +1,37 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ReferenceLine, ResponsiveContainer
 } from 'recharts'
+
+// ── Industry vocabulary adaptation ───────────────────────────────────────────
+
+const INDUSTRY_VOCAB = {
+  food_delivery:  { icon: '🍔', label: 'Food Delivery',       transaction: 'Orden',         transactions: 'Órdenes',      supply: 'Restaurante',   supplies: 'Restaurantes',   user: 'Usuario',   aovLabel: 'AOV',              defaultAov: 290,  currency: 'MXN', country: 'MX' },
+  rideshare:      { icon: '🚗', label: 'Ridesharing',          transaction: 'Viaje',         transactions: 'Viajes',       supply: 'Conductor',     supplies: 'Conductores',    user: 'Pasajero',  aovLabel: 'Tarifa Promedio',  defaultAov: 120,  currency: 'MXN', country: 'MX' },
+  ecommerce:      { icon: '🛒', label: 'E-commerce',           transaction: 'Compra',        transactions: 'Compras',      supply: 'Vendedor',      supplies: 'Vendedores',     user: 'Comprador', aovLabel: 'Ticket Promedio',  defaultAov: 850,  currency: 'MXN', country: 'MX' },
+  quick_commerce: { icon: '⚡', label: 'Quick Commerce',       transaction: 'Canasta',       transactions: 'Canastas',     supply: 'Tienda/Nodo',   supplies: 'Tiendas',        user: 'Shopper',   aovLabel: 'Valor Canasta',    defaultAov: 650,  currency: 'MXN', country: 'MX' },
+  beauty:         { icon: '💅', label: 'Beauty & Wellness',    transaction: 'Cita',          transactions: 'Citas',        supply: 'Profesional',   supplies: 'Profesionales',  user: 'Cliente',   aovLabel: 'Precio Servicio',  defaultAov: 500,  currency: 'MXN', country: 'MX' },
+  hotel:          { icon: '🏨', label: 'Hotel / STR',          transaction: 'Reserva',       transactions: 'Reservas',     supply: 'Propiedad',     supplies: 'Propiedades',    user: 'Huésped',   aovLabel: 'Tarifa Noche',     defaultAov: 1800, currency: 'MXN', country: 'MX' },
+  pharmacy:       { icon: '💊', label: 'Farmacia',             transaction: 'Pedido',        transactions: 'Pedidos',      supply: 'Farmacia',      supplies: 'Farmacias',      user: 'Paciente',  aovLabel: 'Valor Pedido',     defaultAov: 420,  currency: 'MXN', country: 'MX' },
+  saas_b2b:       { icon: '💼', label: 'SaaS B2B',             transaction: 'Suscripción',   transactions: 'Suscripciones', supply: 'Producto',     supplies: 'Módulos',        user: 'Empresa',   aovLabel: 'ARPU Mensual',     defaultAov: 250,  currency: 'USD', country: 'MX' },
+  b2b_platform:   { icon: '🏪', label: 'B2B Platform',         transaction: 'Sub + GMV',     transactions: 'Transacciones', supply: 'Integración',  supplies: 'Apps',           user: 'Merchant',  aovLabel: 'Revenue/Merchant', defaultAov: 300,  currency: 'USD', country: 'MX' },
+  gig:            { icon: '🧑‍💻', label: 'Gig / Freelance',   transaction: 'Proyecto',      transactions: 'Proyectos',    supply: 'Freelancer',    supplies: 'Freelancers',    user: 'Cliente',   aovLabel: 'Valor Proyecto',   defaultAov: 800,  currency: 'USD', country: 'MX' },
+  hr_marketplace: { icon: '👔', label: 'HR Tech',              transaction: 'Contratación',  transactions: 'Contrataciones', supply: 'Empleador',   supplies: 'Empleadores',    user: 'Candidato', aovLabel: 'Costo Publicación', defaultAov: 150, currency: 'USD', country: 'MX' },
+  streaming:      { icon: '🎬', label: 'Streaming / OTT',      transaction: 'Sesión',        transactions: 'Sesiones',     supply: 'Contenido',     supplies: 'Contenidos',     user: 'Suscriptor', aovLabel: 'ARPU Mensual',    defaultAov: 15,   currency: 'USD', country: 'MX' },
+  edtech:         { icon: '📚', label: 'EdTech',               transaction: 'Lección',       transactions: 'Lecciones',    supply: 'Curso',         supplies: 'Cursos',         user: 'Estudiante', aovLabel: 'ARPU Mensual',    defaultAov: 12,   currency: 'USD', country: 'MX' },
+  gaming:         { icon: '🎮', label: 'Mobile Gaming',        transaction: 'Sesión',        transactions: 'Sesiones',     supply: 'Juego',         supplies: 'Juegos',         user: 'Jugador',   aovLabel: 'ARPPU',            defaultAov: 8,    currency: 'USD', country: 'MX' },
+  fitness:        { icon: '🏋️', label: 'Fitness Tech',         transaction: 'Clase',         transactions: 'Clases',       supply: 'Gimnasio',      supplies: 'Gimnasios',      user: 'Miembro',   aovLabel: 'Membresía Mensual', defaultAov: 35,  currency: 'USD', country: 'MX' },
+  super_app:      { icon: '📱', label: 'Super App',            transaction: 'Transacción',   transactions: 'Transacciones', supply: 'Proveedor',    supplies: 'Proveedores',    user: 'Usuario',   aovLabel: 'GMV/Usuario',      defaultAov: 450,  currency: 'MXN', country: 'MX' },
+  fintech:        { icon: '💳', label: 'Fintech / Lending',    transaction: 'Préstamo',      transactions: 'Préstamos',    supply: 'Capital',       supplies: 'Líneas',         user: 'Prestatario', aovLabel: 'Monto Promedio', defaultAov: 5000, currency: 'MXN', country: 'MX' },
+  real_estate:    { icon: '🏠', label: 'Real Estate Tech',     transaction: 'Transacción',   transactions: 'Transacciones', supply: 'Agente',       supplies: 'Agentes',        user: 'Comprador', aovLabel: 'Valor Transacción', defaultAov: 2500000, currency: 'MXN', country: 'MX' },
+  telemedicine:   { icon: '🩺', label: 'Telemedicina',         transaction: 'Consulta',      transactions: 'Consultas',    supply: 'Médico',        supplies: 'Médicos',        user: 'Paciente',  aovLabel: 'ARPU Mensual',     defaultAov: 599,  currency: 'MXN', country: 'MX' },
+  travel_ota:     { icon: '✈️', label: 'Travel / OTA',         transaction: 'Reserva',       transactions: 'Reservas',     supply: 'Hotel/Aerolínea', supplies: 'Proveedores',  user: 'Viajero',   aovLabel: 'Valor Reserva',    defaultAov: 8500, currency: 'MXN', country: 'MX' },
+}
+
+const DEFAULT_VOCAB = INDUSTRY_VOCAB.food_delivery
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -120,7 +147,7 @@ function StepAssumptionsPack({ config, setConfig, onNext }) {
 
 // ── Step 1: Config General ───────────────────────────────────────────────────
 
-function StepConfig({ config, setConfig, onNext, onBack }) {
+function StepConfig({ config, setConfig, onNext, onBack, vocab = DEFAULT_VOCAB }) {
   const COUNTRIES = [
     { code: 'MX', name: '🇲🇽 México', aov: 290, currency: 'MXN' },
     { code: 'BR', name: '🇧🇷 Brasil', aov: 52, currency: 'BRL' },
@@ -137,6 +164,19 @@ function StepConfig({ config, setConfig, onNext, onBack }) {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {vocab.label !== 'Food Delivery' && (
+        <div className="ds-card p-3 bg-gray-900/60 border-gray-700 flex items-center gap-3">
+          <span className="text-2xl">{vocab.icon}</span>
+          <div>
+            <div className="text-xs font-semibold text-gray-200">{vocab.label}</div>
+            <div className="text-[11px] text-gray-500">
+              {vocab.transactions} · {vocab.supply} · {vocab.aovLabel}
+            </div>
+          </div>
+          <span className="ml-auto text-[10px] font-mono text-gray-500 bg-gray-800 px-2 py-1 rounded">industria adaptada</span>
+        </div>
+      )}
+
       <div className="ds-card p-4">
         <label className="ds-label block mb-2">Nombre del Forecast</label>
         <input type="text" value={config.name}
@@ -177,11 +217,11 @@ function StepConfig({ config, setConfig, onNext, onBack }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="ds-card p-4">
-          <label className="ds-label block mb-2">AOV — Ticket Promedio ({config.currency})</label>
+          <label className="ds-label block mb-2">{vocab.aovLabel} ({config.currency})</label>
           <input type="number" value={config.aov}
             onChange={e => setConfig(p => ({ ...p, aov: Number(e.target.value) }))}
             className="ds-input w-full" />
-          <p className="text-xs text-gray-600 italic mt-2">Valor promedio de cada orden en {config.currency}. Se usa para calcular GMV y Revenue.</p>
+          <p className="text-xs text-gray-600 italic mt-2">Valor promedio por {vocab.transaction.toLowerCase()} en {config.currency}. Se usa para calcular GMV y Revenue.</p>
         </div>
         <div className="ds-card p-4">
           <label className="ds-label block mb-2">Take Rate (%)</label>
@@ -819,7 +859,7 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
 
 // ── Step 6: Results ──────────────────────────────────────────────────────────
 
-function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) {
+function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vocab = DEFAULT_VOCAB }) {
   const [tab, setTab] = useState('weekly')
   const { weeks, summary } = result
 
@@ -873,13 +913,13 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
       {/* KPI summary bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
         {[
-          { label: 'Total Órdenes', value: Math.round(summary.total_orders).toLocaleString('es-MX'), color: 'text-gray-100' },
-          { label: 'Incrementales', value: Math.round(summary.total_incremental).toLocaleString('es-MX'), color: 'text-blue-400' },
+          { label: `Total ${vocab.transactions}`, value: Math.round(summary.total_orders).toLocaleString('es-MX'), color: 'text-gray-100' },
+          { label: `${vocab.transactions} Incrementales`, value: Math.round(summary.total_incremental).toLocaleString('es-MX'), color: 'text-blue-400' },
           { label: 'Revenue Neto', value: `${config.currency} ${Math.round(summary.total_revenue).toLocaleString('es-MX')}`, color: 'text-gray-100' },
           { label: 'Total Gastos', value: `${config.currency} ${Math.round(summary.total_gastos).toLocaleString('es-MX')}`, color: 'text-red-400' },
           { label: 'Contribution $', value: `${config.currency} ${Math.round(summary.total_contribution).toLocaleString('es-MX')}`, color: summary.total_contribution >= 0 ? 'text-emerald-400' : 'text-red-400' },
           { label: 'Contribution %', value: `${(summary.avg_contribution_pct * 100).toFixed(1)}%`, color: summary.avg_contribution_pct >= 0.05 ? 'text-emerald-400' : 'text-amber-400' },
-          { label: 'Cost/Order', value: `${config.currency} ${summary.avg_cost_per_order.toFixed(1)}`, color: 'text-gray-300' },
+          { label: `Costo/${vocab.transaction}`, value: `${config.currency} ${summary.avg_cost_per_order.toFixed(1)}`, color: 'text-gray-300' },
         ].map(k => (
           <div key={k.label} className="metric-card">
             <div className="metric-label">{k.label}</div>
@@ -908,7 +948,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
       {tab === 'weekly' && (
         <div className="space-y-4">
           <div className="ds-card p-4">
-            <p className="text-xs text-gray-400 font-mono uppercase mb-3">Órdenes Semanales — Base vs Total vs Incremental</p>
+            <p className="text-xs text-gray-400 font-mono uppercase mb-3">{vocab.transactions} Semanales — Base vs Total vs Incremental</p>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
@@ -930,7 +970,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
                 <thead>
                   <tr>
                     <th>Semana</th>
-                    <th>Órdenes Total</th>
+                    <th>{vocab.transactions} Total</th>
                     <th>Base</th>
                     <th>Incremental</th>
                     <th>GMV</th>
@@ -1070,14 +1110,18 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
 // ── MarkovWizard (main component) ────────────────────────────────────────────
 
 export default function MarkovWizard() {
+  const [searchParams] = useSearchParams()
+  const industryId = searchParams.get('industry') || 'food_delivery'
+  const vocab = INDUSTRY_VOCAB[industryId] ?? DEFAULT_VOCAB
+
   const [step, setStep] = useState(0)
   const [config, setConfig] = useState({
-    name: 'Mi Forecast Markov',
-    country: 'MX',
+    name: `${vocab.label} — Forecast Markov`,
+    country: vocab.country,
     horizon_weeks: 12,
-    aov: 290,
+    aov: vocab.defaultAov,
     take_rate: 0.22,
-    currency: 'MXN',
+    currency: vocab.currency,
     overlap_factor: 0.15,
     profiles: DEFAULT_PROFILES,
     transition_matrix: DEFAULT_MATRIX,
@@ -1188,9 +1232,14 @@ export default function MarkovWizard() {
       <header className="sticky top-0 z-40 border-b border-gray-800 bg-gray-900/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-gray-500 hover:text-gray-300 text-sm">← Inicio</Link>
+            <Link to="/new" className="text-gray-500 hover:text-gray-300 text-sm">← Modelos</Link>
             <span className="text-gray-700">/</span>
-            <span className="text-sm font-mono text-gray-200">Modelo Markov v3</span>
+            <span className="text-sm font-mono text-gray-200">D1 — User Lifecycle Markov</span>
+            {industryId !== 'food_delivery' && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-800 border border-gray-700 text-xs text-gray-300">
+                {vocab.icon} {vocab.label}
+              </span>
+            )}
           </div>
           <div className="hidden md:flex items-center gap-1">
             {STEPS.map((s, i) => (
@@ -1226,7 +1275,7 @@ export default function MarkovWizard() {
           <StepAssumptionsPack config={config} setConfig={setConfig} onNext={() => setStep(1)} />
         )}
         {step === 1 && (
-          <StepConfig config={config} setConfig={setConfig} onNext={() => setStep(2)} onBack={() => setStep(0)} />
+          <StepConfig config={config} setConfig={setConfig} onNext={() => setStep(2)} onBack={() => setStep(0)} vocab={vocab} />
         )}
         {step === 2 && (
           <StepUserMatrix config={config} setConfig={setConfig} onNext={() => setStep(3)} onBack={() => setStep(1)} />
@@ -1241,7 +1290,7 @@ export default function MarkovWizard() {
           <StepCosts config={config} setConfig={setConfig} onRun={runForecast} onBack={() => setStep(4)} loading={loading} error={error} />
         )}
         {step === 6 && result && (
-          <MarkovResults result={result} config={config} onBack={() => setStep(5)} onExportExcel={exportExcel} excelLoading={excelLoading} />
+          <MarkovResults result={result} config={config} onBack={() => setStep(5)} onExportExcel={exportExcel} excelLoading={excelLoading} vocab={vocab} />
         )}
       </main>
     </div>

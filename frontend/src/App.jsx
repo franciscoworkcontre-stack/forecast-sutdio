@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import Wizard from './components/Wizard'
 import HomePage from './components/HomePage'
 import ResultsDashboard from './components/ResultsDashboard'
@@ -46,81 +46,202 @@ const COLOR = {
   purple:  { badge: 'bg-purple-900/40 text-purple-300 border border-purple-800', header: 'text-purple-400', dot: 'bg-purple-500' },
 }
 
-// ── New Forecast — Model Selection Page ──────────────────────────────────────
+// ── Industries for /new selector (subset of HomePage INDUSTRIES) ─────────────
+
+const SELECTOR_INDUSTRIES = [
+  { id: 'food_delivery',  icon: '🍔', name: 'Food Delivery',       category: 'Marketplace',  topModels: ['D1','D3','P3'], transaction: 'Orden',        supply: 'Restaurante' },
+  { id: 'rideshare',      icon: '🚗', name: 'Ridesharing',          category: 'Marketplace',  topModels: ['D3','S2','P5'], transaction: 'Viaje',        supply: 'Conductor' },
+  { id: 'ecommerce',      icon: '🛒', name: 'E-commerce',           category: 'Marketplace',  topModels: ['D1','D2','S3'], transaction: 'Compra',       supply: 'Vendedor' },
+  { id: 'quick_commerce', icon: '⚡', name: 'Quick Commerce',       category: 'Marketplace',  topModels: ['D1','D3','P3'], transaction: 'Canasta',      supply: 'Nodo/Tienda' },
+  { id: 'beauty',         icon: '💅', name: 'Beauty & Wellness',    category: 'Marketplace',  topModels: ['S1','S2','P4'], transaction: 'Cita',         supply: 'Profesional' },
+  { id: 'hotel',          icon: '🏨', name: 'Hotel / STR',          category: 'Marketplace',  topModels: ['D2','S1','S4'], transaction: 'Reserva',      supply: 'Host/Propiedad' },
+  { id: 'pharmacy',       icon: '💊', name: 'Farmacia',             category: 'Marketplace',  topModels: ['D1','D5','P3'], transaction: 'Pedido',       supply: 'Farmacia' },
+  { id: 'saas_b2b',       icon: '💼', name: 'SaaS B2B',             category: 'SaaS',         topModels: ['D1','D2','S1'], transaction: 'Suscripción',  supply: 'Software' },
+  { id: 'b2b_platform',   icon: '🏪', name: 'B2B Platform',         category: 'SaaS',         topModels: ['S1','S2','P2'], transaction: 'Sub + Comisión', supply: 'Apps/Integraciones' },
+  { id: 'gig',            icon: '🧑‍💻', name: 'Gig / Freelance',    category: 'SaaS',         topModels: ['S1','S2','P1'], transaction: 'Proyecto',     supply: 'Freelancer' },
+  { id: 'hr_marketplace', icon: '👔', name: 'HR Tech / Empleo',     category: 'SaaS',         topModels: ['S1','S2','P1'], transaction: 'Contratación', supply: 'Empleador' },
+  { id: 'streaming',      icon: '🎬', name: 'Streaming / OTT',      category: 'Consumer',     topModels: ['D1','D2','D5'], transaction: 'Sesión',       supply: 'Contenido' },
+  { id: 'edtech',         icon: '📚', name: 'EdTech',               category: 'Consumer',     topModels: ['D1','D2','P4'], transaction: 'Lección/Sub',  supply: 'Creador' },
+  { id: 'gaming',         icon: '🎮', name: 'Mobile Gaming',        category: 'Consumer',     topModels: ['D1','D3','P4'], transaction: 'IAP/Session',  supply: 'Desarrollador' },
+  { id: 'fitness',        icon: '🏋️', name: 'Fitness Tech',         category: 'Consumer',     topModels: ['D1','D3','P4'], transaction: 'Clase/Membresía', supply: 'Gimnasio' },
+  { id: 'super_app',      icon: '📱', name: 'Super App',            category: 'Consumer',     topModels: ['D3','D5','P5'], transaction: 'Multi-servicio', supply: 'Multi-vertical' },
+  { id: 'fintech',        icon: '💳', name: 'Fintech / Lending',    category: 'Fintech',      topModels: ['D2','P1','P5'], transaction: 'Préstamo',     supply: 'Capital' },
+  { id: 'real_estate',    icon: '🏠', name: 'Real Estate Tech',     category: 'Fintech',      topModels: ['S1','S2','P2'], transaction: 'Transacción',  supply: 'Agente' },
+  { id: 'telemedicine',   icon: '🩺', name: 'Telemedicina',         category: 'Fintech',      topModels: ['D1','D5','P1'], transaction: 'Consulta',     supply: 'Médico' },
+  { id: 'travel_ota',     icon: '✈️', name: 'Travel / OTA',         category: 'Fintech',      topModels: ['D2','P2','P5'], transaction: 'Reserva',      supply: 'Hotel/Aerolínea' },
+]
+
+const SELECTOR_CATEGORIES = ['Marketplace', 'SaaS', 'Consumer', 'Fintech']
+
+// ── New Forecast — 2-step: Industry → Model ───────────────────────────────────
 
 function NewForecastPage() {
   const navigate = useNavigate()
+  const [step, setStep] = useState(1)           // 1 = industry, 2 = model
+  const [industry, setIndustry] = useState(null)
+
+  const handleIndustry = (ind) => {
+    setIndustry(ind)
+    setStep(2)
+  }
+
+  const handleModel = (model) => {
+    if (model.status === 'full' && model.link) {
+      const dest = industry ? `${model.link}?industry=${industry.id}` : model.link
+      navigate(dest)
+    } else {
+      navigate('/', { state: { openModel: model.id } })
+    }
+  }
+
+  const topModelIds = industry?.topModels ?? []
 
   return (
     <div className="min-h-screen bg-gray-950">
       <header className="border-b border-gray-800 bg-gray-900/50 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="btn-ghost text-xs">← Inicio</Link>
-            <span className="text-sm font-semibold text-gray-200 font-mono">Nuevo Forecast</span>
+            {step === 2
+              ? <button onClick={() => setStep(1)} className="btn-ghost text-xs">← Industria</button>
+              : <Link to="/" className="btn-ghost text-xs">← Inicio</Link>
+            }
+            <span className="text-sm font-semibold text-gray-200 font-mono">
+              Nuevo Forecast
+              {step === 2 && industry && (
+                <span className="ml-2 text-gray-500">/ {industry.icon} {industry.name}</span>
+              )}
+            </span>
           </div>
-          <Link to="/forecasts" className="btn-ghost text-xs">Mis Forecasts</Link>
+          {/* Step indicator */}
+          <div className="flex items-center gap-2">
+            {[1,2].map(s => (
+              <div key={s} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold
+                ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-500'}`}>
+                {s}
+              </div>
+            ))}
+            <span className="text-xs text-gray-500 ml-1">{step === 1 ? 'Industria' : 'Modelo'}</span>
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-100 mb-2">Elige un modelo</h1>
-          <p className="text-gray-400 text-sm">14 modelos organizados en 3 perspectivas. Los modelos <span className="text-blue-400 font-semibold">completos</span> tienen wizard interactivo. Los de <span className="text-amber-400 font-semibold">demo</span> están disponibles en la página principal.</p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {Object.entries(TAXONOMY).map(([key, persp]) => {
-            const c = COLOR[persp.color]
-            return (
-              <div key={key} className="ds-card overflow-hidden flex flex-col">
-                <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40">
-                  <div className={`text-xs font-mono font-bold uppercase tracking-widest mb-0.5 ${c.header}`}>{key} — {persp.label}</div>
-                  <div className="text-[11px] text-gray-500">{persp.sublabel}</div>
-                </div>
-                <div className="flex-1 divide-y divide-gray-800/60">
-                  {persp.models.map(model => {
-                    const isFull = model.status === 'full'
-                    return (
-                      <button
-                        key={model.id}
-                        onClick={() => {
-                          if (isFull && model.link) navigate(model.link)
-                          else navigate('/', { state: { openModel: model.id } })
-                        }}
-                        className={`w-full text-left px-4 py-3 transition-colors group
-                          ${isFull ? 'hover:bg-blue-900/20 cursor-pointer' : 'hover:bg-gray-800/40 cursor-pointer'}`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <span className={`mt-0.5 flex-shrink-0 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${c.badge}`}>{model.id}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className={`text-xs font-semibold leading-tight ${isFull ? 'text-gray-100' : 'text-gray-300'}`}>{model.name}</span>
-                              {isFull && <span className="text-[9px] font-mono bg-blue-600 text-white px-1.5 py-0.5 rounded flex-shrink-0">WIZARD</span>}
-                              {!isFull && <span className="text-[9px] font-mono bg-amber-700/60 text-amber-300 px-1.5 py-0.5 rounded flex-shrink-0">DEMO</span>}
-                            </div>
-                            <p className="text-[11px] text-gray-500 leading-snug">{model.question}</p>
-                          </div>
-                        </div>
-                      </button>
-                    )
-                  })}
+        {/* ── Step 1: Industry Picker ── */}
+        {step === 1 && (
+          <>
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-gray-100 mb-2">¿En qué industria operas?</h1>
+              <p className="text-gray-400 text-sm">Los modelos se adaptan a tu industria con variables y benchmarks específicos.</p>
+            </div>
+
+            {SELECTOR_CATEGORIES.map(cat => (
+              <div key={cat} className="mb-8">
+                <div className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-3">{cat}</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  {SELECTOR_INDUSTRIES.filter(i => i.category === cat).map(ind => (
+                    <button
+                      key={ind.id}
+                      onClick={() => handleIndustry(ind)}
+                      className="ds-card p-3 text-left hover:border-blue-700 hover:bg-blue-900/10 transition-all group"
+                    >
+                      <div className="text-2xl mb-2 leading-none">{ind.icon}</div>
+                      <div className="text-xs font-semibold text-gray-200 leading-tight mb-1">{ind.name}</div>
+                      <div className="text-[10px] text-gray-500">{ind.transaction}</div>
+                    </button>
+                  ))}
                 </div>
               </div>
-            )
-          })}
-        </div>
+            ))}
 
-        <div className="mt-8 ds-card p-4 flex items-center gap-4 bg-gray-900/30">
-          <div className="text-2xl">💡</div>
-          <div>
-            <div className="text-sm font-semibold text-gray-200 mb-0.5">¿No sabes cuál elegir?</div>
-            <p className="text-xs text-gray-400">Empieza con <span className="text-blue-400 font-semibold">D1 — User Lifecycle Markov</span>. Es el modelo más completo: integra todos los demás y produce un forecast semanal con desglose por iniciativa y costo.</p>
-          </div>
-          <button onClick={() => navigate('/markov')} className="btn-primary text-xs flex-shrink-0 ml-auto">
-            Abrir D1 Markov →
-          </button>
-        </div>
+            <button
+              onClick={() => { setIndustry(null); setStep(2) }}
+              className="text-xs text-gray-500 hover:text-gray-300 underline underline-offset-2 mt-2"
+            >
+              Saltar — ver todos los modelos sin filtro de industria
+            </button>
+          </>
+        )}
+
+        {/* ── Step 2: Model Picker ── */}
+        {step === 2 && (
+          <>
+            <div className="mb-6">
+              {industry ? (
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-2xl">{industry.icon}</span>
+                    <h1 className="text-2xl font-bold text-gray-100">Modelos para {industry.name}</h1>
+                  </div>
+                  <p className="text-gray-400 text-sm">
+                    Los modelos <span className="text-blue-400 font-semibold">recomendados</span> están diseñados para responder las preguntas clave de esta industria.
+                    La terminología se adaptará automáticamente ({industry.transaction} · {industry.supply}).
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-100 mb-1">Elige un modelo</h1>
+                  <p className="text-gray-400 text-sm">14 modelos · 3 perspectivas McKinsey.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Object.entries(TAXONOMY).map(([key, persp]) => {
+                const c = COLOR[persp.color]
+                return (
+                  <div key={key} className="ds-card overflow-hidden flex flex-col">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40">
+                      <div className={`text-xs font-mono font-bold uppercase tracking-widest mb-0.5 ${c.header}`}>{key} — {persp.label}</div>
+                      <div className="text-[11px] text-gray-500">{persp.sublabel}</div>
+                    </div>
+                    <div className="flex-1 divide-y divide-gray-800/60">
+                      {persp.models.map(model => {
+                        const isFull = model.status === 'full'
+                        const isRecommended = topModelIds.includes(model.id)
+                        return (
+                          <button
+                            key={model.id}
+                            onClick={() => handleModel(model)}
+                            className={`w-full text-left px-4 py-3 transition-colors group
+                              ${isRecommended ? 'bg-blue-950/30 hover:bg-blue-900/25' : isFull ? 'hover:bg-blue-900/20' : 'hover:bg-gray-800/40'}`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className={`mt-0.5 flex-shrink-0 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${c.badge}`}>{model.id}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                  <span className={`text-xs font-semibold leading-tight ${isFull || isRecommended ? 'text-gray-100' : 'text-gray-300'}`}>{model.name}</span>
+                                  {isFull && <span className="text-[9px] font-mono bg-blue-600 text-white px-1.5 py-0.5 rounded flex-shrink-0">WIZARD</span>}
+                                  {!isFull && <span className="text-[9px] font-mono bg-amber-700/60 text-amber-300 px-1.5 py-0.5 rounded flex-shrink-0">DEMO</span>}
+                                  {isRecommended && <span className="text-[9px] font-mono bg-emerald-800 text-emerald-300 px-1.5 py-0.5 rounded flex-shrink-0">★ REC</span>}
+                                </div>
+                                <p className="text-[11px] text-gray-500 leading-snug">{model.question}</p>
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-8 ds-card p-4 flex items-center gap-4 bg-gray-900/30">
+              <div className="text-2xl">💡</div>
+              <div>
+                <div className="text-sm font-semibold text-gray-200 mb-0.5">¿No sabes cuál elegir?</div>
+                <p className="text-xs text-gray-400">Empieza con <span className="text-blue-400 font-semibold">D1 — User Lifecycle Markov</span>. Es el modelo más completo y aplica a cualquier industria.</p>
+              </div>
+              <button
+                onClick={() => navigate(industry ? `/markov?industry=${industry.id}` : '/markov')}
+                className="btn-primary text-xs flex-shrink-0 ml-auto"
+              >
+                Abrir D1 Markov →
+              </button>
+            </div>
+          </>
+        )}
       </main>
     </div>
   )
