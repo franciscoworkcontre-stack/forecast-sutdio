@@ -1013,6 +1013,178 @@ const COLOR_STYLES = {
   purple:  { headerBg: 'bg-purple-950/30',  text: 'text-purple-400',  active: 'bg-purple-900/20 border-purple-700' },
 }
 
+// ── 20 Industries ────────────────────────────────────────────────────────────
+
+const INDUSTRIES = [
+  {
+    id: 'food_delivery', icon: '🍔', name: 'Food Delivery', category: 'marketplace',
+    demand: 'Usuarios', supply: 'Restaurantes', transaction: 'Orden',
+    models: ['D1', 'D3', 'P3'],
+    vars: { aov: 'AOV', take_rate: 'Take Rate', courier_cost: 'Costo Courier' },
+    insight: 'Tiempo de entrega <20min = +15-25% órdenes sin promo',
+    color: 'orange',
+  },
+  {
+    id: 'rideshare', icon: '🚗', name: 'Ridesharing', category: 'marketplace',
+    demand: 'Pasajeros', supply: 'Conductores', transaction: 'Viaje',
+    models: ['D3', 'S2', 'P5'],
+    vars: { aov: 'Tarifa/Viaje', take_rate: 'Comisión', courier_cost: 'Pago Conductor' },
+    insight: 'Exceso de oferta destruye eficiencia de CAC; déficit dispara precios y daña retención',
+    color: 'blue',
+  },
+  {
+    id: 'ecommerce', icon: '🛒', name: 'E-commerce', category: 'marketplace',
+    demand: 'Compradores', supply: 'Vendedores', transaction: 'Orden',
+    models: ['D1', 'D2', 'S3'],
+    vars: { aov: 'Valor Orden', take_rate: 'Comisión + Fees', courier_cost: 'Costo Fulfillment' },
+    insight: 'Vendedores de baja calidad dañan retención del comprador antes de alcanzar escala',
+    color: 'yellow',
+  },
+  {
+    id: 'quick_commerce', icon: '⚡', name: 'Quick Commerce', category: 'marketplace',
+    demand: 'Shoppers', supply: 'Nodos / Tiendas', transaction: 'Canasta',
+    models: ['D1', 'D3', 'P3'],
+    vars: { aov: 'Valor Canasta', take_rate: 'Comisión + Delivery', courier_cost: 'Costo Fulfillment' },
+    insight: 'CAC debe recuperarse en 3-5 órdenes; frecuencia > AOV como lever principal',
+    color: 'cyan',
+  },
+  {
+    id: 'super_app', icon: '📱', name: 'Super App', category: 'marketplace',
+    demand: 'Usuarios', supply: 'Proveedores multi-vertical', transaction: 'Transacción cross-servicio',
+    models: ['D3', 'D5', 'P5'],
+    vars: { aov: 'GMV Mensual/User', take_rate: 'Take Rate Blended', courier_cost: 'Costo Operacional' },
+    insight: 'Usuarios multi-servicio tienen LTV 4-5x mayor; requieren balance de unit economics cross-vertical',
+    color: 'purple',
+  },
+  {
+    id: 'beauty_wellness', icon: '💅', name: 'Beauty & Wellness', category: 'marketplace',
+    demand: 'Clientes', supply: 'Profesionales / Salones', transaction: 'Reserva / Cita',
+    models: ['S1', 'S2', 'P4'],
+    vars: { aov: 'Precio Servicio', take_rate: 'Comisión', courier_cost: 'N/A' },
+    insight: 'Retención es profesional-driven: clientes siguen al terapeuta, no a la plataforma',
+    color: 'pink',
+  },
+  {
+    id: 'saas_b2b', icon: '💼', name: 'SaaS B2B', category: 'saas',
+    demand: 'Empresas / Clientes', supply: 'Software (single-sided)', transaction: 'Suscripción',
+    models: ['D1', 'D2', 'S1'],
+    vars: { aov: 'ARPU Mensual', take_rate: 'N/A', courier_cost: 'Costo CS' },
+    insight: 'NRR >120% via upsell/expansion compensa churn; payback <12 meses es el umbral de viabilidad',
+    color: 'blue',
+  },
+  {
+    id: 'b2b_platform', icon: '🏪', name: 'B2B SaaS Platform', category: 'saas',
+    demand: 'Merchants / Sellers', supply: 'Apps / Integraciones', transaction: 'Suscripción + Comisión GMV',
+    models: ['S1', 'S2', 'P2'],
+    vars: { aov: 'Revenue/Merchant', take_rate: 'Platform Take Rate', courier_cost: 'Onboarding Cost' },
+    insight: 'Plataforma Shopify-style: NRR 110-135% via GMV growth; retención alta (85-95%) si el seller es rentable',
+    color: 'green',
+  },
+  {
+    id: 'gig_freelance', icon: '🧑‍💻', name: 'Gig / Freelance', category: 'saas',
+    demand: 'Clientes / Compradores', supply: 'Freelancers / Proveedores', transaction: 'Proyecto / Gig',
+    models: ['S1', 'S2', 'P1'],
+    vars: { aov: 'Valor Proyecto', take_rate: 'Comisión Plataforma', courier_cost: 'N/A' },
+    insight: 'Freelancers tienen bajo switching cost (25-40% churn anual); clients retienen 40-60% vía calidad de supply',
+    color: 'indigo',
+  },
+  {
+    id: 'hr_marketplace', icon: '👔', name: 'HR Tech / Empleo', category: 'saas',
+    demand: 'Candidatos', supply: 'Empleadores / Reclutadores', transaction: 'Postulación / Contratación',
+    models: ['S1', 'S2', 'P1'],
+    vars: { aov: 'Costo Publicación', take_rate: 'Suscripción Recruiter', courier_cost: 'N/A' },
+    insight: 'Retención de empleadores (75-85%) es alta por switching costs; candidatos dejan la plataforma al ser contratados',
+    color: 'slate',
+  },
+  {
+    id: 'streaming', icon: '🎬', name: 'Streaming / OTT', category: 'consumer',
+    demand: 'Suscriptores', supply: 'Contenido / Studios', transaction: 'Suscripción / Sesión',
+    models: ['D1', 'D2', 'D5'],
+    vars: { aov: 'ARPU Mensual', take_rate: 'N/A', courier_cost: 'Content Spend %' },
+    insight: 'Churn impulsado por frescura de contenido; personalización explica >80% del engagement y es el lever principal',
+    color: 'red',
+  },
+  {
+    id: 'edtech', icon: '📚', name: 'EdTech', category: 'consumer',
+    demand: 'Estudiantes', supply: 'Creadores / Cursos', transaction: 'Inscripción / Lección / Suscripción',
+    models: ['D1', 'D2', 'P4'],
+    vars: { aov: 'ARPU Mensual', take_rate: 'N/A', courier_cost: 'Costo Contenido' },
+    insight: 'D7 retention (11-13%) separa apps viables de las que no; hábito > calidad de contenido como driver de retención',
+    color: 'emerald',
+  },
+  {
+    id: 'mobile_gaming', icon: '🎮', name: 'Mobile Gaming', category: 'consumer',
+    demand: 'Jugadores', supply: 'Desarrolladores / Creadores', transaction: 'IAP / Battle Pass / Ad',
+    models: ['D1', 'D3', 'P4'],
+    vars: { aov: 'ARPPU', take_rate: 'N/A', courier_cost: 'UA Cost' },
+    insight: '98% de usuarios son gratis; D1-D7 retention es el binding constraint, no la monetización',
+    color: 'violet',
+  },
+  {
+    id: 'sports_fitness', icon: '🏋️', name: 'Fitness Tech', category: 'consumer',
+    demand: 'Miembros', supply: 'Gimnasios / Instructores', transaction: 'Reserva / Membresía',
+    models: ['D1', 'D3', 'P4'],
+    vars: { aov: 'Membresía Mensual', take_rate: 'Comisión Clases', courier_cost: 'N/A' },
+    insight: 'Miembros que van 2x/semana tienen 50% menos churn que 1x/semana; activación temprana es el KPI crítico',
+    color: 'lime',
+  },
+  {
+    id: 'fintech_lending', icon: '💳', name: 'Fintech / Lending', category: 'financial',
+    demand: 'Prestatarios', supply: 'Capital / Prestamistas', transaction: 'Préstamo / Crédito',
+    models: ['D2', 'P1', 'P5'],
+    vars: { aov: 'Monto Préstamo', take_rate: 'Margen + Originación', courier_cost: 'Default Rate' },
+    insight: 'Rentabilidad escala via repeat borrowing y expansión de línea; CAC de Nubank <$7 es outlier de categoría',
+    color: 'teal',
+  },
+  {
+    id: 'hotel_str', icon: '🏨', name: 'Hotel / Short-term Rental', category: 'marketplace',
+    demand: 'Huéspedes', supply: 'Hosts / Propiedades', transaction: 'Reserva / Estadía',
+    models: ['D2', 'S1', 'S4'],
+    vars: { aov: 'Tarifa Nocturna', take_rate: 'Comisión Booking', courier_cost: 'N/A' },
+    insight: 'Supply es el cuello de botella: churn de hosts (20%) es impulsado por regulación y carga de gestión',
+    color: 'amber',
+  },
+  {
+    id: 'pharmacy', icon: '💊', name: 'Farmacia / Health Commerce', category: 'marketplace',
+    demand: 'Pacientes', supply: 'Farmacias / Laboratorios', transaction: 'Pedido / Receta',
+    models: ['D1', 'D5', 'P3'],
+    vars: { aov: 'Valor Pedido', take_rate: 'Comisión + Delivery', courier_cost: 'Costo Entrega' },
+    insight: 'Retención alta (60-75%) por recetas crónicas; LTV se expande con adherencia y múltiples condiciones',
+    color: 'sky',
+  },
+  {
+    id: 'real_estate', icon: '🏠', name: 'Real Estate Tech', category: 'financial',
+    demand: 'Compradores / Arrendatarios', supply: 'Agentes / Brokers', transaction: 'Listado / Transacción',
+    models: ['S1', 'S2', 'P2'],
+    vars: { aov: 'Valor Transacción', take_rate: 'Split Comisión', courier_cost: 'N/A' },
+    insight: 'Top agents retienen 85-90%; buyers tienen baja repeat rate (10-20%) por baja frecuencia de compra',
+    color: 'stone',
+  },
+  {
+    id: 'telemedicine', icon: '🩺', name: 'Telemedicina', category: 'financial',
+    demand: 'Pacientes', supply: 'Médicos / Proveedores', transaction: 'Consulta / Suscripción',
+    models: ['D1', 'D5', 'P1'],
+    vars: { aov: 'ARPU Mensual', take_rate: 'Comisión Recetas', courier_cost: 'Costo Compliance' },
+    insight: 'LTV escala via expansión de condición (hair → ansiedad → peso) sin incremento proporcional de CAC',
+    color: 'cyan',
+  },
+  {
+    id: 'travel_ota', icon: '✈️', name: 'Travel / OTA', category: 'financial',
+    demand: 'Viajeros', supply: 'Hoteles / Aerolíneas', transaction: 'Reserva',
+    models: ['D2', 'P2', 'P5'],
+    vars: { aov: 'Valor Reserva', take_rate: 'Comisión OTA', courier_cost: 'N/A' },
+    insight: 'D30 retention 2.8-5% — la más baja de todas las industrias; profitabilidad depende enteramente del CAC',
+    color: 'indigo',
+  },
+]
+
+const IND_CATEGORIES = {
+  marketplace: { label: 'Marketplace & Delivery', color: 'text-orange-400' },
+  saas:        { label: 'SaaS & Plataformas B2B', color: 'text-blue-400' },
+  consumer:    { label: 'Consumer Tech', color: 'text-purple-400' },
+  financial:   { label: 'Fintech, Salud & Viajes', color: 'text-emerald-400' },
+}
+
 const TAXONOMY = {
   D: {
     label: 'Demanda', sublabel: 'El usuario como driver de órdenes', color: 'blue',
@@ -1866,6 +2038,7 @@ export default function HomePage() {
   const waterfallRef = useRef(null)
   const latamRef = useRef(null)
   const excelRef = useRef(null)
+  const industriesRef = useRef(null)
   const techRef = useRef(null)
   const ctaRef = useRef(null)
 
@@ -1874,12 +2047,13 @@ export default function HomePage() {
   const waterfallVisible = useScrollReveal(waterfallRef)
   const latamVisible = useScrollReveal(latamRef)
   const excelVisible = useScrollReveal(excelRef)
+  const industriesVisible = useScrollReveal(industriesRef)
   const techVisible = useScrollReveal(techRef)
   const ctaVisible = useScrollReveal(ctaRef)
 
   // Counters
   const c1 = useCounter(14, statsVisible)
-  const c2 = useCounter(17, statsVisible)
+  const c2 = useCounter(20, statsVisible)
   const c3 = useCounter(52, statsVisible)
   const c4 = useCounter(9, statsVisible)
 
@@ -1928,6 +2102,7 @@ export default function HomePage() {
           </div>
           <div className="hidden md:flex items-center gap-6">
             <a href="#modelos" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Modelos</a>
+            <a href="#industrias" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Industrias</a>
             <a href="#latam" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Países</a>
             <a href="#excel" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Excel Export</a>
           </div>
@@ -1947,34 +2122,33 @@ export default function HomePage() {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-800/50 text-blue-400 text-xs font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              14 modelos · 3 perspectivas · LATAM-first
+              14 modelos · 20 industrias · LATAM-first
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-50">
               Forecasting para<br />
               <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                Food Delivery
+                cualquier marketplace
               </span>
             </h1>
 
             <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-              8 modelos cuantitativos para proyectar órdenes, ROI y expansión.
-              Diseñado para equipos de Estrategia y Operaciones en LATAM.
+              14 modelos cuantitativos aplicables a 20 industrias. Desde food delivery hasta SaaS, fintech y OTAs — mismo framework, variables adaptadas.
             </p>
 
             <div className="flex flex-wrap gap-3">
               <Link to="/new" className="btn-primary px-6 py-2.5 text-sm font-semibold shadow-lg shadow-blue-900/30">
                 Crear Forecast →
               </Link>
-              <a href="#modelos" className="btn-ghost px-6 py-2.5 text-sm border border-gray-700">
-                Ver Modelos
+              <a href="#industrias" className="btn-ghost px-6 py-2.5 text-sm border border-gray-700">
+                Ver Industrias
               </a>
             </div>
 
             <div className="flex flex-wrap gap-6 pt-2 border-t border-gray-800">
               {[
-                { value: '8', label: 'Modelos' },
-                { value: '17', label: 'Países LATAM' },
+                { value: '14', label: 'Modelos' },
+                { value: '20', label: 'Industrias' },
                 { value: 'McKinsey', label: 'Excel Export' },
                 { value: '100%', label: 'offline' },
               ].map((s) => (
@@ -2020,8 +2194,8 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { count: c1, label: 'Modelos (14 en total)', suffix: '' },
-              { count: c2, label: 'Países LATAM', suffix: '' },
+              { count: c1, label: 'Modelos cuantitativos', suffix: '' },
+              { count: c2, label: 'Industrias cubiertas', suffix: '' },
               { count: c3, label: 'Semanas de horizonte', suffix: '' },
               { count: c4, label: 'Tabs Excel McKinsey', suffix: '' },
             ].map(({ count, label, suffix }) => (
@@ -2354,7 +2528,70 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 8: Technical Details ──────────────────────────────────── */}
+      {/* ── SECTION 8: Industries ─────────────────────────────────────────── */}
+      <section
+        id="industrias"
+        ref={industriesRef}
+        className={`py-20 bg-gray-950 border-t border-gray-800/60 transition-all duration-700 ${
+          industriesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-800/50 text-purple-400 text-xs font-mono mb-4">
+              14 modelos × 20 industrias
+            </div>
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">Un framework, cualquier industria</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
+              Los modelos de Markov, cohortes, funnel y supply side aplican a cualquier marketplace o plataforma. Solo cambian las variables — la lógica es la misma.
+            </p>
+          </div>
+
+          {Object.entries(IND_CATEGORIES).map(([catKey, cat]) => {
+            const catIndustries = INDUSTRIES.filter(i => i.category === catKey)
+            return (
+              <div key={catKey} className="mb-10">
+                <div className={`text-xs font-mono font-bold uppercase tracking-widest mb-3 ${cat.color}`}>
+                  {cat.label}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  {catIndustries.map(ind => (
+                    <div key={ind.id} className="ds-card p-3 hover:border-gray-600 transition-colors group">
+                      <div className="flex items-start gap-2 mb-2">
+                        <span className="text-xl leading-none">{ind.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-gray-200 leading-tight">{ind.name}</div>
+                          <div className="text-[10px] text-gray-500 mt-0.5 truncate">{ind.demand} → {ind.supply}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {ind.models.map(m => (
+                          <span key={m} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">{m}</span>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-gray-500 leading-snug line-clamp-2">{ind.insight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+
+          <div className="mt-6 ds-card p-5 bg-gradient-to-r from-blue-950/30 to-purple-950/20 border-blue-800/40">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-gray-100 mb-1">¿Tu industria no está aquí?</div>
+                <p className="text-xs text-gray-400">Los modelos son agnósticos a la industria. Si tienes usuarios, proveedores y transacciones, el framework aplica. Abre un forecast y adapta las variables a tu contexto.</p>
+              </div>
+              <Link to="/new" className="btn-primary text-xs flex-shrink-0 whitespace-nowrap">
+                Crear Forecast →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 9: Technical Details ──────────────────────────────────── */}
       <section
         ref={techRef}
         className={`py-20 transition-all duration-700 ${
@@ -2418,7 +2655,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 9: CTA Footer ─────────────────────────────────────────── */}
+      {/* ── SECTION 10: CTA Footer ─────────────────────────────────────────── */}
       <section
         ref={ctaRef}
         className={`py-24 bg-gradient-to-br from-blue-950/30 via-gray-950 to-gray-950 border-t border-gray-800 transition-all duration-700 ${
