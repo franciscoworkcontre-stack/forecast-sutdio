@@ -169,27 +169,27 @@ def run_markov_forecast(req: MarkovForecastRequest) -> MarkovForecastResult:
         gmv = total_orders_eff * req.aov
         net_revenue = gmv * req.take_rate
 
-        coupon_spend = 0.0
-        ddc_spend = 0.0
-        bxsy_spend = 0.0
+        gasto_cupon = 0.0
+        gasto_ddc = 0.0
+        gasto_bxsy = 0.0
 
         for pid in profile_ids:
             o = profile_orders_eff.get(pid, 0.0)
             c = cost_map.get(pid)
             if c is None:
                 # Default cost config
-                coupon_spend += o * 0.3 * 35.0 * 0.6
-                ddc_spend += o * 0.2 * 25.0
-                bxsy_spend += o * 0.15 * 40.0 * 0.8
+                gasto_cupon += o * 0.3 * 35.0 * 0.6
+                gasto_ddc += o * 0.2 * 25.0
+                gasto_bxsy += o * 0.15 * 40.0 * 0.8
             else:
-                coupon_spend += o * c.pct_w_coupon * c.coupon_p2c * c.coupon_redeem
-                ddc_spend += o * c.pct_w_ddc * c.ddc_p2c
-                bxsy_spend += o * c.pct_w_bxsy * c.bxsy_b2c * c.bxsy_redeem
+                gasto_cupon += o * c.pct_w_coupon * c.gasto_cupon * c.coupon_redeem
+                gasto_ddc += o * c.pct_w_ddc * c.gasto_ddc
+                gasto_bxsy += o * c.pct_w_bxsy * c.gasto_bxsy * c.bxsy_redeem
 
-        total_spend = coupon_spend + ddc_spend + bxsy_spend
-        contribution_dollar = net_revenue - total_spend
+        total_gastos = gasto_cupon + gasto_ddc + gasto_bxsy
+        contribution_dollar = net_revenue - total_gastos
         contribution_pct = contribution_dollar / net_revenue if net_revenue > 0 else 0.0
-        cost_per_order = total_spend / total_orders_eff if total_orders_eff > 0 else 0.0
+        cost_per_order = total_gastos / total_orders_eff if total_orders_eff > 0 else 0.0
 
         # Compute effective multipliers for reporting
         traffic_mults = [compute_multiplier(traffic_levers, w, p.id) for p in profiles]
@@ -204,10 +204,10 @@ def run_markov_forecast(req: MarkovForecastRequest) -> MarkovForecastResult:
             orders_incremental=round(total_incremental, 1),
             gmv=round(gmv, 2),
             net_revenue=round(net_revenue, 2),
-            coupon_spend=round(coupon_spend, 2),
-            ddc_spend=round(ddc_spend, 2),
-            bxsy_spend=round(bxsy_spend, 2),
-            total_spend=round(total_spend, 2),
+            gasto_cupon=round(gasto_cupon, 2),
+            gasto_ddc=round(gasto_ddc, 2),
+            gasto_bxsy=round(gasto_bxsy, 2),
+            total_gastos=round(total_gastos, 2),
             contribution_dollar=round(contribution_dollar, 2),
             contribution_pct=round(contribution_pct, 4),
             cost_per_order=round(cost_per_order, 2),
@@ -222,16 +222,22 @@ def run_markov_forecast(req: MarkovForecastRequest) -> MarkovForecastResult:
     total_orders = sum(r.orders_total for r in results)
     total_incremental_sum = sum(r.orders_incremental for r in results)
     total_revenue = sum(r.net_revenue for r in results)
-    total_spend_sum = sum(r.total_spend for r in results)
+    total_gastos_sum = sum(r.total_gastos for r in results)
+    total_gasto_cupon_sum = sum(r.gasto_cupon for r in results)
+    total_gasto_ddc_sum = sum(r.gasto_ddc for r in results)
+    total_gasto_bxsy_sum = sum(r.gasto_bxsy for r in results)
     total_contribution = sum(r.contribution_dollar for r in results)
     avg_contribution_pct = total_contribution / total_revenue if total_revenue > 0 else 0
-    avg_cost_per_order = total_spend_sum / total_orders if total_orders > 0 else 0
+    avg_cost_per_order = total_gastos_sum / total_orders if total_orders > 0 else 0
 
     summary = {
         "total_orders": round(total_orders, 0),
         "total_incremental": round(total_incremental_sum, 0),
         "total_revenue": round(total_revenue, 2),
-        "total_spend": round(total_spend_sum, 2),
+        "total_gastos": round(total_gastos_sum, 2),
+        "total_gasto_cupon": round(total_gasto_cupon_sum, 2),
+        "total_gasto_ddc": round(total_gasto_ddc_sum, 2),
+        "total_gasto_bxsy": round(total_gasto_bxsy_sum, 2),
         "total_contribution": round(total_contribution, 2),
         "avg_contribution_pct": round(avg_contribution_pct, 4),
         "avg_cost_per_order": round(avg_cost_per_order, 2),

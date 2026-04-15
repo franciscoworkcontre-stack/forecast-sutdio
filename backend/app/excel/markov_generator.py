@@ -146,10 +146,10 @@ def _create_exec_summary(wb: Workbook, result: MarkovForecastResult, request: Ma
         ("Órdenes/Semana (avg)",         f"{summary.get('avg_orders_per_week', 0):,.0f}",                             "órdenes/sem"),
         ("GMV Total",                    fmt_cur(summary.get('total_gmv', 0)),                                        cur),
         ("Revenue Neto",                 fmt_cur(summary.get('total_net_revenue', 0)),                                cur),
-        ("Gasto en Cupones",             fmt_cur(summary.get('total_coupon_spend', 0)),                               cur),
-        ("Gasto DDC (Free Delivery)",    fmt_cur(summary.get('total_ddc_spend', 0)),                                  cur),
-        ("Gasto BxSy",                   fmt_cur(summary.get('total_bxsy_spend', 0)),                                 cur),
-        ("Gasto Total Plataforma",       fmt_cur(summary.get('total_spend', 0)),                                      cur),
+        ("Gasto P2C — Cupones",          fmt_cur(summary.get('total_gasto_cupon', 0)),                               cur),
+        ("Gasto P2C — Free Delivery",   fmt_cur(summary.get('total_gasto_ddc', 0)),                                  cur),
+        ("Gasto B2C — Promos/Bundle",   fmt_cur(summary.get('total_gasto_bxsy', 0)),                                 cur),
+        ("Total Gastos Comerciales",     fmt_cur(summary.get('total_gastos', 0)),                                     cur),
         ("Contribution Margin $",        fmt_cur(summary.get('total_contribution_dollar', 0)),                        cur),
         ("Contribution Margin %",        f"{summary.get('avg_contribution_pct', 0) * 100:.1f}%",                     "% del revenue"),
     ]
@@ -193,7 +193,7 @@ def _create_exec_summary(wb: Workbook, result: MarkovForecastResult, request: Ma
             round(w.orders_total),
             round(w.gmv),
             round(w.net_revenue),
-            round(w.total_spend),
+            round(w.total_gastos),
             round(w.contribution_dollar),
             f"{w.contribution_pct * 100:.1f}%",
         ]
@@ -218,8 +218,8 @@ def _create_weekly_detail(wb: Workbook, result: MarkovForecastResult, request: M
     # Headers row 2
     headers = [
         "Semana", "Órdenes Base", "Órd. Incremental", "Órd. Total", "WoW%",
-        "GMV", "Revenue Neto", "Cupones", "DDC", "BxSy",
-        "Gasto Total", "CM$", "CM%", "Costo/Orden", "Traffic Mult", "Conv Mult",
+        "GMV", "Revenue Neto", "Gasto P2C Cupones", "Gasto P2C DDC", "Gasto B2C BxSy",
+        "Total Gastos", "CM$", "CM%", "Costo/Orden", "Traffic Mult", "Conv Mult",
     ]
     ws.row_dimensions[2].height = 18
     for col, hdr in enumerate(headers, start=1):
@@ -249,10 +249,10 @@ def _create_weekly_detail(wb: Workbook, result: MarkovForecastResult, request: M
             (wow,                         FMT_PCT,    None),
             (w.gmv,                       "#,##0.00", None),
             (w.net_revenue,               "#,##0.00", None),
-            (w.coupon_spend,              "#,##0.00", None),
-            (w.ddc_spend,                 "#,##0.00", None),
-            (w.bxsy_spend,                "#,##0.00", None),
-            (w.total_spend,               "#,##0.00", None),
+            (w.gasto_cupon,               "#,##0.00", None),
+            (w.gasto_ddc,                 "#,##0.00", None),
+            (w.gasto_bxsy,                "#,##0.00", None),
+            (w.total_gastos,              "#,##0.00", None),
             (w.contribution_dollar,       "#,##0.00", None),
             (w.contribution_pct,          FMT_PCT,    None),
             (w.cost_per_order,            "#,##0.00", None),
@@ -302,10 +302,10 @@ def _create_weekly_detail(wb: Workbook, result: MarkovForecastResult, request: M
         (5,  None,                                        "@"),   # WoW% N/A for total
         (6,  sum(w.gmv for w in weeks),                  "#,##0.00"),
         (7,  sum(w.net_revenue for w in weeks),          "#,##0.00"),
-        (8,  sum(w.coupon_spend for w in weeks),         "#,##0.00"),
-        (9,  sum(w.ddc_spend for w in weeks),            "#,##0.00"),
-        (10, sum(w.bxsy_spend for w in weeks),           "#,##0.00"),
-        (11, sum(w.total_spend for w in weeks),          "#,##0.00"),
+        (8,  sum(w.gasto_cupon for w in weeks),          "#,##0.00"),
+        (9,  sum(w.gasto_ddc for w in weeks),            "#,##0.00"),
+        (10, sum(w.gasto_bxsy for w in weeks),           "#,##0.00"),
+        (11, sum(w.total_gastos for w in weeks),         "#,##0.00"),
         (12, sum(w.contribution_dollar for w in weeks),  "#,##0.00"),
         (13, sum(w.contribution_pct for w in weeks) / len(weeks) if weeks else 0, FMT_PCT),
         (14, sum(w.cost_per_order for w in weeks) / len(weeks) if weeks else 0, "#,##0.00"),

@@ -64,12 +64,12 @@ class AcquisitionConfig(BaseModel):
 class ProfileCostConfig(BaseModel):
     profile_id: str
     pct_w_coupon: float = Field(ge=0, le=1, default=0.3)
-    coupon_p2c: float = Field(ge=0, default=35.0)
+    gasto_cupon: float = Field(ge=0, default=35.0)   # Gasto P2C: costo por cupón redimido
     coupon_redeem: float = Field(ge=0, le=1, default=0.6)
     pct_w_ddc: float = Field(ge=0, le=1, default=0.2)
-    ddc_p2c: float = Field(ge=0, default=25.0)
+    gasto_ddc: float = Field(ge=0, default=25.0)      # Gasto P2C: costo por orden con free delivery
     pct_w_bxsy: float = Field(ge=0, le=1, default=0.15)
-    bxsy_b2c: float = Field(ge=0, default=40.0)
+    gasto_bxsy: float = Field(ge=0, default=40.0)     # Gasto B2C: subsidio por orden BxSy/bundle
     bxsy_redeem: float = Field(ge=0, le=1, default=0.8)
 
 
@@ -101,10 +101,10 @@ class WeeklyMarkovResult(BaseModel):
     orders_incremental: float
     gmv: float
     net_revenue: float
-    coupon_spend: float
-    ddc_spend: float
-    bxsy_spend: float
-    total_spend: float
+    gasto_cupon: float    # Gasto P2C en cupones
+    gasto_ddc: float      # Gasto P2C en free delivery
+    gasto_bxsy: float     # Gasto B2C en promos/bundle
+    total_gastos: float   # Total gastos comerciales
     contribution_dollar: float
     contribution_pct: float
     cost_per_order: float

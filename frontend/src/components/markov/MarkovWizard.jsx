@@ -55,12 +55,12 @@ const DEFAULT_LEVERS = [
 ]
 
 const DEFAULT_COSTS = {
-  A: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
-  B: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
-  C: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
-  D: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
-  E: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
-  F: { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 },
+  A: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
+  B: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
+  C: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
+  D: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
+  E: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
+  F: { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 },
 }
 
 // ── Step 0: Assumptions Pack ─────────────────────────────────────────────────
@@ -709,7 +709,7 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
   const profiles = config.profiles
   const costs = config.costs
 
-  const COST_DEFAULTS = { pct_w_coupon: 0.30, coupon_p2c: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, ddc_p2c: 25, pct_w_bxsy: 0.15, bxsy_b2c: 40, bxsy_redeem: 0.80 }
+  const COST_DEFAULTS = { pct_w_coupon: 0.30, gasto_cupon: 35, coupon_redeem: 0.60, pct_w_ddc: 0.20, gasto_ddc: 25, pct_w_bxsy: 0.15, gasto_bxsy: 40, bxsy_redeem: 0.80 }
 
   const update = (profileId, field, val) => {
     setConfig(prev => ({
@@ -729,34 +729,34 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
   }, [profiles])
 
   const COST_COLS = [
-    { key: 'pct_w_coupon', label: '% w/Cupón', tooltip: 'Qué % de los usuarios de este perfil redime cupones' },
-    { key: 'coupon_p2c', label: 'Costo Cupón', tooltip: `Costo por cupón redimido (${config.currency})` },
-    { key: 'coupon_redeem', label: 'Redención Cupón', tooltip: 'De los que tienen cupón, qué % lo usa' },
-    { key: 'pct_w_ddc', label: '% w/DDC', tooltip: 'Qué % de usuarios de este perfil usa el Free Delivery Club' },
-    { key: 'ddc_p2c', label: 'Costo DDC', tooltip: `Costo por orden con free delivery (${config.currency})` },
-    { key: 'pct_w_bxsy', label: '% w/BxSy', tooltip: 'Qué % de usuarios aprovecha las promos 2x1 o bundle' },
-    { key: 'bxsy_b2c', label: 'Costo BxSy', tooltip: `Costo del subsidio BxSy por orden (${config.currency})` },
-    { key: 'bxsy_redeem', label: 'Redención BxSy' },
+    { key: 'pct_w_coupon', label: '% usuarios', tooltip: 'Qué % de los usuarios de este perfil redime cupones' },
+    { key: 'gasto_cupon',  label: 'Gasto/cupón', tooltip: `Gasto P2C por cupón redimido (${config.currency})` },
+    { key: 'coupon_redeem', label: '% redención', tooltip: 'De los que tienen cupón, qué % lo usa' },
+    { key: 'pct_w_ddc',   label: '% usuarios', tooltip: 'Qué % de usuarios de este perfil usa el Free Delivery Club' },
+    { key: 'gasto_ddc',   label: 'Gasto/orden', tooltip: `Gasto P2C por orden con free delivery (${config.currency})` },
+    { key: 'pct_w_bxsy',  label: '% usuarios', tooltip: 'Qué % de usuarios aprovecha las promos 2x1 o bundle' },
+    { key: 'gasto_bxsy',  label: 'Gasto/orden', tooltip: `Gasto B2C por orden con promo BxSy/bundle (${config.currency})` },
+    { key: 'bxsy_redeem', label: '% redención', tooltip: 'De los que tienen la promo activa, qué % la usa' },
   ]
 
   return (
     <div className="space-y-6">
       <div className="ds-card p-4 bg-amber-950/20 border-amber-900/50">
         <p className="text-xs text-amber-300">
-          Esta pantalla define cuánto cuesta cada tipo de promo por perfil. El modelo usa estos valores para calcular el <strong>Contribution Margin = Net Revenue − Total Spend</strong>. Ajusta los porcentajes según tu mix de promos.
+          Esta pantalla define los <strong>gastos comerciales</strong> por perfil. <strong>Gastos P2C</strong> (Plataforma→Consumidor): cupones y free delivery, financiados por la plataforma. <strong>Gastos B2C</strong> (Negocio→Consumidor): promos tipo BxSy o bundle, financiadas por la plataforma o el restaurante. El modelo calcula <strong>CM = Net Revenue − Total Gastos</strong>.
         </p>
       </div>
 
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Costos de Promos por Perfil</div>
+        <div className="ds-section-header">Gastos Comerciales por Perfil</div>
         <div className="overflow-x-auto p-2">
           <table className="text-xs font-mono">
             <thead>
               <tr>
                 <th className="text-left px-2 py-1 w-20 text-gray-400">Perfil</th>
-                <th colSpan={3} className="text-center py-1 text-gray-500 border-b border-gray-800 uppercase tracking-wider">Cupón</th>
-                <th colSpan={2} className="text-center py-1 text-gray-500 border-b border-gray-800 uppercase tracking-wider">DDC</th>
-                <th colSpan={3} className="text-center py-1 text-gray-500 border-b border-gray-800 uppercase tracking-wider">BxSy</th>
+                <th colSpan={3} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto P2C — Cupón</th>
+                <th colSpan={2} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto P2C — Free Delivery</th>
+                <th colSpan={3} className="text-center py-1 text-amber-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto B2C — Promo/Bundle</th>
               </tr>
               <tr className="border-b border-gray-800">
                 <th className="px-2 py-1" />
@@ -850,9 +850,9 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
   const pylData = weeks.map(w => ({
     w: `S${w.week}`,
     net_revenue: Math.round(w.net_revenue),
-    coupon: Math.round(w.coupon_spend),
-    ddc: Math.round(w.ddc_spend),
-    bxsy: Math.round(w.bxsy_spend),
+    coupon: Math.round(w.gasto_cupon),
+    ddc: Math.round(w.gasto_ddc),
+    bxsy: Math.round(w.gasto_bxsy),
     contribution: Math.round(w.contribution_dollar),
   }))
 
@@ -876,7 +876,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
           { label: 'Total Órdenes', value: Math.round(summary.total_orders).toLocaleString('es-MX'), color: 'text-gray-100' },
           { label: 'Incrementales', value: Math.round(summary.total_incremental).toLocaleString('es-MX'), color: 'text-blue-400' },
           { label: 'Revenue Neto', value: `${config.currency} ${Math.round(summary.total_revenue).toLocaleString('es-MX')}`, color: 'text-gray-100' },
-          { label: 'Total Spend', value: `${config.currency} ${Math.round(summary.total_spend).toLocaleString('es-MX')}`, color: 'text-red-400' },
+          { label: 'Total Gastos', value: `${config.currency} ${Math.round(summary.total_gastos).toLocaleString('es-MX')}`, color: 'text-red-400' },
           { label: 'Contribution $', value: `${config.currency} ${Math.round(summary.total_contribution).toLocaleString('es-MX')}`, color: summary.total_contribution >= 0 ? 'text-emerald-400' : 'text-red-400' },
           { label: 'Contribution %', value: `${(summary.avg_contribution_pct * 100).toFixed(1)}%`, color: summary.avg_contribution_pct >= 0.05 ? 'text-emerald-400' : 'text-amber-400' },
           { label: 'Cost/Order', value: `${config.currency} ${summary.avg_cost_per_order.toFixed(1)}`, color: 'text-gray-300' },
@@ -935,7 +935,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
                     <th>Incremental</th>
                     <th>GMV</th>
                     <th>Net Revenue</th>
-                    <th>Total Spend</th>
+                    <th>Total Gastos</th>
                     <th>Contribution $</th>
                     <th>Contribution %</th>
                     <th>Cost/Order</th>
@@ -950,7 +950,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
                       <td className="text-blue-400">+{Math.round(w.orders_incremental).toLocaleString('es-MX')}</td>
                       <td>{Math.round(w.gmv).toLocaleString('es-MX')}</td>
                       <td>{Math.round(w.net_revenue).toLocaleString('es-MX')}</td>
-                      <td className="text-red-400">{Math.round(w.total_spend).toLocaleString('es-MX')}</td>
+                      <td className="text-red-400">{Math.round(w.total_gastos).toLocaleString('es-MX')}</td>
                       <td className={w.contribution_dollar >= 0 ? 'text-emerald-400' : 'text-red-400'}>
                         {Math.round(w.contribution_dollar).toLocaleString('es-MX')}
                       </td>
@@ -1021,9 +1021,9 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading }) 
               <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
               <Legend wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="net_revenue" name="Net Revenue" stackId="rev" fill="#3b82f6" fillOpacity={0.8} isAnimationActive={false} />
-              <Bar dataKey="coupon" name="Coupon Spend" stackId="cost" fill="#f87171" fillOpacity={0.8} isAnimationActive={false} />
-              <Bar dataKey="ddc" name="DDC Spend" stackId="cost" fill="#f59e0b" fillOpacity={0.8} isAnimationActive={false} />
-              <Bar dataKey="bxsy" name="BxSy Spend" stackId="cost" fill="#ef4444" fillOpacity={0.8} isAnimationActive={false} />
+              <Bar dataKey="coupon" name="Gasto P2C Cupones" stackId="cost" fill="#f87171" fillOpacity={0.8} isAnimationActive={false} />
+              <Bar dataKey="ddc" name="Gasto P2C Free Delivery" stackId="cost" fill="#f59e0b" fillOpacity={0.8} isAnimationActive={false} />
+              <Bar dataKey="bxsy" name="Gasto B2C Promos" stackId="cost" fill="#ef4444" fillOpacity={0.8} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
