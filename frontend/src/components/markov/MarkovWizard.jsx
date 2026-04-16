@@ -119,28 +119,47 @@ function StepAssumptionsPack({ config, setConfig, onNext }) {
   }
 
   return (
-    <div>
-      <p className="text-gray-400 text-sm mb-6">
-        Elige un pack de supuestos pre-armado para tu mercado o continúa con los defaults. Puedes modificar cualquier valor en los pasos siguientes.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {packs.map(pack => (
-          <button key={pack.id} onClick={() => applyPack(pack.id)}
-            className={`ds-card p-4 text-left transition-all hover:border-blue-700 ${selected === pack.id ? 'border-blue-500 bg-blue-950/30' : ''}`}>
-            <div className="text-sm font-semibold text-gray-200 mb-1">{pack.name}</div>
-            <div className="text-xs text-gray-500">{pack.description}</div>
-            {selected === pack.id && <div className="mt-2 text-xs text-blue-400 font-mono">✓ Aplicado</div>}
-          </button>
-        ))}
-        <button onClick={onNext}
-          className="ds-card p-4 text-left hover:border-gray-600 transition-all">
-          <div className="text-sm font-semibold text-gray-400 mb-1">Usar defaults</div>
-          <div className="text-xs text-gray-600">Continuar con los valores pre-cargados sin aplicar un pack</div>
-        </button>
+    <div className="space-y-6">
+      {/* What is this step */}
+      <div className="ds-card p-4 bg-blue-950/20 border-blue-900/50">
+        <div className="flex items-start gap-3">
+          <span className="text-xl mt-0.5">🎯</span>
+          <div>
+            <div className="text-sm font-semibold text-gray-200 mb-1">¿Qué es este modelo?</div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              El modelo Markov divide a tus usuarios en <strong>estados</strong> (ej: nuevo, activo, dormido) y calcula cada semana cuántos
+              pasan de un estado a otro. Eso te da un forecast que <strong>descompone el crecimiento por iniciativa</strong>:
+              retención, reactivación, adquisición y frecuencia — cada uno con su costo y ROI separado.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <button onClick={onNext} className="btn-primary">Continuar →</button>
+      <div>
+        <div className="text-sm font-semibold text-gray-200 mb-1">Punto de partida — elige un preset de mercado</div>
+        <p className="text-xs text-gray-500 mb-4">
+          Cada preset pre-carga los parámetros de funnel, base de usuarios y matriz de transición para ese contexto.
+          Puedes ajustar cualquier valor en los pasos siguientes.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {packs.map(pack => (
+            <button key={pack.id} onClick={() => applyPack(pack.id)}
+              className={`ds-card p-4 text-left transition-all hover:border-blue-700 ${selected === pack.id ? 'border-blue-500 bg-blue-950/30' : ''}`}>
+              <div className="text-sm font-semibold text-gray-200 mb-1">{pack.name}</div>
+              <div className="text-xs text-gray-500 leading-snug">{pack.description}</div>
+              {selected === pack.id && <div className="mt-2 text-xs text-blue-400 font-mono">✓ Cargado</div>}
+            </button>
+          ))}
+          <button onClick={onNext} className="ds-card p-4 text-left hover:border-gray-600 transition-all border-dashed">
+            <div className="text-sm font-semibold text-gray-400 mb-1">Empezar desde cero</div>
+            <div className="text-xs text-gray-600">Usar los valores default sin ningún preset</div>
+          </button>
+        </div>
+      </div>
+
+      <button onClick={onNext} className="btn-primary">
+        {selected ? `Continuar con preset "${packs.find(p=>p.id===selected)?.name || selected}" →` : 'Continuar →'}
+      </button>
     </div>
   )
 }
@@ -224,24 +243,45 @@ function StepConfig({ config, setConfig, onNext, onBack, vocab = DEFAULT_VOCAB }
           <p className="text-xs text-gray-600 italic mt-2">Valor promedio por {vocab.transaction.toLowerCase()} en {config.currency}. Se usa para calcular GMV y Revenue.</p>
         </div>
         <div className="ds-card p-4">
-          <label className="ds-label block mb-2">Take Rate (%)</label>
-          <input type="number" step="0.01" min="0" max="1" value={config.take_rate}
+          <div className="flex items-center justify-between mb-2">
+            <label className="ds-label">Take Rate</label>
+            <span className="text-blue-400 font-mono font-bold text-sm">{(config.take_rate * 100).toFixed(1)}%</span>
+          </div>
+          <input type="range" min={0.05} max={0.50} step={0.005} value={config.take_rate}
             onChange={e => setConfig(p => ({ ...p, take_rate: Number(e.target.value) }))}
-            className="ds-input w-full" />
-          <p className="text-xs text-gray-600 italic mt-2">% del GMV que retiene la plataforma. Típico: 15-30%.</p>
+            className="w-full accent-blue-500" />
+          <div className="flex justify-between text-[10px] text-gray-600 mt-1 mb-2">
+            <span>5%</span><span>50%</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: 'Food Delivery LATAM', range: '18–28%', val: 0.22 },
+              { label: 'Rideshare', range: '20–25%', val: 0.22 },
+              { label: 'E-commerce', range: '10–15%', val: 0.12 },
+              { label: 'SaaS', range: '70–85%', val: 0.78 },
+            ].map(b => (
+              <button key={b.label} onClick={() => setConfig(p => ({ ...p, take_rate: b.val }))}
+                className="text-[10px] px-2 py-0.5 rounded border border-gray-700 text-gray-500 hover:border-blue-700 hover:text-blue-400 transition-all">
+                {b.label} · {b.range}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="ds-card p-4">
-        <div className="flex justify-between mb-2">
+        <div className="flex justify-between mb-1">
           <label className="ds-label">Factor de Overlap entre Levers</label>
           <span className="text-blue-400 font-mono">{(config.overlap_factor * 100).toFixed(0)}%</span>
         </div>
         <input type="range" min={0} max={0.5} step={0.01} value={config.overlap_factor}
           onChange={e => setConfig(p => ({ ...p, overlap_factor: Number(e.target.value) }))}
           className="w-full accent-blue-500" />
-        <p className="text-xs text-gray-600 italic mt-2">
-          Cuando múltiples levers están activos, sus efectos se superponen y no son perfectamente aditivos. 0% = aditivo puro. Default: 15%.
+        <p className="text-xs text-gray-500 mt-2">
+          Si activas un cupón (+12%) y free delivery (+8%) al mismo tiempo, parte del efecto se superpone — el mismo usuario hubiera ordenado de todos modos.
+          <strong className="text-gray-400"> 0% = los efectos son perfectamente aditivos</strong> (optimista).
+          <strong className="text-gray-400"> 15% (default)</strong> = reducción moderada por solapamiento.
+          <strong className="text-gray-400"> 30-50%</strong> = mercado maduro con alta saturación.
         </p>
       </div>
 
@@ -288,8 +328,36 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
 
   const allRowsValid = profiles.every((_, i) => Math.abs(rowSum(i) - 1.0) <= 0.001)
 
+  const PROFILE_GLOSSARY = [
+    { id: 'A', name: 'EFO (1ra orden)', color: 'text-blue-400',   desc: 'Usuarios que acaban de hacer su primera orden. Tasa de retención crítica: si no compran 2 veces, se pierden.' },
+    { id: 'B', name: '2da Orden',       color: 'text-purple-400', desc: 'Han completado exactamente 2 órdenes. Punto de inflexión: si llegan a 3, su probabilidad de quedarse sube drásticamente.' },
+    { id: 'C', name: 'Churneado',       color: 'text-red-400',    desc: 'Usuarios que ordenaron alguna vez pero llevan 4+ semanas sin actividad. El foco de las campañas de reactivación.' },
+    { id: 'D', name: 'Baja Frecuencia', color: 'text-amber-400',  desc: 'Activos pero piden 1-2 veces al mes. El segmento más grande en mercados maduros. Target de levers de conversión.' },
+    { id: 'E', name: 'Alta Frecuencia', color: 'text-emerald-400',desc: 'Power users: 3+ órdenes al mes. Alta retención natural. Objetivo: mantenerlos y mejorar AOV, no gastar en conversión.' },
+    { id: 'F', name: 'Inactivo',        color: 'text-gray-500',   desc: 'Más de 90 días sin abrir la app. Reactivación muy costosa. Útil para medir el "fondo" del embudo a largo plazo.' },
+  ]
+
   return (
     <div className="space-y-6">
+      {/* Profile glossary */}
+      <div className="ds-card p-4">
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Glosario de Perfiles</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {PROFILE_GLOSSARY.map(pg => {
+            const profile = profiles.find(p => p.id === pg.id)
+            return (
+              <div key={pg.id} className="flex gap-2 bg-gray-900/50 rounded-lg p-2.5">
+                <span className={`ds-badge-blue flex-shrink-0 mt-0.5 h-fit`}>{pg.id}</span>
+                <div>
+                  <div className={`text-xs font-semibold ${pg.color}`}>{profile?.name || pg.name}</div>
+                  <div className="text-[11px] text-gray-500 leading-relaxed mt-0.5">{pg.desc}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
       {/* User base section */}
       <div className="ds-card overflow-hidden">
         <div className="ds-section-header">Base de Usuarios — Semana 0</div>
@@ -365,7 +433,10 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
                 <tr>
                   <th className="text-gray-500 pb-2 pr-2 text-left w-24">De \ A →</th>
                   {profiles.map(p => (
-                    <th key={p.id} className="pb-2 px-1 text-center text-gray-400 w-16">{p.id}</th>
+                    <th key={p.id} className="pb-2 px-1 text-center w-16">
+                      <div className="text-gray-300 font-semibold">{p.id}</div>
+                      <div className="text-[9px] text-gray-600 font-normal leading-tight">{p.name.split(' ')[0]}</div>
+                    </th>
                   ))}
                   <th className="pb-2 px-2 text-center text-gray-500">Suma</th>
                 </tr>
@@ -634,6 +705,14 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
                     className="ds-input w-20 text-center text-sm" />
                   <span className="text-xs text-gray-500 font-mono">({(l.base_uplift * 100).toFixed(0)}%)</span>
                 </div>
+                {l.active && (
+                  <div className="text-[10px] text-gray-600 font-mono flex-shrink-0 hidden lg:block">
+                    semana {ramp.ramp_weeks}+ →{' '}
+                    <span className={l.lever_type === 'traffic' ? 'text-blue-400' : 'text-emerald-400'}>
+                      +{(l.base_uplift * 100).toFixed(0)}% {l.lever_type === 'traffic' ? 'tráfico' : 'conversión'}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
