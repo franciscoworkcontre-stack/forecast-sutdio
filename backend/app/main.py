@@ -335,3 +335,124 @@ async def markov_export_excel(request: MarkovForecastRequest):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ── Wizard Model Routes (D2-P5) ────────────────────────────────────────────────
+
+from .models.d2_cohort_engine import CohortRequest, run_cohort_forecast
+from .models.d3_funnel_engine import FunnelRequest, run_funnel_forecast
+from .models.d4_frequency_engine import FrequencyRequest, run_frequency_forecast
+from .models.d5_winback_engine import WinbackRequest, run_winback_forecast
+from .models.s1_onboarding_engine import OnboardingRequest, run_onboarding_forecast
+from .models.s2_portfolio_engine import PortfolioRequest, run_portfolio_forecast
+from .models.s3_engagement_engine import EngagementRequest, run_engagement_forecast
+from .models.s4_health_engine import S4HealthRequest, run_health_forecast
+from .models.p1_network_engine import NetworkRequest, run_network_forecast
+from .models.p2_incrementality_engine import IncrementalityRequest, run_incrementality_forecast
+from .models.p3_delivery_engine import DeliveryRequest, run_delivery_forecast
+from .models.p4_competitive_engine import CompetitiveRequest, run_competitive_forecast
+from .models.p5_equilibrium_engine import EquilibriumRequest, run_equilibrium_forecast
+
+
+@app.post("/api/models/d2/calculate")
+async def d2_calculate(request: CohortRequest):
+    try:
+        return run_cohort_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/d3/calculate")
+async def d3_calculate(request: FunnelRequest):
+    try:
+        return run_funnel_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/d4/calculate")
+async def d4_calculate(request: FrequencyRequest):
+    try:
+        return run_frequency_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/d5/calculate")
+async def d5_calculate(request: WinbackRequest):
+    try:
+        return run_winback_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/s1/calculate")
+async def s1_calculate(request: OnboardingRequest):
+    try:
+        return run_onboarding_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/s2/calculate")
+async def s2_calculate(request: PortfolioRequest):
+    try:
+        return run_portfolio_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/s3/calculate")
+async def s3_calculate(request: EngagementRequest):
+    try:
+        return run_engagement_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/s4/calculate")
+async def s4_calculate(request: S4HealthRequest):
+    try:
+        return run_health_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/p1/calculate")
+async def p1_calculate(request: NetworkRequest):
+    try:
+        return run_network_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/p2/calculate")
+async def p2_calculate(request: IncrementalityRequest):
+    try:
+        return run_incrementality_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/p3/calculate")
+async def p3_calculate(request: DeliveryRequest):
+    try:
+        return run_delivery_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/p4/calculate")
+async def p4_calculate(request: CompetitiveRequest):
+    try:
+        return run_competitive_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/models/p5/calculate")
+async def p5_calculate(request: EquilibriumRequest):
+    try:
+        return run_equilibrium_forecast(request)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))

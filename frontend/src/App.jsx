@@ -4,6 +4,19 @@ import Wizard from './components/Wizard'
 import HomePage from './components/HomePage'
 import ResultsDashboard from './components/ResultsDashboard'
 import MarkovWizard from './components/markov/MarkovWizard'
+import D2CohortWizard from './components/models/D2CohortWizard'
+import D3FunnelWizard from './components/models/D3FunnelWizard'
+import D4FrequencyWizard from './components/models/D4FrequencyWizard'
+import D5WinbackWizard from './components/models/D5WinbackWizard'
+import S1OnboardingWizard from './components/models/S1OnboardingWizard'
+import S2PortfolioWizard from './components/models/S2PortfolioWizard'
+import S3EngagementWizard from './components/models/S3EngagementWizard'
+import S4HealthWizard from './components/models/S4HealthWizard'
+import P1NetworkWizard from './components/models/P1NetworkWizard'
+import P2IncrementalityWizard from './components/models/P2IncrementalityWizard'
+import P3DeliveryWizard from './components/models/P3DeliveryWizard'
+import P4CompetitiveWizard from './components/models/P4CompetitiveWizard'
+import P5EquilibriumWizard from './components/models/P5EquilibriumWizard'
 import { fmtOrders, fmtPct, formatDate } from './utils/formatters'
 
 // ── Taxonomy data (mirrors HomePage) ────────────────────────────────────────
@@ -13,29 +26,29 @@ const TAXONOMY = {
     label: 'Demanda', sublabel: 'El usuario como driver de órdenes', color: 'blue',
     models: [
       { id: 'D1', name: 'User Lifecycle Markov', question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?', status: 'full', link: '/markov' },
-      { id: 'D2', name: 'Cohort Retention & LTV', question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?', status: 'demo' },
-      { id: 'D3', name: 'Funnel Conversion', question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?', status: 'demo' },
-      { id: 'D4', name: 'Frequency & Wallet Share', question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?', status: 'demo' },
-      { id: 'D5', name: 'Reactivation & Winback', question: '¿Cuántas órdenes puedo recuperar de mi base dormida?', status: 'demo' },
+      { id: 'D2', name: 'Cohort Retention & LTV', question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?', status: 'full', link: '/models/d2' },
+      { id: 'D3', name: 'Funnel Conversion', question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?', status: 'full', link: '/models/d3' },
+      { id: 'D4', name: 'Frequency & Wallet Share', question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?', status: 'full', link: '/models/d4' },
+      { id: 'D5', name: 'Reactivation & Winback', question: '¿Cuántas órdenes puedo recuperar de mi base dormida?', status: 'full', link: '/models/d5' },
     ],
   },
   S: {
     label: 'Oferta', sublabel: 'El restaurante como driver de órdenes', color: 'emerald',
     models: [
-      { id: 'S1', name: 'Restaurant Onboarding & Maturation', question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?', status: 'demo' },
-      { id: 'S2', name: 'Portfolio & Selection Effect', question: '¿Más restaurantes o mejores restaurantes?', status: 'demo' },
-      { id: 'S3', name: 'Restaurant Engagement & Performance', question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?', status: 'demo' },
-      { id: 'S4', name: 'Restaurant Health Score', question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?', status: 'demo' },
+      { id: 'S1', name: 'Restaurant Onboarding & Maturation', question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?', status: 'full', link: '/models/s1' },
+      { id: 'S2', name: 'Portfolio & Selection Effect', question: '¿Más restaurantes o mejores restaurantes?', status: 'full', link: '/models/s2' },
+      { id: 'S3', name: 'Restaurant Engagement & Performance', question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?', status: 'full', link: '/models/s3' },
+      { id: 'S4', name: 'Restaurant Health Score', question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?', status: 'full', link: '/models/s4' },
     ],
   },
   P: {
     label: 'Plataforma', sublabel: 'Efectos emergentes de la interacción oferta-demanda', color: 'purple',
     models: [
-      { id: 'P1', name: 'Network Effects & Liquidity', question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?', status: 'demo' },
-      { id: 'P2', name: 'Incrementality & Cannibalization', question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?', status: 'demo' },
-      { id: 'P3', name: 'Delivery Economics & Capacity', question: '¿En qué punto la flota se convierte en el cuello de botella de crecimiento?', status: 'demo' },
-      { id: 'P4', name: 'Competitive Dynamics', question: '¿Qué pasa con mis órdenes si entra o sale un competidor?', status: 'demo' },
-      { id: 'P5', name: 'Marketplace Equilibrium', question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?', status: 'demo' },
+      { id: 'P1', name: 'Network Effects & Liquidity', question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?', status: 'full', link: '/models/p1' },
+      { id: 'P2', name: 'Incrementality & Cannibalization', question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?', status: 'full', link: '/models/p2' },
+      { id: 'P3', name: 'Delivery Economics & Capacity', question: '¿En qué punto la flota se convierte en el cuello de botella de crecimiento?', status: 'full', link: '/models/p3' },
+      { id: 'P4', name: 'Competitive Dynamics', question: '¿Qué pasa con mis órdenes si entra o sale un competidor?', status: 'full', link: '/models/p4' },
+      { id: 'P5', name: 'Marketplace Equilibrium', question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?', status: 'full', link: '/models/p5' },
     ],
   },
 }
@@ -518,6 +531,19 @@ export default function App() {
         <Route path="/forecast/:id" element={<ForecastDetail />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/markov" element={<MarkovWizard />} />
+        <Route path="/models/d2" element={<D2CohortWizard />} />
+        <Route path="/models/d3" element={<D3FunnelWizard />} />
+        <Route path="/models/d4" element={<D4FrequencyWizard />} />
+        <Route path="/models/d5" element={<D5WinbackWizard />} />
+        <Route path="/models/s1" element={<S1OnboardingWizard />} />
+        <Route path="/models/s2" element={<S2PortfolioWizard />} />
+        <Route path="/models/s3" element={<S3EngagementWizard />} />
+        <Route path="/models/s4" element={<S4HealthWizard />} />
+        <Route path="/models/p1" element={<P1NetworkWizard />} />
+        <Route path="/models/p2" element={<P2IncrementalityWizard />} />
+        <Route path="/models/p3" element={<P3DeliveryWizard />} />
+        <Route path="/models/p4" element={<P4CompetitiveWizard />} />
+        <Route path="/models/p5" element={<P5EquilibriumWizard />} />
       </Routes>
     </BrowserRouter>
   )
