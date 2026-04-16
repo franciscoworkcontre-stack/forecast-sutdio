@@ -293,108 +293,115 @@ function StepConfig({ config, setConfig, onNext, onBack, vocab = DEFAULT_VOCAB }
   )
 }
 
+// ── Matrix derivation from business parameters ───────────────────────────────
+
+function deriveMatrix({ new_to_2nd, reactivation, retention_active, retention_power, upgrade_rate }) {
+  const churnFromNew = 1 - new_to_2nd
+  const upgradeClamp = Math.min(upgrade_rate, retention_active - 0.01)
+  const dChurn = 1 - retention_active
+  const eChurn = 1 - retention_power
+  const cToInactive = Math.min(0.05, 1 - reactivation - 0.01)
+  const cStays = Math.max(0, 1 - reactivation - cToInactive)
+
+  const m = [
+    [0, new_to_2nd, churnFromNew * 0.80, 0, 0, churnFromNew * 0.20],
+    [0, 0, 0.10, 0.60, 0.30, 0],
+    [reactivation * 0.30, 0, cStays, reactivation * 0.70, 0, cToInactive],
+    [0, 0, dChurn * 0.75, retention_active - upgradeClamp, upgradeClamp, dChurn * 0.25],
+    [0, 0, eChurn * 0.20, eChurn * 0.75, retention_power, eChurn * 0.05],
+    [0, 0, 0.05, 0, 0, 0.95],
+  ]
+  return m.map(row => {
+    const s = row.reduce((a, b) => a + b, 0)
+    return s > 0 ? row.map(v => parseFloat((v / s).toFixed(4))) : row
+  })
+}
+
+const DEFAULT_BPARAMS = { new_to_2nd: 0.70, reactivation: 0.05, retention_active: 0.65, retention_power: 0.75, upgrade_rate: 0.15 }
+
 // ── Step 2: User Base & Transition Matrix ────────────────────────────────────
 
 function StepUserMatrix({ config, setConfig, onNext, onBack }) {
   const profiles = config.profiles
   const matrix = config.transition_matrix
+  const [bparams, setBparams] = useState(config.business_params || DEFAULT_BPARAMS)
+  const [showMatrix, setShowMatrix] = useState(false)
+
+  const updateBParam = (key, val) => {
+    const next = { ...bparams, [key]: val }
+    setBparams(next)
+    setConfig(p => ({ ...p, business_params: next, transition_matrix: deriveMatrix(next) }))
+  }
+
+  useEffect(() => {
+    setConfig(p => ({ ...p, business_params: bparams, transition_matrix: deriveMatrix(bparams) }))
+  }, [])
 
   const updateCell = (i, j, val) => {
     const newMatrix = matrix.map(row => [...row])
     newMatrix[i][j] = Math.max(0, Math.min(1, Number(val) || 0))
     setConfig(p => ({ ...p, transition_matrix: newMatrix }))
   }
-
   const rowSum = (i) => (matrix[i] || []).reduce((a, b) => a + b, 0)
-
-  const PRESETS = {
-    conservative: [
-      [0.00, 0.70, 0.10, 0.15, 0.05, 0.00],
-      [0.00, 0.00, 0.10, 0.60, 0.30, 0.00],
-      [0.05, 0.00, 0.60, 0.25, 0.05, 0.05],
-      [0.00, 0.00, 0.15, 0.65, 0.15, 0.05],
-      [0.00, 0.00, 0.05, 0.15, 0.75, 0.05],
-      [0.00, 0.00, 0.10, 0.05, 0.00, 0.85],
-    ],
-    aggressive: [
-      [0.00, 0.80, 0.05, 0.12, 0.03, 0.00],
-      [0.00, 0.00, 0.05, 0.50, 0.45, 0.00],
-      [0.08, 0.00, 0.50, 0.30, 0.10, 0.02],
-      [0.00, 0.00, 0.08, 0.60, 0.30, 0.02],
-      [0.00, 0.00, 0.02, 0.10, 0.86, 0.02],
-      [0.00, 0.00, 0.05, 0.03, 0.00, 0.92],
-    ],
-  }
-
   const allRowsValid = profiles.every((_, i) => Math.abs(rowSum(i) - 1.0) <= 0.001)
 
-  const PROFILE_GLOSSARY = [
-    { id: 'A', name: 'EFO (1ra orden)', color: 'text-blue-400',   desc: 'Usuarios que acaban de hacer su primera orden. Tasa de retención crítica: si no compran 2 veces, se pierden.' },
-    { id: 'B', name: '2da Orden',       color: 'text-purple-400', desc: 'Han completado exactamente 2 órdenes. Punto de inflexión: si llegan a 3, su probabilidad de quedarse sube drásticamente.' },
-    { id: 'C', name: 'Churneado',       color: 'text-red-400',    desc: 'Usuarios que ordenaron alguna vez pero llevan 4+ semanas sin actividad. El foco de las campañas de reactivación.' },
-    { id: 'D', name: 'Baja Frecuencia', color: 'text-amber-400',  desc: 'Activos pero piden 1-2 veces al mes. El segmento más grande en mercados maduros. Target de levers de conversión.' },
-    { id: 'E', name: 'Alta Frecuencia', color: 'text-emerald-400',desc: 'Power users: 3+ órdenes al mes. Alta retención natural. Objetivo: mantenerlos y mejorar AOV, no gastar en conversión.' },
-    { id: 'F', name: 'Inactivo',        color: 'text-gray-500',   desc: 'Más de 90 días sin abrir la app. Reactivación muy costosa. Útil para medir el "fondo" del embudo a largo plazo.' },
+  const PROFILE_META = [
+    { id: 'A', color: 'text-blue-400',    shortDesc: 'Primera orden — momento crítico' },
+    { id: 'B', color: 'text-purple-400',  shortDesc: '2da orden — punto de inflexión' },
+    { id: 'C', color: 'text-red-400',     shortDesc: '4+ semanas sin actividad' },
+    { id: 'D', color: 'text-amber-400',   shortDesc: '1-2 órdenes/mes — segmento masivo' },
+    { id: 'E', color: 'text-emerald-400', shortDesc: '3+ órdenes/mes — power users' },
+    { id: 'F', color: 'text-gray-500',    shortDesc: '+90 días sin abrir app' },
+  ]
+
+  const SLIDERS = [
+    { key: 'new_to_2nd',         label: '¿Cuántos usuarios nuevos hacen una 2da orden?',                          min: 0.20, max: 0.95, step: 0.01,  fmt: v => `${(v*100).toFixed(0)}%`, hint: 'LATAM maduro: 60-75%. Mercado emergente: 45-60%.', tag: 'A → B', tagColor: 'text-blue-400' },
+    { key: 'retention_active',   label: '¿Qué % de usuarios de baja frecuencia se mantienen activos cada semana?', min: 0.30, max: 0.92, step: 0.01,  fmt: v => `${(v*100).toFixed(0)}%`, hint: 'Tu segmento más grande (D). Típico: 60-70%.', tag: 'D → D', tagColor: 'text-amber-400' },
+    { key: 'retention_power',    label: '¿Qué % de tus power users se mantienen activos cada semana?',             min: 0.50, max: 0.97, step: 0.01,  fmt: v => `${(v*100).toFixed(0)}%`, hint: 'Núcleo de alta frecuencia (E). Bueno: 75-90%.', tag: 'E → E', tagColor: 'text-emerald-400' },
+    { key: 'reactivation',       label: '¿Qué % de usuarios churneados vuelven espontáneamente cada semana?',      min: 0.01, max: 0.20, step: 0.005, fmt: v => `${(v*100).toFixed(1)}%`, hint: 'Sin campañas: 2-6%. Con winback activo: 8-15%.', tag: 'C → D', tagColor: 'text-red-400' },
+    { key: 'upgrade_rate',       label: '¿Qué % de usuarios de baja frecuencia suben a alta frecuencia cada semana?', min: 0.01, max: 0.28, step: 0.005, fmt: v => `${(v*100).toFixed(1)}%`, hint: 'Upgrade orgánico D→E. Con levers de conversión activos sube. Base: 10-20%.', tag: 'D → E', tagColor: 'text-purple-400' },
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Profile glossary */}
-      <div className="ds-card p-4">
-        <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Glosario de Perfiles</div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {PROFILE_GLOSSARY.map(pg => {
-            const profile = profiles.find(p => p.id === pg.id)
-            return (
-              <div key={pg.id} className="flex gap-2 bg-gray-900/50 rounded-lg p-2.5">
-                <span className={`ds-badge-blue flex-shrink-0 mt-0.5 h-fit`}>{pg.id}</span>
-                <div>
-                  <div className={`text-xs font-semibold ${pg.color}`}>{profile?.name || pg.name}</div>
-                  <div className="text-[11px] text-gray-500 leading-relaxed mt-0.5">{pg.desc}</div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* User base section */}
+    <div className="space-y-6 max-w-3xl">
+      {/* User base */}
       <div className="ds-card overflow-hidden">
         <div className="ds-section-header">Base de Usuarios — Semana 0</div>
         <div className="p-4">
-          <p className="text-xs text-gray-500 mb-4">
-            Ingresa cuántos usuarios hay en cada perfil al inicio del forecast. Estos datos deben venir de tu herramienta de analytics o SQL.
-          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-4">
+            {PROFILE_META.map(pm => {
+              const profile = profiles.find(p => p.id === pm.id)
+              return (
+                <div key={pm.id} className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-1.5">
+                  <span className="ds-badge-blue text-[10px] flex-shrink-0">{pm.id}</span>
+                  <div className="min-w-0">
+                    <div className={`text-[11px] font-semibold truncate ${pm.color}`}>{profile?.name || pm.id}</div>
+                    <div className="text-[10px] text-gray-600 leading-tight">{pm.shortDesc}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 uppercase border-b border-gray-800">
-                <th className="text-left pb-2 pr-4 font-medium">ID</th>
-                <th className="text-left pb-2 pr-4 font-medium">Nombre del Perfil</th>
-                <th className="text-right pb-2 font-medium">Usuarios en Week 0</th>
+                <th className="text-left pb-2 pr-4 font-medium">Segmento</th>
+                <th className="text-left pb-2 pr-4 font-medium">Nombre</th>
+                <th className="text-right pb-2 font-medium">Usuarios — Sem. 0</th>
               </tr>
             </thead>
             <tbody>
               {profiles.map((p, i) => (
                 <tr key={p.id} className="border-b border-gray-800/50">
-                  <td className="py-2 pr-4">
-                    <span className="ds-badge-blue">{p.id}</span>
-                  </td>
+                  <td className="py-2 pr-4"><span className="ds-badge-blue">{p.id}</span></td>
                   <td className="py-2 pr-4">
                     <input type="text" value={p.name}
-                      onChange={e => {
-                        const np = [...profiles]
-                        np[i] = { ...np[i], name: e.target.value }
-                        setConfig(prev => ({ ...prev, profiles: np }))
-                      }}
+                      onChange={e => { const np = [...profiles]; np[i] = { ...np[i], name: e.target.value }; setConfig(prev => ({ ...prev, profiles: np })) }}
                       className="bg-transparent border-b border-gray-700 text-gray-200 text-sm focus:outline-none focus:border-blue-500 w-full" />
                   </td>
                   <td className="py-2 text-right">
                     <input type="number" value={p.initial_users}
-                      onChange={e => {
-                        const np = [...profiles]
-                        np[i] = { ...np[i], initial_users: Number(e.target.value) }
-                        setConfig(prev => ({ ...prev, profiles: np }))
-                      }}
+                      onChange={e => { const np = [...profiles]; np[i] = { ...np[i], initial_users: Number(e.target.value) }; setConfig(prev => ({ ...prev, profiles: np })) }}
                       className="ds-input w-36 text-right" />
                   </td>
                 </tr>
@@ -412,92 +419,97 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
         </div>
       </div>
 
-      {/* Transition matrix section */}
+      {/* Business question sliders */}
       <div className="ds-card overflow-hidden">
         <div className="ds-section-header flex items-center justify-between">
-          <span>Transition Matrix (Cadena de Markov)</span>
-          <div className="flex gap-2">
-            <button onClick={() => setConfig(p => ({ ...p, transition_matrix: PRESETS.conservative }))}
-              className="text-xs btn-ghost py-0.5">Conservadora</button>
-            <button onClick={() => setConfig(p => ({ ...p, transition_matrix: PRESETS.aggressive }))}
-              className="text-xs btn-ghost py-0.5">Agresiva</button>
-          </div>
+          <span>Comportamiento de Usuarios — 5 preguntas clave</span>
+          <button onClick={() => setShowMatrix(v => !v)}
+            className="text-[10px] font-mono text-gray-500 hover:text-gray-300 border border-gray-700 rounded px-2 py-0.5 transition-colors">
+            {showMatrix ? 'Ocultar matriz' : 'Ver matriz derivada'}
+          </button>
         </div>
-        <div className="p-4">
-          <p className="text-xs text-gray-500 mb-4">
-            Cada celda [i,j] = probabilidad de que un usuario del perfil <strong>i</strong> (fila) pase al perfil <strong>j</strong> (columna) cada semana. <strong>Cada fila debe sumar exactamente 1.0.</strong>
-          </p>
-          <div className="overflow-x-auto">
-            <table className="text-xs font-mono">
-              <thead>
-                <tr>
-                  <th className="text-gray-500 pb-2 pr-2 text-left w-24">De \ A →</th>
-                  {profiles.map(p => (
-                    <th key={p.id} className="pb-2 px-1 text-center w-16">
-                      <div className="text-gray-300 font-semibold">{p.id}</div>
-                      <div className="text-[9px] text-gray-600 font-normal leading-tight">{p.name.split(' ')[0]}</div>
-                    </th>
-                  ))}
-                  <th className="pb-2 px-2 text-center text-gray-500">Suma</th>
-                </tr>
-              </thead>
-              <tbody>
-                {profiles.map((fromP, i) => {
-                  const sum = rowSum(i)
-                  const valid = Math.abs(sum - 1.0) <= 0.001
-                  return (
-                    <tr key={fromP.id}>
-                      <td className="pr-2 py-1">
-                        <span className="ds-badge-blue mr-1">{fromP.id}</span>
-                      </td>
-                      {profiles.map((toP, j) => {
-                        const val = matrix[i]?.[j] ?? 0
-                        return (
-                          <td key={toP.id} className="px-1 py-1">
-                            <input
-                              type="number" step="0.01" min="0" max="1"
-                              value={val}
-                              onChange={e => updateCell(i, j, e.target.value)}
-                              className="w-14 text-center text-xs rounded border focus:outline-none focus:border-blue-500 py-1"
-                              style={{
-                                background: val > 0 ? `rgba(59,130,246,${Math.min(val * 1.5, 0.5)})` : '#1f2937',
-                                borderColor: val > 0 ? `rgba(59,130,246,${val + 0.2})` : '#374151',
-                                color: val > 0.4 ? '#fff' : '#9ca3af',
-                              }}
-                            />
-                          </td>
-                        )
-                      })}
-                      <td className="px-2 py-1 text-center">
-                        <span className={`ds-badge ${valid ? 'ds-badge-green' : 'ds-badge-red'}`}>
-                          {sum.toFixed(3)}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div className="p-4 space-y-5">
+          {SLIDERS.map(s => (
+            <div key={s.key}>
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label className="text-xs text-gray-300 font-medium leading-snug pr-4 flex-1">{s.label}</label>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-[10px] font-mono ${s.tagColor} bg-gray-900 px-1.5 py-0.5 rounded`}>{s.tag}</span>
+                  <span className={`font-mono font-bold text-sm ${s.tagColor}`}>{s.fmt(bparams[s.key])}</span>
+                </div>
+              </div>
+              <input type="range" min={s.min} max={s.max} step={s.step} value={bparams[s.key]}
+                onChange={e => updateBParam(s.key, Number(e.target.value))}
+                className="w-full accent-blue-500" />
+              <p className="text-[10px] text-gray-600 mt-1">{s.hint}</p>
+            </div>
+          ))}
+        </div>
 
-          {!allRowsValid && (
-            <div className="mt-3 px-3 py-2 bg-red-950/30 border border-red-800 rounded text-xs text-red-400">
-              ⚠ Algunas filas no suman 1.0. El modelo requiere que cada fila de la matriz sume exactamente 1.0 (±0.001).
+        {showMatrix && (
+          <div className="border-t border-gray-800 p-4 bg-gray-950/50">
+            <p className="text-[10px] text-gray-500 mb-3">
+              Matriz generada a partir de las preguntas anteriores. Cada fila debe sumar 1.0. Puedes editar celdas manualmente si necesitas ajuste fino.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="text-xs font-mono">
+                <thead>
+                  <tr>
+                    <th className="text-gray-500 pb-2 pr-2 text-left w-24">De \ A →</th>
+                    {profiles.map(p => (
+                      <th key={p.id} className="pb-2 px-1 text-center w-14">
+                        <div className="text-gray-300 font-semibold">{p.id}</div>
+                        <div className="text-[9px] text-gray-600 font-normal">{p.name.split(' ')[0]}</div>
+                      </th>
+                    ))}
+                    <th className="pb-2 px-2 text-center text-gray-500">Σ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profiles.map((fromP, i) => {
+                    const sum = rowSum(i)
+                    const valid = Math.abs(sum - 1.0) <= 0.001
+                    return (
+                      <tr key={fromP.id}>
+                        <td className="pr-2 py-1"><span className="ds-badge-blue">{fromP.id}</span></td>
+                        {profiles.map((toP, j) => {
+                          const val = matrix[i]?.[j] ?? 0
+                          return (
+                            <td key={toP.id} className="px-1 py-1">
+                              <input type="number" step="0.01" min="0" max="1" value={val}
+                                onChange={e => updateCell(i, j, e.target.value)}
+                                className="w-12 text-center text-xs rounded border focus:outline-none focus:border-blue-500 py-0.5"
+                                style={{
+                                  background: val > 0 ? `rgba(59,130,246,${Math.min(val * 1.5, 0.5)})` : '#1f2937',
+                                  borderColor: val > 0 ? `rgba(59,130,246,${val + 0.2})` : '#374151',
+                                  color: val > 0.4 ? '#fff' : '#9ca3af',
+                                }} />
+                            </td>
+                          )
+                        })}
+                        <td className="px-2 py-1 text-center">
+                          <span className={`ds-badge text-[9px] ${valid ? 'ds-badge-green' : 'ds-badge-red'}`}>
+                            {sum.toFixed(3)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
-          {allRowsValid && (
-            <div className="mt-3 px-3 py-2 bg-emerald-950/30 border border-emerald-800 rounded text-xs text-emerald-400">
-              ✓ Matriz válida — todas las filas suman 1.0
-            </div>
-          )}
-        </div>
+            {!allRowsValid && (
+              <div className="mt-2 px-3 py-1.5 bg-red-950/30 border border-red-800 rounded text-xs text-red-400">
+                ⚠ Algunas filas no suman 1.0
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3">
         <button onClick={onBack} className="btn-secondary">← Atrás</button>
-        <button onClick={onNext} className="btn-primary" disabled={!allRowsValid}>
-          Continuar →
-        </button>
+        <button onClick={onNext} className="btn-primary" disabled={!allRowsValid}>Continuar →</button>
       </div>
     </div>
   )
@@ -936,11 +948,66 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
   )
 }
 
+// ── Auto-narrative generator ─────────────────────────────────────────────────
+
+function generateNarrative(result, config, vocab) {
+  const { weeks, summary } = result
+  const activeLevers = config.levers.filter(l => l.active)
+  const incrPct = summary.total_orders > 0 ? summary.total_incremental / summary.total_orders : 0
+  const breakevenWeek = weeks.find(w => w.contribution_dollar > 0)
+  const half = Math.floor(weeks.length / 2)
+  const avgCMFirst = weeks.slice(0, half).reduce((a, w) => a + w.contribution_pct, 0) / (half || 1)
+  const avgCMSecond = weeks.slice(half).reduce((a, w) => a + w.contribution_pct, 0) / (weeks.length - half || 1)
+  const findings = []
+
+  if (activeLevers.length === 0) {
+    findings.push(`Forecast de crecimiento orgánico puro — sin levers activos.`)
+  } else if (incrPct > 0.05) {
+    findings.push(`Los ${activeLevers.length} lever${activeLevers.length > 1 ? 's' : ''} activo${activeLevers.length > 1 ? 's' : ''} explican el <strong>${(incrPct * 100).toFixed(0)}%</strong> de las ${vocab.transactions.toLowerCase()} proyectadas.`)
+  }
+
+  if (breakevenWeek) {
+    findings.push(`El contribution margin se vuelve positivo en la <strong>semana ${breakevenWeek.week}</strong>.`)
+  } else if (summary.total_contribution < 0) {
+    findings.push(`⚠ El contribution margin es negativo en todo el horizonte — revisar gastos comerciales.`)
+  }
+
+  if (avgCMSecond > avgCMFirst + 0.02) {
+    findings.push(`El margen mejora de <strong>${(avgCMFirst * 100).toFixed(1)}%</strong> (primera mitad) a <strong>${(avgCMSecond * 100).toFixed(1)}%</strong> (segunda mitad) — leverage operativo positivo.`)
+  } else if (avgCMFirst > 0 && Math.abs(avgCMSecond - avgCMFirst) <= 0.02) {
+    findings.push(`Margen estable en torno al <strong>${((avgCMFirst + avgCMSecond) / 2 * 100).toFixed(1)}%</strong> durante todo el periodo.`)
+  }
+
+  return findings
+}
+
 // ── Step 6: Results ──────────────────────────────────────────────────────────
+
+const SCENARIO_MULTIPLIERS = { bear: 0.60, base: 1.0, bull: 1.40 }
 
 function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vocab = DEFAULT_VOCAB }) {
   const [tab, setTab] = useState('weekly')
+  const [scenario, setScenario] = useState('base')
   const { weeks, summary } = result
+
+  // Apply scenario multiplier to incremental component
+  const scMult = SCENARIO_MULTIPLIERS[scenario]
+  const scSummary = scenario === 'base' ? summary : {
+    ...summary,
+    total_orders: Math.round(summary.total_orders - summary.total_incremental + summary.total_incremental * scMult),
+    total_incremental: Math.round(summary.total_incremental * scMult),
+    total_revenue: Math.round(summary.total_revenue * (1 - (1 - scMult) * (summary.total_incremental / Math.max(summary.total_orders, 1)))),
+    total_gastos: Math.round(summary.total_gastos * (1 + (scMult - 1) * 0.6)),
+    total_contribution: Math.round(summary.total_contribution + (scMult - 1) * summary.total_incremental * config.aov * config.take_rate * 0.7),
+    avg_contribution_pct: null, // computed below
+    avg_cost_per_order: null,
+  }
+  if (scenario !== 'base') {
+    scSummary.avg_contribution_pct = scSummary.total_revenue > 0 ? (scSummary.total_contribution / (scSummary.total_revenue || 1)) : 0
+    scSummary.avg_cost_per_order = scSummary.total_orders > 0 ? scSummary.total_gastos / scSummary.total_orders : 0
+  }
+
+  const narrative = generateNarrative(result, config, vocab)
 
   const profileColors = { A: '#3b82f6', B: '#8b5cf6', C: '#f87171', D: '#f59e0b', E: '#34d399', F: '#6b7280' }
 
@@ -980,27 +1047,67 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
       {/* Action bar */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs text-gray-500 font-mono">Resultados del Forecast Markov v3</span>
-        <button
-          onClick={onExportExcel}
-          disabled={excelLoading}
-          className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50"
-        >
+        <button onClick={onExportExcel} disabled={excelLoading}
+          className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50">
           {excelLoading ? '⏳ Generando...' : '📥 Exportar Excel McKinsey →'}
         </button>
+      </div>
+
+      {/* Auto-narrative key findings */}
+      {narrative.length > 0 && (
+        <div className="ds-card p-4 mb-4 border-blue-900/50 bg-blue-950/10">
+          <div className="flex items-start gap-3">
+            <span className="text-lg flex-shrink-0 mt-0.5">💡</span>
+            <div>
+              <div className="text-xs font-semibold text-gray-300 mb-1.5">Hallazgos clave</div>
+              <ul className="space-y-1">
+                {narrative.map((f, i) => (
+                  <li key={i} className="text-xs text-gray-400 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: `• ${f}` }} />
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scenario switcher */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-xs text-gray-500 font-mono flex-shrink-0">Escenario:</span>
+        <div className="flex gap-1">
+          {[
+            { id: 'bear', label: 'Conservador', sub: '−40% incremental', color: 'border-red-800 text-red-400 bg-red-950/20' },
+            { id: 'base', label: 'Base',         sub: 'tus inputs',        color: 'border-blue-700 text-blue-300 bg-blue-950/30' },
+            { id: 'bull', label: 'Optimista',    sub: '+40% incremental', color: 'border-emerald-800 text-emerald-400 bg-emerald-950/20' },
+          ].map(sc => (
+            <button key={sc.id} onClick={() => setScenario(sc.id)}
+              className={`px-3 py-1.5 rounded border text-xs transition-all ${
+                scenario === sc.id ? sc.color : 'border-gray-800 text-gray-600 hover:text-gray-400 hover:border-gray-700'
+              }`}>
+              <div className="font-semibold">{sc.label}</div>
+              <div className="text-[10px] opacity-70">{sc.sub}</div>
+            </button>
+          ))}
+        </div>
+        {scenario !== 'base' && (
+          <span className="text-[10px] text-gray-600 italic">
+            Los escenarios ajustan el componente incremental. La base orgánica no cambia.
+          </span>
+        )}
       </div>
 
       {/* KPI summary bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
         {[
-          { label: `Total ${vocab.transactions}`, value: Math.round(summary.total_orders).toLocaleString('es-MX'), color: 'text-gray-100' },
-          { label: `${vocab.transactions} Incrementales`, value: Math.round(summary.total_incremental).toLocaleString('es-MX'), color: 'text-blue-400' },
-          { label: 'Revenue Neto', value: `${config.currency} ${Math.round(summary.total_revenue).toLocaleString('es-MX')}`, color: 'text-gray-100' },
-          { label: 'Total Gastos', value: `${config.currency} ${Math.round(summary.total_gastos).toLocaleString('es-MX')}`, color: 'text-red-400' },
-          { label: 'Contribution $', value: `${config.currency} ${Math.round(summary.total_contribution).toLocaleString('es-MX')}`, color: summary.total_contribution >= 0 ? 'text-emerald-400' : 'text-red-400' },
-          { label: 'Contribution %', value: `${(summary.avg_contribution_pct * 100).toFixed(1)}%`, color: summary.avg_contribution_pct >= 0.05 ? 'text-emerald-400' : 'text-amber-400' },
-          { label: `Costo/${vocab.transaction}`, value: `${config.currency} ${summary.avg_cost_per_order.toFixed(1)}`, color: 'text-gray-300' },
+          { label: `Total ${vocab.transactions}`, value: Math.round(scSummary.total_orders).toLocaleString('es-MX'), color: 'text-gray-100' },
+          { label: `${vocab.transactions} Incrementales`, value: Math.round(scSummary.total_incremental).toLocaleString('es-MX'), color: scenario === 'bear' ? 'text-red-400' : scenario === 'bull' ? 'text-emerald-400' : 'text-blue-400' },
+          { label: 'Revenue Neto', value: `${config.currency} ${Math.round(scSummary.total_revenue).toLocaleString('es-MX')}`, color: 'text-gray-100' },
+          { label: 'Total Gastos', value: `${config.currency} ${Math.round(scSummary.total_gastos).toLocaleString('es-MX')}`, color: 'text-red-400' },
+          { label: 'Contribution $', value: `${config.currency} ${Math.round(scSummary.total_contribution).toLocaleString('es-MX')}`, color: scSummary.total_contribution >= 0 ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Contribution %', value: `${((scSummary.avg_contribution_pct ?? summary.avg_contribution_pct) * 100).toFixed(1)}%`, color: (scSummary.avg_contribution_pct ?? summary.avg_contribution_pct) >= 0.05 ? 'text-emerald-400' : 'text-amber-400' },
+          { label: `Costo/${vocab.transaction}`, value: `${config.currency} ${(scSummary.avg_cost_per_order ?? summary.avg_cost_per_order).toFixed(1)}`, color: 'text-gray-300' },
         ].map(k => (
-          <div key={k.label} className="metric-card">
+          <div key={k.label} className={`metric-card transition-all ${scenario !== 'base' ? 'ring-1 ring-inset ring-gray-800' : ''}`}>
             <div className="metric-label">{k.label}</div>
             <div className={`metric-value text-base ${k.color}`}>{k.value}</div>
           </div>
