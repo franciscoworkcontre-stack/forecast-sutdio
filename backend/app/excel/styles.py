@@ -1,4 +1,4 @@
-"""Excel styling constants for McKinsey-style reports."""
+"""Excel styling constants for MBB-grade reports."""
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, GradientFill
 from openpyxl.utils import get_column_letter
 

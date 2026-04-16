@@ -91,6 +91,7 @@ class MarkovForecastRequest(BaseModel):
     costs: List[ProfileCostConfig] = []  # one per profile, defaults if empty
     use_seasonality: bool = False
     seasonality_country: Optional[str] = None
+    palette: str = 'navy'
 
 
 # Output schemas

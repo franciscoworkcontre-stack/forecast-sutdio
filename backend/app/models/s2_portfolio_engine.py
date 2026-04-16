@@ -39,6 +39,7 @@ class PortfolioRequest(BaseModel):
             PortfolioChange(tier_name="Premium", delta_count=50, delta_conversion=0.01),
         ]
     )
+    palette: str = 'navy'
 
 
 def _compute_orders(traffic: float, tiers: List[RestaurantTier]) -> float:

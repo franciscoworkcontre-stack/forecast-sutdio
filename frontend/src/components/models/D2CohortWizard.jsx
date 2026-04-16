@@ -7,20 +7,33 @@ import GenericWizard from './GenericWizard'
 
 // ── Inputs ────────────────────────────────────────────────────────────────────
 
-function D2Inputs({ config, setConfig, vocab }) {
+function D2Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const channels = config.channels || []
+  const displayChannels = mode === 'base' ? channels.slice(0, 2) : channels
 
   const updateChannel = (i, field, value) => {
     const next = channels.map((ch, idx) => idx === i ? { ...ch, [field]: value } : ch)
     setConfig(p => ({ ...p, channels: next }))
   }
 
+  const addChannel = () => {
+    setConfig(p => ({ ...p, channels: [...(p.channels || []), { name: `Canal ${(p.channels||[]).length + 1}`, cac: 120, weekly_new_users: 300 }] }))
+  }
+
+  const retentionCurve = config.retention_curve || [1.0, 0.65, 0.55, 0.45, 0.38, 0.32, 0.27, 0.23]
+  const baseRetentionKeys = [0, 3, 11]  // W1, W4, W12 indices (capped to length)
+  const retentionDisplay = mode === 'base'
+    ? retentionCurve.slice(0, 3)   // W1, W4 (W12 not in default 8-point, so show first 3)
+    : retentionCurve
+
   return (
     <div className="space-y-4">
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Canales de Adquisición</div>
+        <div className="ds-section-header">
+          Canales de Adquisición {mode === 'base' ? '(2 principales)' : '(hasta 5)'}
+        </div>
         <div className="p-4 space-y-3">
-          {channels.map((ch, i) => (
+          {displayChannels.map((ch, i) => (
             <div key={i} className="grid grid-cols-3 gap-3 items-end">
               <div>
                 <label className="ds-label block mb-1">Canal</label>
@@ -42,6 +55,32 @@ function D2Inputs({ config, setConfig, vocab }) {
               </div>
             </div>
           ))}
+          {mode === 'advanced' && channels.length < 5 && (
+            <button onClick={addChannel} className="text-xs text-blue-400 hover:text-blue-300 border border-dashed border-blue-900 rounded px-3 py-1.5 w-full transition-colors">
+              + Agregar canal
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="ds-card p-4">
+        <label className="ds-label block mb-2">
+          Curva de Retención {mode === 'base' ? '(puntos W1, W4, W8)' : '(8 puntos semanales)'}
+        </label>
+        <p className="text-xs text-gray-500 mb-3">Fracción de usuarios retenidos en cada semana post-adquisición</p>
+        <div className={`grid gap-1 ${mode === 'base' ? 'grid-cols-3' : 'grid-cols-8'}`}>
+          {(mode === 'base' ? retentionCurve.slice(0, 3) : retentionCurve).map((v, i) => (
+            <div key={i} className="text-center">
+              <input type="number" min={0} max={1} step={0.01} value={v}
+                onChange={e => {
+                  const next = [...retentionCurve]
+                  next[i] = Math.min(1, Math.max(0, Number(e.target.value)))
+                  setConfig(p => ({ ...p, retention_curve: next }))
+                }}
+                className="ds-input w-full text-center text-xs px-1 py-1" />
+              <div className="text-[10px] text-gray-600 mt-1">S{i + 1}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -58,24 +97,21 @@ function D2Inputs({ config, setConfig, vocab }) {
         </div>
       </div>
 
-      <div className="ds-card p-4">
-        <label className="ds-label block mb-2">Curva de Retención (semanas 1-8)</label>
-        <p className="text-xs text-gray-500 mb-3">Fracción de usuarios retenidos en cada semana post-adquisición</p>
-        <div className="grid grid-cols-8 gap-1">
-          {(config.retention_curve || []).map((v, i) => (
-            <div key={i} className="text-center">
-              <input type="number" min={0} max={1} step={0.01} value={v}
-                onChange={e => {
-                  const next = [...(config.retention_curve || [])]
-                  next[i] = Math.min(1, Math.max(0, Number(e.target.value)))
-                  setConfig(p => ({ ...p, retention_curve: next }))
-                }}
-                className="ds-input w-full text-center text-xs px-1 py-1" />
-              <div className="text-[10px] text-gray-600 mt-1">S{i + 1}</div>
-            </div>
-          ))}
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-2">Avanzado — Tasa de descuento</div>
+          <div className="flex justify-between mb-2">
+            <label className="ds-label">Tasa de descuento anual (LTV NPV)</label>
+            <span className="text-amber-400 font-mono font-bold">{((config.discount_rate || 0.1) * 100).toFixed(0)}%</span>
+          </div>
+          <input type="range" min={0.05} max={0.30} step={0.01} value={config.discount_rate || 0.1}
+            onChange={e => setConfig(p => ({ ...p, discount_rate: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+          <div className="flex justify-between text-xs text-gray-600 mt-1">
+            <span>5%</span><span>30%</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

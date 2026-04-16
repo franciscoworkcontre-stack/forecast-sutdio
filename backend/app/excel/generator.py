@@ -1,5 +1,5 @@
 """
-McKinsey-style Excel report generator using openpyxl.
+MBB-grade Excel report generator using openpyxl.
 
 Tabs generated:
   1. Cover
@@ -32,7 +32,7 @@ from .styles import (
 
 
 def generate_excel(result: ForecastResult, request: ForecastRequest) -> bytes:
-    """Generate a McKinsey-style Excel workbook and return as bytes."""
+    """Generate an MBB-grade Excel workbook and return as bytes."""
     wb = Workbook()
     wb.remove(wb.active)  # remove default sheet
 

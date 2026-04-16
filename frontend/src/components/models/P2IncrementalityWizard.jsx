@@ -4,12 +4,19 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function P2Inputs({ config, setConfig, vocab }) {
+function P2Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const campaigns = config.campaigns || []
+  const displayCampaigns = mode === 'base' ? campaigns.slice(0, 2) : campaigns
 
   const updateCamp = (i, field, value) => {
     const next = campaigns.map((c, idx) => idx === i ? { ...c, [field]: value } : c)
     setConfig(p => ({ ...p, campaigns: next }))
+  }
+
+  const addCampaign = () => {
+    if (campaigns.length < 4) {
+      setConfig(p => ({ ...p, campaigns: [...(p.campaigns||[]), { name: `Campaña ${(p.campaigns||[]).length+1}`, promoted_orders_per_week: 2000, organic_baseline: 500, uplift_observed_pct: 0.30, discount_per_order: 40, cost_per_order: 0 }] }))
+    }
   }
 
   return (
@@ -21,9 +28,11 @@ function P2Inputs({ config, setConfig, vocab }) {
       </div>
 
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Campañas Promocionales</div>
+        <div className="ds-section-header">
+          Campañas Promocionales {mode === 'base' ? '(2 campañas)' : '(hasta 4 campañas)'}
+        </div>
         <div className="p-4 space-y-5">
-          {campaigns.map((camp, i) => (
+          {displayCampaigns.map((camp, i) => (
             <div key={i} className="ds-card p-3 bg-gray-950/50">
               <input value={camp.name} onChange={e => updateCamp(i, 'name', e.target.value)}
                 className="ds-input w-full mb-3 font-semibold text-xs" />
@@ -58,8 +67,39 @@ function P2Inputs({ config, setConfig, vocab }) {
               </div>
             </div>
           ))}
+          {mode === 'advanced' && campaigns.length < 4 && (
+            <button onClick={addCampaign} className="text-xs text-blue-400 hover:text-blue-300 border border-dashed border-blue-900 rounded px-3 py-1.5 w-full transition-colors">
+              + Agregar campaña
+            </button>
+          )}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Desplazamiento temporal de demanda</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Forward displacement % (demanda adelantada)</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.forward_displacement_pct || 0.10) * 100)}%</span>
+              </div>
+              <input type="range" min={0} max={0.40} step={0.05} value={config.forward_displacement_pct || 0.10}
+                onChange={e => setConfig(p => ({ ...p, forward_displacement_pct: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Canibalización cross-campaign</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.cross_cannibalization_pct || 0.05) * 100)}%</span>
+              </div>
+              <input type="range" min={0} max={0.30} step={0.05} value={config.cross_cannibalization_pct || 0.05}
+                onChange={e => setConfig(p => ({ ...p, cross_cannibalization_pct: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

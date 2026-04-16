@@ -322,10 +322,10 @@ from .excel.markov_generator import generate_markov_excel
 
 @app.post("/api/markov/export-excel")
 async def markov_export_excel(request: MarkovForecastRequest):
-    """Run Markov forecast and return McKinsey-style Excel."""
+    """Run Markov forecast and return MBB-grade Excel."""
     try:
         result = run_markov_forecast(request)
-        excel_bytes = generate_markov_excel(result, request)
+        excel_bytes = generate_markov_excel(result, request, palette_key=request.palette)
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -456,3 +456,164 @@ async def p5_calculate(request: EquilibriumRequest):
         return run_equilibrium_forecast(request)
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+# ── Excel Export Routes (D2–P5) ────────────────────────────────────────────────
+
+from .excel.generic_generator import generate_generic_excel
+
+
+@app.post("/api/models/d2/export-excel")
+async def d2_export_excel(request: CohortRequest):
+    try:
+        result = run_cohort_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "D2 — Cohort Retention & LTV", "D2", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"d2_cohort_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/d3/export-excel")
+async def d3_export_excel(request: FunnelRequest):
+    try:
+        result = run_funnel_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "D3 — Funnel Conversion", "D3", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"d3_funnel_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/d4/export-excel")
+async def d4_export_excel(request: FrequencyRequest):
+    try:
+        result = run_frequency_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "D4 — Frequency & Wallet Share", "D4", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"d4_frequency_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/d5/export-excel")
+async def d5_export_excel(request: WinbackRequest):
+    try:
+        result = run_winback_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "D5 — Reactivation & Winback", "D5", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"d5_winback_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/s1/export-excel")
+async def s1_export_excel(request: OnboardingRequest):
+    try:
+        result = run_onboarding_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "S1 — Restaurant Onboarding & Maturation", "S1", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"s1_onboarding_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/s2/export-excel")
+async def s2_export_excel(request: PortfolioRequest):
+    try:
+        result = run_portfolio_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "S2 — Portfolio & Selection Effect", "S2", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"s2_portfolio_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/s3/export-excel")
+async def s3_export_excel(request: EngagementRequest):
+    try:
+        result = run_engagement_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "S3 — Restaurant Engagement & Performance", "S3", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"s3_engagement_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/s4/export-excel")
+async def s4_export_excel(request: S4HealthRequest):
+    try:
+        result = run_health_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "S4 — Restaurant Health Score", "S4", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"s4_health_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/p1/export-excel")
+async def p1_export_excel(request: NetworkRequest):
+    try:
+        result = run_network_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "P1 — Network Effects & Liquidity", "P1", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"p1_network_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/p2/export-excel")
+async def p2_export_excel(request: IncrementalityRequest):
+    try:
+        result = run_incrementality_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "P2 — Incrementality & Cannibalization", "P2", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"p2_incrementality_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/p3/export-excel")
+async def p3_export_excel(request: DeliveryRequest):
+    try:
+        result = run_delivery_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "P3 — Delivery Economics & Capacity", "P3", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"p3_delivery_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/p4/export-excel")
+async def p4_export_excel(request: CompetitiveRequest):
+    try:
+        result = run_competitive_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "P4 — Competitive Dynamics", "P4", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"p4_competitive_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/models/p5/export-excel")
+async def p5_export_excel(request: EquilibriumRequest):
+    try:
+        result = run_equilibrium_forecast(request)
+        excel_bytes = generate_generic_excel(result if isinstance(result, dict) else result.model_dump(), "P5 — Marketplace Equilibrium", "P5", request.model_dump(), request.palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    filename = f"p5_equilibrium_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})

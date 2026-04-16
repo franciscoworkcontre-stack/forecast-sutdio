@@ -166,6 +166,15 @@ function StepAssumptionsPack({ config, setConfig, onNext }) {
 
 // ── Step 1: Config General ───────────────────────────────────────────────────
 
+const MARKOV_PALETTE_OPTIONS = [
+  { id: 'navy',   name: 'Azul Marino',        primary: '#1e3a5f', accent: '#f59e0b' },
+  { id: 'green',  name: 'Verde Institucional', primary: '#14532d', accent: '#6366f1' },
+  { id: 'red',    name: 'Rojo Corporativo',    primary: '#7f1d1d', accent: '#0ea5e9' },
+  { id: 'purple', name: 'Morado Ejecutivo',    primary: '#4c1d95', accent: '#10b981' },
+  { id: 'slate',  name: 'Gris Carbon',         primary: '#1f2937', accent: '#3b82f6' },
+  { id: 'orange', name: 'Naranja Ejecutivo',   primary: '#7c2d12', accent: '#3b82f6' },
+]
+
 function StepConfig({ config, setConfig, onNext, onBack, vocab = DEFAULT_VOCAB }) {
   const COUNTRIES = [
     { code: 'MX', name: '🇲🇽 México', aov: 290, currency: 'MXN' },
@@ -201,6 +210,31 @@ function StepConfig({ config, setConfig, onNext, onBack, vocab = DEFAULT_VOCAB }
         <input type="text" value={config.name}
           onChange={e => setConfig(p => ({ ...p, name: e.target.value }))}
           className="ds-input w-full" placeholder="Mi Forecast Q1 2025" />
+      </div>
+
+      <div className="ds-card p-4">
+        <label className="ds-label block mb-2">Paleta de color del Excel</label>
+        <div className="flex gap-3 flex-wrap">
+          {MARKOV_PALETTE_OPTIONS.map(p => (
+            <button
+              key={p.id}
+              title={p.name}
+              onClick={() => setConfig(prev => ({ ...prev, palette: p.id }))}
+              className="flex flex-col items-center gap-1 group"
+            >
+              <div
+                className="w-8 h-8 rounded-full transition-all"
+                style={{
+                  backgroundColor: p.primary,
+                  boxShadow: config.palette === p.id
+                    ? `0 0 0 2px #fff, 0 0 0 4px ${p.primary}`
+                    : '0 0 0 1px rgba(255,255,255,0.15)',
+                }}
+              />
+              <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">{p.name.split(' ')[0]}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="ds-card p-4">
@@ -325,7 +359,7 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
   const profiles = config.profiles
   const matrix = config.transition_matrix
   const [bparams, setBparams] = useState(config.business_params || DEFAULT_BPARAMS)
-  const [showMatrix, setShowMatrix] = useState(false)
+  const [mode, setMode] = useState('base')
 
   const updateBParam = (key, val) => {
     const next = { ...bparams, [key]: val }
@@ -423,10 +457,18 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
       <div className="ds-card overflow-hidden">
         <div className="ds-section-header flex items-center justify-between">
           <span>Comportamiento de Usuarios — 5 preguntas clave</span>
-          <button onClick={() => setShowMatrix(v => !v)}
-            className="text-[10px] font-mono text-gray-500 hover:text-gray-300 border border-gray-700 rounded px-2 py-0.5 transition-colors">
-            {showMatrix ? 'Ocultar matriz' : 'Ver matriz derivada'}
-          </button>
+          <div className="flex items-center gap-2">
+            {['base', 'advanced'].map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
+                  mode === m
+                    ? m === 'base' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-amber-600 border-amber-500 text-white'
+                    : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                }`}>
+                {m === 'base' ? 'Base' : 'Avanzado'}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="p-4 space-y-5">
           {SLIDERS.map(s => (
@@ -446,7 +488,7 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
           ))}
         </div>
 
-        {showMatrix && (
+        {mode === 'advanced' && (
           <div className="border-t border-gray-800 p-4 bg-gray-950/50">
             <p className="text-[10px] text-gray-500 mb-3">
               Matriz generada a partir de las preguntas anteriores. Cada fila debe sumar 1.0. Puedes editar celdas manualmente si necesitas ajuste fino.
@@ -520,6 +562,7 @@ function StepUserMatrix({ config, setConfig, onNext, onBack }) {
 function StepFunnel({ config, setConfig, onNext, onBack }) {
   const profiles = config.profiles
   const funnel = config.funnel_params
+  const [mode, setMode] = useState('base')
 
   const update = (profileId, field, val) => {
     setConfig(prev => ({
@@ -540,7 +583,7 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
     p2_topic: 'P2 = Purchase rate. De los que entran a un restaurante, qué % completa la orden. Típico: 10-25%.',
   }
 
-  const COLUMNS = [
+  const ALL_COLUMNS = [
     { key: 'open_app_pct', label: '% Open App', group: 'Actividad', tooltip: TOOLTIPS.open_app_pct },
     { key: 'avg_weekly_sessions', label: 'Sessions/sem', group: 'Actividad', tooltip: TOOLTIPS.avg_weekly_sessions },
     { key: 'see_vertical_pct', label: '% Ver Vertical', group: 'Actividad', tooltip: TOOLTIPS.see_vertical_pct },
@@ -555,35 +598,72 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
     { key: 'p2_filter', label: 'P2 Filter', group: 'Conversión' },
   ]
 
+  const BASE_COLUMNS = [
+    { key: 'open_app_pct', label: '% Open App', group: 'Actividad', tooltip: TOOLTIPS.open_app_pct },
+    { key: 'avg_weekly_sessions', label: 'Sessions/sem', group: 'Actividad', tooltip: TOOLTIPS.avg_weekly_sessions },
+    { key: 'p1_topic', label: 'P1 (click)', group: 'Conversión', tooltip: TOOLTIPS.p1_topic },
+    { key: 'p2_topic', label: 'P2 (compra)', group: 'Conversión', tooltip: TOOLTIPS.p2_topic },
+  ]
+
+  const COLUMNS = mode === 'base' ? BASE_COLUMNS : ALL_COLUMNS
+
   return (
     <div className="space-y-4">
       <div className="ds-card p-4 bg-blue-950/20 border-blue-900/50">
         <p className="text-xs text-blue-300">
           <strong>Cómo funciona el funnel:</strong> Usuarios → % que abren app → sesiones → % que ven la vertical → se distribuyen por entry point → P1 (click) → P2 (compra) → Órdenes.
-          Los <strong>entry shares deben sumar ~1.0 por fila</strong>. P1 y P2 son tasas entre 0 y 1.
+          {mode === 'advanced' && <> Los <strong>entry shares deben sumar ~1.0 por fila</strong>. P1 y P2 son tasas entre 0 y 1.</>}
         </p>
       </div>
 
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Parámetros del Funnel por Perfil</div>
+        <div className="ds-section-header flex items-center justify-between">
+          <span>Parámetros del Funnel por Perfil</span>
+          <div className="flex items-center gap-2">
+            {['base', 'advanced'].map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
+                  mode === m
+                    ? m === 'base' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-amber-600 border-amber-500 text-white'
+                    : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                }`}>
+                {m === 'base' ? 'Base' : 'Avanzado'}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="overflow-x-auto p-2">
           <table className="w-full text-xs font-mono">
             <thead>
-              <tr>
-                <th className="text-left px-2 py-1 w-24" />
-                <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Actividad</th>
-                <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Entry Share</th>
-                <th colSpan={6} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Conversión (P1 × P2)</th>
-              </tr>
-              <tr className="border-b border-gray-800">
-                <th className="text-left px-2 py-1 text-gray-400">Perfil</th>
-                {COLUMNS.map(c => (
-                  <th key={c.key} className="px-1 py-1 text-gray-400 text-center" title={c.tooltip || ''}>
-                    {c.label}{c.tooltip ? ' ?' : ''}
-                  </th>
-                ))}
-                <th className="px-2 py-1 text-gray-400 text-center">Ords/sem</th>
-              </tr>
+              {mode === 'advanced' ? (
+                <>
+                  <tr>
+                    <th className="text-left px-2 py-1 w-24" />
+                    <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Actividad</th>
+                    <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Entry Share</th>
+                    <th colSpan={6} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Conversión (P1 × P2)</th>
+                  </tr>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left px-2 py-1 text-gray-400">Perfil</th>
+                    {COLUMNS.map(c => (
+                      <th key={c.key} className="px-1 py-1 text-gray-400 text-center" title={c.tooltip || ''}>
+                        {c.label}{c.tooltip ? ' ?' : ''}
+                      </th>
+                    ))}
+                    <th className="px-2 py-1 text-gray-400 text-center">Ords/sem</th>
+                  </tr>
+                </>
+              ) : (
+                <tr className="border-b border-gray-800">
+                  <th className="text-left px-2 py-1 text-gray-400">Perfil</th>
+                  {COLUMNS.map(c => (
+                    <th key={c.key} className="px-1 py-1 text-gray-400 text-center" title={c.tooltip || ''}>
+                      {c.label}{c.tooltip ? ' ?' : ''}
+                    </th>
+                  ))}
+                  <th className="px-2 py-1 text-gray-400 text-center">Ords/sem</th>
+                </tr>
+              )}
             </thead>
             <tbody>
               {profiles.map(p => {
@@ -595,11 +675,14 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
                 const open = users * (fp.open_app_pct || 0)
                 const sess = open * (fp.avg_weekly_sessions || 0)
                 const sv = sess * (fp.see_vertical_pct || 0)
-                const ords = sv * (
-                  (fp.entry_topic || 0) * (fp.p1_topic || 0) * (fp.p2_topic || 0) +
-                  (fp.entry_feed || 0) * (fp.p1_feed || 0) * (fp.p2_feed || 0) +
-                  (fp.entry_filter || 0) * (fp.p1_filter || 0) * (fp.p2_filter || 0)
-                )
+                // In base mode: assume topic entry=1.0 for estimation
+                const ords = mode === 'advanced'
+                  ? sv * (
+                      (fp.entry_topic || 0) * (fp.p1_topic || 0) * (fp.p2_topic || 0) +
+                      (fp.entry_feed || 0) * (fp.p1_feed || 0) * (fp.p2_feed || 0) +
+                      (fp.entry_filter || 0) * (fp.p1_filter || 0) * (fp.p2_filter || 0)
+                    )
+                  : open * (fp.avg_weekly_sessions || 0) * (fp.p1_topic || 0) * (fp.p2_topic || 0)
 
                 return (
                   <tr key={p.id} className="border-b border-gray-800/50 hover:bg-gray-800/20">
@@ -653,6 +736,7 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
   const levers = config.levers
   const ramp = config.ramp_config
   const acq = config.acquisition
+  const [mode, setMode] = useState('base')
 
   const updateLever = (id, field, val) => {
     setConfig(prev => ({
@@ -683,7 +767,21 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
   return (
     <div className="space-y-6">
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Levers Activos</div>
+        <div className="ds-section-header flex items-center justify-between">
+          <span>Levers Activos</span>
+          <div className="flex items-center gap-2">
+            {['base', 'advanced'].map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
+                  mode === m
+                    ? m === 'base' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-amber-600 border-amber-500 text-white'
+                    : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                }`}>
+                {m === 'base' ? 'Base' : 'Avanzado'}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="p-4">
           <p className="text-xs text-gray-500 mb-4">
             Los Traffic Levers aumentan cuánta gente ve la vertical (multiplicador de visibilidad).
@@ -699,8 +797,13 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
                   <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${l.active ? 'left-5' : 'left-0.5'}`} />
                 </button>
 
-                <input value={l.name} onChange={e => updateLever(l.id, 'name', e.target.value)}
-                  className="bg-transparent text-gray-200 text-sm font-medium focus:outline-none border-b border-transparent focus:border-gray-600 flex-1" />
+                <span className="text-gray-200 text-sm font-medium flex-1">
+                  {mode === 'advanced'
+                    ? <input value={l.name} onChange={e => updateLever(l.id, 'name', e.target.value)}
+                        className="bg-transparent text-gray-200 text-sm font-medium focus:outline-none border-b border-transparent focus:border-gray-600 w-full" />
+                    : l.name
+                  }
+                </span>
 
                 <span className={`ds-badge text-[10px] flex-shrink-0 ${
                   l.lever_type === 'traffic' ? 'ds-badge-blue' :
@@ -709,15 +812,27 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
                   {l.lever_type === 'traffic' ? '↑ Tráfico' : l.lever_type === 'conversion' ? '↑ Conversión' : '↑ Ambos'}
                 </span>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs text-gray-500">Uplift:</span>
-                  <input type="number" step="0.01" min="0" max="5"
-                    value={l.base_uplift}
-                    onChange={e => updateLever(l.id, 'base_uplift', Number(e.target.value))}
-                    className="ds-input w-20 text-center text-sm" />
-                  <span className="text-xs text-gray-500 font-mono">({(l.base_uplift * 100).toFixed(0)}%)</span>
-                </div>
-                {l.active && (
+                {mode === 'advanced' ? (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs text-gray-500">Uplift:</span>
+                    <input type="number" step="0.01" min="0" max="5"
+                      value={l.base_uplift}
+                      onChange={e => updateLever(l.id, 'base_uplift', Number(e.target.value))}
+                      className="ds-input w-20 text-center text-sm" />
+                    <span className="text-xs text-gray-500 font-mono">({(l.base_uplift * 100).toFixed(0)}%)</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <input type="range" min={0} max={2} step={0.05} value={l.base_uplift}
+                      onChange={e => updateLever(l.id, 'base_uplift', Number(e.target.value))}
+                      className="w-24 accent-blue-500" />
+                    <span className={`text-sm font-mono font-bold flex-shrink-0 ${l.lever_type === 'traffic' ? 'text-blue-400' : 'text-emerald-400'}`}>
+                      +{(l.base_uplift * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                )}
+
+                {mode === 'advanced' && l.active && (
                   <div className="text-[10px] text-gray-600 font-mono flex-shrink-0 hidden lg:block">
                     semana {ramp.ramp_weeks}+ →{' '}
                     <span className={l.lever_type === 'traffic' ? 'text-blue-400' : 'text-emerald-400'}>
@@ -741,6 +856,21 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
                 <div className="text-xl font-mono font-bold text-emerald-400">{computeMultiplier(convActive).toFixed(2)}×</div>
                 <div className="text-xs text-gray-600">{convActive.length} levers activos</div>
               </div>
+            </div>
+          )}
+
+          {mode === 'advanced' && (
+            <div className="mt-4 ds-card p-3 bg-amber-950/10 border-amber-900/40">
+              <div className="flex justify-between mb-1">
+                <label className="ds-label text-amber-300">Factor de overlap entre levers</label>
+                <span className="text-amber-400 font-mono text-sm">{((config.overlap_factor || 0.3) * 100).toFixed(0)}%</span>
+              </div>
+              <input type="range" min={0} max={0.8} step={0.05} value={config.overlap_factor || 0.3}
+                onChange={e => setConfig(p => ({ ...p, overlap_factor: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+              <p className="text-[10px] text-gray-500 mt-1">
+                Cuánto se solapan los efectos de múltiples levers. 0% = aditivos puros. 80% = rendimientos fuertemente decrecientes.
+              </p>
             </div>
           )}
         </div>
@@ -1049,7 +1179,7 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
         <span className="text-xs text-gray-500 font-mono">Resultados del Forecast Markov v3</span>
         <button onClick={onExportExcel} disabled={excelLoading}
           className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50">
-          {excelLoading ? '⏳ Generando...' : '📥 Exportar Excel McKinsey →'}
+          {excelLoading ? '⏳ Generando...' : '📥 Exportar Excel MBB Consulting →'}
         </button>
       </div>
 
@@ -1324,6 +1454,7 @@ export default function MarkovWizard() {
     },
     costs: DEFAULT_COSTS,
     use_seasonality: false,
+    palette: 'navy',
   })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -1338,6 +1469,7 @@ export default function MarkovWizard() {
     take_rate: cfg.take_rate,
     currency: cfg.currency,
     overlap_factor: cfg.overlap_factor,
+    palette: cfg.palette || 'navy',
     profiles: cfg.profiles,
     transition_matrix: {
       profile_ids: cfg.profiles.map(p => p.id),

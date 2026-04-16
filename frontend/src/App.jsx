@@ -25,30 +25,30 @@ const TAXONOMY = {
   D: {
     label: 'Demanda', sublabel: 'El usuario como driver de órdenes', color: 'blue',
     models: [
-      { id: 'D1', name: 'User Lifecycle Markov', question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?', status: 'full', link: '/markov' },
-      { id: 'D2', name: 'Cohort Retention & LTV', question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?', status: 'full', link: '/models/d2' },
-      { id: 'D3', name: 'Funnel Conversion', question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?', status: 'full', link: '/models/d3' },
-      { id: 'D4', name: 'Frequency & Wallet Share', question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?', status: 'full', link: '/models/d4' },
-      { id: 'D5', name: 'Reactivation & Winback', question: '¿Cuántas órdenes puedo recuperar de mi base dormida?', status: 'full', link: '/models/d5' },
+      { id: 'D1', name: 'User Lifecycle Markov', question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?', status: 'full', link: '/markov', level: 'advanced' },
+      { id: 'D2', name: 'Cohort Retention & LTV', question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?', status: 'full', link: '/models/d2', level: 'mid' },
+      { id: 'D3', name: 'Funnel Conversion', question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?', status: 'full', link: '/models/d3', level: 'foundational' },
+      { id: 'D4', name: 'Frequency & Wallet Share', question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?', status: 'full', link: '/models/d4', level: 'foundational' },
+      { id: 'D5', name: 'Reactivation & Winback', question: '¿Cuántas órdenes puedo recuperar de mi base dormida?', status: 'full', link: '/models/d5', level: 'mid' },
     ],
   },
   S: {
     label: 'Oferta', sublabel: 'El restaurante como driver de órdenes', color: 'emerald',
     models: [
-      { id: 'S1', name: 'Restaurant Onboarding & Maturation', question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?', status: 'full', link: '/models/s1' },
-      { id: 'S2', name: 'Portfolio & Selection Effect', question: '¿Más restaurantes o mejores restaurantes?', status: 'full', link: '/models/s2' },
-      { id: 'S3', name: 'Restaurant Engagement & Performance', question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?', status: 'full', link: '/models/s3' },
-      { id: 'S4', name: 'Restaurant Health Score', question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?', status: 'full', link: '/models/s4' },
+      { id: 'S1', name: 'Restaurant Onboarding & Maturation', question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?', status: 'full', link: '/models/s1', level: 'mid' },
+      { id: 'S2', name: 'Portfolio & Selection Effect', question: '¿Más restaurantes o mejores restaurantes?', status: 'full', link: '/models/s2', level: 'mid' },
+      { id: 'S3', name: 'Restaurant Engagement & Performance', question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?', status: 'full', link: '/models/s3', level: 'foundational' },
+      { id: 'S4', name: 'Restaurant Health Score', question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?', status: 'full', link: '/models/s4', level: 'mid' },
     ],
   },
   P: {
     label: 'Plataforma', sublabel: 'Efectos emergentes de la interacción oferta-demanda', color: 'purple',
     models: [
-      { id: 'P1', name: 'Network Effects & Liquidity', question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?', status: 'full', link: '/models/p1' },
-      { id: 'P2', name: 'Incrementality & Cannibalization', question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?', status: 'full', link: '/models/p2' },
-      { id: 'P3', name: 'Delivery Economics & Capacity', question: '¿En qué punto la flota se convierte en el cuello de botella de crecimiento?', status: 'full', link: '/models/p3' },
-      { id: 'P4', name: 'Competitive Dynamics', question: '¿Qué pasa con mis órdenes si entra o sale un competidor?', status: 'full', link: '/models/p4' },
-      { id: 'P5', name: 'Marketplace Equilibrium', question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?', status: 'full', link: '/models/p5' },
+      { id: 'P1', name: 'Network Effects & Liquidity', question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?', status: 'full', link: '/models/p1', level: 'advanced' },
+      { id: 'P2', name: 'Incrementality & Cannibalization', question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?', status: 'full', link: '/models/p2', level: 'mid' },
+      { id: 'P3', name: 'Delivery Economics & Capacity', question: '¿En qué punto la flota se convierte en el cuello de botella de crecimiento?', status: 'full', link: '/models/p3', level: 'mid' },
+      { id: 'P4', name: 'Competitive Dynamics', question: '¿Qué pasa con mis órdenes si entra o sale un competidor?', status: 'full', link: '/models/p4', level: 'advanced' },
+      { id: 'P5', name: 'Marketplace Equilibrium', question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?', status: 'full', link: '/models/p5', level: 'mid' },
     ],
   },
 }
@@ -194,7 +194,7 @@ function NewForecastPage() {
               ) : (
                 <div>
                   <h1 className="text-2xl font-bold text-gray-100 mb-1">Elige un modelo</h1>
-                  <p className="text-gray-400 text-sm">14 modelos · 3 perspectivas McKinsey.</p>
+                  <p className="text-gray-400 text-sm">14 modelos · 3 perspectivas MBB Consulting.</p>
                 </div>
               )}
             </div>
@@ -227,6 +227,9 @@ function NewForecastPage() {
                                   {isFull && <span className="text-[9px] font-mono bg-blue-600 text-white px-1.5 py-0.5 rounded flex-shrink-0">WIZARD</span>}
                                   {!isFull && <span className="text-[9px] font-mono bg-amber-700/60 text-amber-300 px-1.5 py-0.5 rounded flex-shrink-0">DEMO</span>}
                                   {isRecommended && <span className="text-[9px] font-mono bg-emerald-800 text-emerald-300 px-1.5 py-0.5 rounded flex-shrink-0">★ REC</span>}
+                                  {model.level === 'foundational' && <span className="text-[9px] font-mono bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded flex-shrink-0">Base</span>}
+                                  {model.level === 'mid' && <span className="text-[9px] font-mono bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded flex-shrink-0">Mid</span>}
+                                  {model.level === 'advanced' && <span className="text-[9px] font-mono bg-amber-900/60 text-amber-300 px-1.5 py-0.5 rounded flex-shrink-0">Advanced</span>}
                                 </div>
                                 <p className="text-[11px] text-gray-500 leading-snug">{model.question}</p>
                               </div>

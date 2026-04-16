@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function S2Inputs({ config, setConfig, vocab }) {
+function S2Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const tiers = config.restaurant_tiers || []
   const changes = config.proposed_changes || []
 
@@ -96,6 +96,20 @@ function S2Inputs({ config, setConfig, vocab }) {
           ))}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Split nuevo vs. existente</div>
+          <div className="flex justify-between mb-1">
+            <label className="ds-label">% {vocab.supply}s nuevos en portafolio</label>
+            <span className="text-amber-400 font-mono text-sm">{Math.round((config.new_supply_pct || 0.20) * 100)}%</span>
+          </div>
+          <input type="range" min={0.05} max={0.60} step={0.05} value={config.new_supply_pct || 0.20}
+            onChange={e => setConfig(p => ({ ...p, new_supply_pct: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+          <p className="text-xs text-gray-500 mt-2">Los {vocab.supply}s nuevos tienen menor conversión inicial hasta que maduran.</p>
+        </div>
+      )}
     </div>
   )
 }

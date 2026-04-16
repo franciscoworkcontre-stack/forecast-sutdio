@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function P3Inputs({ config, setConfig, vocab }) {
+function P3Inputs({ config, setConfig, vocab, mode = 'base' }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -71,6 +71,22 @@ function P3Inputs({ config, setConfig, vocab }) {
           onChange={e => setConfig(p => ({ ...p, platform_subsidy_per_order: Number(e.target.value) }))}
           className="ds-input w-full" />
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Impacto del tiempo de entrega en conversión</div>
+          <div className="flex justify-between mb-1">
+            <label className="ds-label">Elasticidad: % {vocab.transactions} perdidas por +10min entrega</label>
+            <span className="text-amber-400 font-mono text-sm">{Math.round((config.delivery_time_elasticity || 0.12) * 100)}%</span>
+          </div>
+          <input type="range" min={0.02} max={0.40} step={0.02} value={config.delivery_time_elasticity || 0.12}
+            onChange={e => setConfig(p => ({ ...p, delivery_time_elasticity: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+          <p className="text-xs text-gray-500 mt-2">
+            Benchmark: food delivery LATAM 10-20%, rideshare 5-15%. Cada 10 minutos adicionales reduce conversión en este %.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

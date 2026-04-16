@@ -32,6 +32,7 @@ class S4HealthRequest(BaseModel):
             RestaurantHealth(name="Noodle Box", weekly_orders=200, order_trend_pct=8, rating=4.6, days_since_menu_update=10, response_rate=0.98),
         ]
     )
+    palette: str = 'navy'
 
 
 def _compute_health_score(r: RestaurantHealth) -> float:

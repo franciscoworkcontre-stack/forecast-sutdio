@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function S3Inputs({ config, setConfig, vocab }) {
+function S3Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const rests = config.restaurants || []
   const prog = config.engagement_program || {}
 
@@ -75,6 +75,30 @@ function S3Inputs({ config, setConfig, vocab }) {
           </div>
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Levers individuales de engagement</div>
+          <div className="space-y-2">
+            {[
+              { key: 'lever_photos', label: 'Fotos de menú actualizadas', default: 0.12 },
+              { key: 'lever_menu', label: 'Completitud del menú', default: 0.08 },
+              { key: 'lever_response', label: 'Tiempo de respuesta', default: 0.10 },
+              { key: 'lever_promo', label: 'Frecuencia de promos auto-financiadas', default: 0.15 },
+              { key: 'lever_hours', label: 'Extensión de horarios', default: 0.07 },
+              { key: 'lever_ads', label: 'Participación en ads internos', default: 0.09 },
+            ].map(lever => (
+              <div key={lever.key} className="flex items-center gap-3">
+                <span className="text-xs text-gray-400 flex-1">{lever.label}</span>
+                <input type="range" min={0} max={0.30} step={0.01} value={config[lever.key] ?? lever.default}
+                  onChange={e => setConfig(p => ({ ...p, [lever.key]: Number(e.target.value) }))}
+                  className="w-28 accent-amber-500" />
+                <span className="text-amber-400 font-mono text-xs w-10 text-right">+{((config[lever.key] ?? lever.default) * 100).toFixed(0)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

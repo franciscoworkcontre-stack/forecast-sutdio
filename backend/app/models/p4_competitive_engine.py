@@ -36,6 +36,7 @@ class CompetitiveRequest(BaseModel):
     our_response: OurResponse = Field(
         default=OurResponse(type="match", cost_per_week=50000)
     )
+    palette: str = 'navy'
 
 
 def run_competitive_forecast(req: CompetitiveRequest) -> dict:

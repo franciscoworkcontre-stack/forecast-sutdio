@@ -55,6 +55,17 @@ const SCENARIOS = [
   { id: 'bull', label: 'Bull', multiplier: 1.4, color: 'text-emerald-400', bg: 'bg-emerald-900/30 border-emerald-800' },
 ]
 
+// ── Color palette options ─────────────────────────────────────────────────────
+
+const PALETTE_OPTIONS = [
+  { id: 'navy',   name: 'Azul Marino',        primary: '#1e3a5f', accent: '#f59e0b' },
+  { id: 'green',  name: 'Verde Institucional', primary: '#14532d', accent: '#6366f1' },
+  { id: 'red',    name: 'Rojo Corporativo',    primary: '#7f1d1d', accent: '#0ea5e9' },
+  { id: 'purple', name: 'Morado Ejecutivo',    primary: '#4c1d95', accent: '#10b981' },
+  { id: 'slate',  name: 'Gris Carbon',         primary: '#1f2937', accent: '#3b82f6' },
+  { id: 'orange', name: 'Naranja Ejecutivo',   primary: '#7c2d12', accent: '#3b82f6' },
+]
+
 // ── Shared Config Step ────────────────────────────────────────────────────────
 
 function StepConfig({ config, setConfig, vocab, modelName, description }) {
@@ -79,6 +90,31 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
       <div className="ds-card p-4 bg-blue-950/20 border-blue-900/40">
         <div className="text-xs font-semibold text-gray-200 mb-1">{modelName}</div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+      </div>
+
+      <div className="ds-card p-4">
+        <label className="ds-label block mb-2">Paleta de color del Excel</label>
+        <div className="flex gap-3 flex-wrap">
+          {PALETTE_OPTIONS.map(p => (
+            <button
+              key={p.id}
+              title={p.name}
+              onClick={() => setConfig(prev => ({ ...prev, palette: p.id }))}
+              className="flex flex-col items-center gap-1 group"
+            >
+              <div
+                className="w-8 h-8 rounded-full transition-all"
+                style={{
+                  backgroundColor: p.primary,
+                  boxShadow: config.palette === p.id
+                    ? `0 0 0 2px #fff, 0 0 0 4px ${p.primary}`
+                    : '0 0 0 1px rgba(255,255,255,0.15)',
+                }}
+              />
+              <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">{p.name.split(' ')[0]}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="ds-card p-4">
@@ -197,12 +233,15 @@ export default function GenericWizard({ modelConfig }) {
     take_rate: 0.22,
     currency: vocab.currency,
     country: vocab.country,
+    palette: 'navy',
     ...defaultConfig,
   }))
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [scenario, setScenario] = useState('base')
+  const [excelLoading, setExcelLoading] = useState(false)
+  const [mode, setMode] = useState('base')
 
   const colors = PERSPECTIVE_COLORS[perspective] || PERSPECTIVE_COLORS.D
   const scMultiplier = SCENARIOS.find(s => s.id === scenario)?.multiplier ?? 1.0
@@ -237,6 +276,33 @@ export default function GenericWizard({ modelConfig }) {
     const a = document.createElement('a')
     a.href = url; a.download = `${modelId}_forecast.json`; a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const handleExportExcel = async () => {
+    setExcelLoading(true)
+    try {
+      const exportPath = `/api/models/${modelId.toLowerCase()}/export-excel`
+      const resp = await fetch(exportPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      })
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}))
+        throw new Error(errData.detail || `Error ${resp.status}`)
+      }
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${modelId.toLowerCase()}_forecast.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert('Error exportando Excel: ' + e.message)
+    } finally {
+      setExcelLoading(false)
+    }
   }
 
   const findings = result ? generateFindings(result, modelId, vocab) : []
@@ -286,9 +352,24 @@ export default function GenericWizard({ modelConfig }) {
         {/* Step 1: Model-specific inputs */}
         {step === 1 && (
           <div>
-            <h1 className={`text-xl font-bold mb-1 ${colors.header}`}>Parámetros del Modelo</h1>
+            <div className="flex items-center mb-1">
+              <h1 className={`text-xl font-bold ${colors.header}`}>Parámetros del Modelo</h1>
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-xs text-gray-500">Modo:</span>
+                {['base', 'advanced'].map(m => (
+                  <button key={m} onClick={() => setMode(m)}
+                    className={`text-xs px-3 py-1 rounded border transition-all ${
+                      mode === m
+                        ? m === 'base' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-amber-600 border-amber-500 text-white'
+                        : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                    }`}>
+                    {m === 'base' ? 'Base' : 'Avanzado'}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-gray-500 text-sm mb-6">Ajusta los inputs específicos de {modelName}.</p>
-            <InputsComponent config={config} setConfig={setConfig} vocab={vocab} />
+            <InputsComponent config={config} setConfig={setConfig} vocab={vocab} mode={mode} />
             <div className="mt-6 flex gap-3">
               <button onClick={() => setStep(0)} className="btn-secondary">← Atrás</button>
               <button
@@ -353,6 +434,13 @@ export default function GenericWizard({ modelConfig }) {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button onClick={() => setStep(1)} className="btn-secondary text-xs">← Editar Inputs</button>
               <button onClick={handleExportJSON} className="btn-secondary text-xs">Exportar JSON</button>
+              <button
+                onClick={handleExportExcel}
+                disabled={excelLoading}
+                className="btn-primary text-xs disabled:opacity-50"
+              >
+                {excelLoading ? 'Generando...' : 'Exportar Excel →'}
+              </button>
               <Link to="/new" className="text-xs text-gray-500 hover:text-gray-300 ml-auto">
                 Nuevo Forecast →
               </Link>

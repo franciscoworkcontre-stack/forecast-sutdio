@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function P5Inputs({ config, setConfig, vocab }) {
+function P5Inputs({ config, setConfig, vocab, mode = 'base' }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -61,6 +61,29 @@ function P5Inputs({ config, setConfig, vocab }) {
           onChange={e => setConfig(p => ({ ...p, fixed_costs_per_week: Number(e.target.value) }))}
           className="ds-input w-full" />
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Sensibilidad al subsidio por orden</div>
+          <div className="flex justify-between mb-1">
+            <label className="ds-label">Subsidio adicional por {vocab.transaction} ({config.currency})</label>
+            <span className="text-amber-400 font-mono text-sm">{config.currency} {config.subsidy_sensitivity || 0}</span>
+          </div>
+          <input type="range" min={0} max={100} step={5} value={config.subsidy_sensitivity || 0}
+            onChange={e => setConfig(p => ({ ...p, subsidy_sensitivity: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+          <p className="text-xs text-gray-500 mt-2">
+            Simula el impacto de aumentar o reducir el subsidio por {vocab.transaction} en el breakeven y contribución.
+          </p>
+          <div className="flex justify-between mb-1 mt-3">
+            <label className="ds-label">Churn rate de usuarios (%/semana)</label>
+            <span className="text-amber-400 font-mono text-sm">{config.churn_rate_pct || 5}%</span>
+          </div>
+          <input type="range" min={0.5} max={20} step={0.5} value={config.churn_rate_pct || 5}
+            onChange={e => setConfig(p => ({ ...p, churn_rate_pct: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+        </div>
+      )}
     </div>
   )
 }

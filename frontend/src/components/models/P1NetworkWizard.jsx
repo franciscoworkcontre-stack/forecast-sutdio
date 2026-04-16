@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function P1Inputs({ config, setConfig, vocab }) {
+function P1Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const zones = config.zones || []
   const plan = config.supply_growth_plan || []
 
@@ -75,6 +75,32 @@ function P1Inputs({ config, setConfig, vocab }) {
           ))}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Umbral de liquidez y doom loop</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Umbral de liquidez mínimo (fulfillment %)</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.liquidity_threshold || 0.70) * 100)}%</span>
+              </div>
+              <input type="range" min={0.50} max={0.90} step={0.05} value={config.liquidity_threshold || 0.70}
+                onChange={e => setConfig(p => ({ ...p, liquidity_threshold: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Umbral de doom loop (demanda/semana)</label>
+                <span className="text-amber-400 font-mono text-sm">{(config.doom_loop_threshold || 5000).toLocaleString()}</span>
+              </div>
+              <input type="number" value={config.doom_loop_threshold || 5000}
+                onChange={e => setConfig(p => ({ ...p, doom_loop_threshold: Number(e.target.value) }))}
+                className="ds-input w-full" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1005,7 +1005,7 @@ const MODEL_SHORT_NAMES = {
   C1: 'Market Share',
 }
 
-// ── Taxonomy Data (McKinsey Framework) ────────────────────────────────────────
+// ── Taxonomy Data (MBB Consulting Framework) ──────────────────────────────────
 
 const COLOR_STYLES = {
   blue:    { headerBg: 'bg-blue-950/30',    text: 'text-blue-400',    active: 'bg-blue-900/20 border-blue-700' },
@@ -1194,35 +1194,35 @@ const TAXONOMY = {
         question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?',
         context: 'Usuarios en estados discretos (nuevos, activos, baja/alta frecuencia, dormidos, churned). Cada semana transicionan entre estados con probabilidades medibles. Las iniciativas modifican esas probabilidades.',
         insight: 'Descompone "+20% en órdenes" en acciones concretas: mueve 3k usuarios de baja a alta frecuencia, reduce churn 5pp, atrae 2k nuevos por semana. Cada iniciativa tiene un costo y un ROI separado.',
-        status: 'full', demoId: null, link: '/markov', linkLabel: 'Abrir Wizard de 7 pasos →',
+        status: 'full', demoId: null, link: '/markov', linkLabel: 'Abrir Wizard de 7 pasos →', level: 'advanced',
       },
       {
         id: 'D2', name: 'Cohort Retention & LTV',
         question: '¿Cuándo recupero el CAC? ¿Qué canal de adquisición es más eficiente?',
         context: 'Cada cohort semanal tiene curva de retención y frecuencia propia. El LTV total en cualquier semana es la suma de contribuciones de todos los cohorts activos.',
         insight: 'Una mejora de 5pp en retención W4 no solo añade usuarios ese día, sino indefinidamente. El NPV es siempre mayor de lo que parece. Este modelo produce el argumento cuantitativo para redirigir budget de adquisición a retención.',
-        status: 'full', demoId: null, link: '/models/d2', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/d2', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
       {
         id: 'D3', name: 'Funnel Conversion',
         question: '¿En qué paso del journey pierdo la mayoría de órdenes potenciales?',
         context: 'Apertura de app → búsqueda → menú → carrito → checkout → repetición. Cada paso tiene una tasa de conversión medible vs benchmark de industria.',
         insight: 'Si tu checkout está en 55% y el benchmark es 75%, eso equivale a +36% más órdenes sin adquirir un solo usuario nuevo. El constraint de conversión es el lever más capital-eficiente de resolver.',
-        status: 'full', demoId: null, link: '/models/d3', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/d3', linkLabel: 'Abrir Wizard →', level: 'foundational',
       },
       {
         id: 'D4', name: 'Frequency & Wallet Share',
         question: '¿Cuánta frecuencia adicional puedo extraer de usuarios existentes?',
         context: 'Punto de partida: 21 ocasiones de comida por semana. ¿Cuántas son addressables para delivery? ¿Cuántas captura tu plataforma? El gap es el upside de frecuencia.',
         insight: 'En LATAM, delivery captura solo 5-8% de las ocasiones de comida. El techo teórico es 4-5x el nivel actual. Cada lever (desayunos, late-night, suscripción) cierra una fracción de ese gap.',
-        status: 'full', demoId: null, link: '/models/d4', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/d4', linkLabel: 'Abrir Wizard →', level: 'foundational',
       },
       {
         id: 'D5', name: 'Reactivation & Winback',
         question: '¿Cuántas órdenes puedo recuperar de mi base dormida?',
         context: 'El 40-60% de usuarios registrados están dormidos. Tienen probabilidad de reactivación decayente. Campañas de winback aumentan esa probabilidad a diferentes costos.',
         insight: 'La ventana dorada es semanas 4-8 post-último pedido. Antes vuelven solos. Después de 26 semanas, el costo de reactivación supera el LTV esperado del usuario reactivado.',
-        status: 'full', demoId: null, link: '/models/d5', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/d5', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
     ],
   },
@@ -1234,28 +1234,28 @@ const TAXONOMY = {
         question: '¿Cuántas órdenes generarán los restaurantes que estoy activando esta semana?',
         context: 'Cada restaurante sigue una curva de maduración (% del steady-state por semana de vida). La velocidad depende del tipo: dark kitchen madura en 8 semanas, tradicional en 12-16.',
         insight: 'El métrico predictivo clave es "órdenes en Semana 4". Un restaurante por debajo del mínimo en W4 tiene >80% de probabilidad de churnar antes de W12. Establece un checkpoint W4 y duplica soporte para los que están rezagados.',
-        status: 'full', demoId: null, link: '/models/s1', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/s1', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
       {
         id: 'S2', name: 'Portfolio & Selection Effect',
         question: '¿Más restaurantes o mejores restaurantes? ¿Volumen o variedad de categorías?',
         context: 'La demanda responde al número de restaurantes con rendimientos decrecientes por categoría. El restaurante #100 de pizza genera mucho menos demanda incremental que el primero de comida árabe.',
         insight: 'Dos puntos de inflexión: "mínimo viable" (~15-20 restaurantes, 5+ categorías) y "techo de variedad" (~80-120). Entre ellos, cada restaurante tiene ROI medible. Fuera de ese rango, el equipo de BD no debería priorizar más unidades.',
-        status: 'full', demoId: null, link: '/models/s2', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/s2', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
       {
         id: 'S3', name: 'Restaurant Engagement & Performance',
         question: '¿Cómo subo el volumen de restaurantes existentes sin que la plataforma pague más?',
         context: 'Levers gratuitos para la plataforma: fotos de menú, optimización de tiempos de preparación, promos auto-financiadas por el restaurante, extensión de horarios, ads dentro de la app.',
         insight: 'Un restaurante que optimiza menú + operaciones + promos auto-financiadas ve 40-80% más órdenes. Es el lever de crecimiento más capital-eficiente en un marketplace maduro.',
-        status: 'full', demoId: null, link: '/models/s3', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/s3', linkLabel: 'Abrir Wizard →', level: 'foundational',
       },
       {
         id: 'S4', name: 'Restaurant Health Score',
         question: '¿Qué restaurantes van a irse y cuántas órdenes estoy en riesgo de perder?',
         context: 'Score 0-100 basado en tendencia de órdenes (4 semanas), engagement con la plataforma, métricas operacionales (acceptance rate, cancelaciones) y exposición competitiva.',
         insight: 'No todo churn de restaurante vale lo mismo. Perder un restaurante de 300 órdenes/semana con usuarios leales cuesta 5-10x más que perder uno de 20 órdenes genéricas. Focaliza retención en los 10-15 restaurantes ancla por ciudad por trimestre.',
-        status: 'full', demoId: null, link: '/models/s4', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/s4', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
     ],
   },
@@ -1267,35 +1267,35 @@ const TAXONOMY = {
         question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?',
         context: 'Cuatro fases: pre-liquidez (supply-led), liquidez temprana (balanced), madurez (demand-led), saturación (eficiencia). La estrategia de inversión correcta depende de la fase actual.',
         insight: 'El error más caro en food delivery: invertir en adquisición de usuarios en un mercado Fase 1. Los usuarios bajan la app, ven 5 restaurantes con 50 minutos de entrega, y nunca vuelven. Regla: nunca >20% del presupuesto de ciudad en demanda antes de 15 restaurantes/km².',
-        status: 'full', demoId: null, link: '/models/p1', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/p1', linkLabel: 'Abrir Wizard →', level: 'advanced',
       },
       {
         id: 'P2', name: 'Incrementality & Cannibalization',
         question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?',
         context: 'Descompone órdenes observadas en: orgánicas (sin promo), verdaderamente incrementales, adelantadas de la semana siguiente, y canibalizadas entre promos activas.',
         insight: 'Todas las empresas sobreestiman el impacto de sus promos en 40-70%. Cupones broadcast tienen 80%+ de canibalización orgánica. El ROI real de promos es 2-3x más bajo que el análisis naive. La solución: promos trigger-based y segmentadas.',
-        status: 'full', demoId: null, link: '/models/p2', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/p2', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
       {
         id: 'P3', name: 'Delivery Economics & Capacity',
         question: '¿En qué punto la flota de couriers se convierte en el cuello de botella de crecimiento?',
         context: 'Loop de equilibrio: supply de couriers → tiempo de entrega → conversión → demanda → earnings → supply. Tiene dos equilibrios posibles: virtuoso y colapso (doom loop).',
         insight: '10 minutos menos en entrega promedio = +15-25% en órdenes, sin promo alguna. En la mayoría de mercados LATAM, este impacto supera el de todo el presupuesto combinado de marketing.',
-        status: 'full', demoId: null, link: '/models/p3', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/p3', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
       {
         id: 'P4', name: 'Competitive Dynamics',
         question: '¿Qué pasa con mis órdenes si entra o sale un competidor?',
         context: 'Modela el share de mercado bajo cuatro escenarios: entrada de competidor, salida de competidor, guerra de precios, y expansión de categoría (ej: grocery).',
         insight: 'Cuando un competidor sale, capturas 40-70% de sus órdenes en 3 meses. El 20-30% restante se pierde permanentemente — esos usuarios dejan de pedir delivery. Esta es la justificación cuantitativa para participar en M&A defensivo.',
-        status: 'full', demoId: null, link: '/models/p4', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/p4', linkLabel: 'Abrir Wizard →', level: 'advanced',
       },
       {
         id: 'P5', name: 'Marketplace Equilibrium',
         question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?',
         context: 'Test simultáneo de los tres lados: usuarios (retención orgánica, NPS), restaurantes (churn, promos auto-financiadas), couriers (earnings vs alternativas). Más unit economics de la plataforma.',
         insight: 'La prueba definitiva: ¿qué pasa si eliminas todas las promos mañana? Empresa saludable: -10-20% de órdenes. Empresa no-saludable: -30-50%. La brecha es la "burbuja de subsidios" — no es un marketplace real.',
-        status: 'full', demoId: null, link: '/models/p5', linkLabel: 'Abrir Wizard →',
+        status: 'full', demoId: null, link: '/models/p5', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
     ],
   },
@@ -2149,7 +2149,7 @@ export default function HomePage() {
               {[
                 { value: '14', label: 'Modelos' },
                 { value: '20', label: 'Industrias' },
-                { value: 'McKinsey', label: 'Excel Export' },
+                { value: 'MBB', label: 'Excel Export' },
                 { value: '100%', label: 'offline' },
               ].map((s) => (
                 <div key={s.label}>
@@ -2197,7 +2197,7 @@ export default function HomePage() {
               { count: c1, label: 'Modelos cuantitativos', suffix: '' },
               { count: c2, label: 'Industrias cubiertas', suffix: '' },
               { count: c3, label: 'Semanas de horizonte', suffix: '' },
-              { count: c4, label: 'Tabs Excel McKinsey', suffix: '' },
+              { count: c4, label: 'Tabs Excel MBB Consulting', suffix: '' },
             ].map(({ count, label, suffix }) => (
               <div key={label} className="space-y-2">
                 <div className="text-5xl font-mono font-bold text-blue-400">
@@ -2221,7 +2221,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400 text-xs font-mono mb-4">
-              McKinsey Digital & Analytics · 14 modelos cuantitativos · 3 perspectivas
+              MBB Consulting · 14 modelos cuantitativos · 3 perspectivas
             </div>
             <h2 className="text-3xl font-bold text-gray-100 mb-3">¿Cuál es tu pregunta de negocio?</h2>
             <p className="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
@@ -2258,7 +2258,7 @@ export default function HomePage() {
                           </div>
                           <p className="text-gray-500 text-[11px] leading-snug">{model.question}</p>
                         </div>
-                        <div className="flex-shrink-0 mt-0.5">
+                        <div className="flex-shrink-0 mt-0.5 flex flex-col gap-0.5 items-end">
                           {model.status === 'full' && (
                             <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-purple-900/50 text-purple-300 border-purple-800">WIZARD</span>
                           )}
@@ -2267,6 +2267,15 @@ export default function HomePage() {
                           )}
                           {model.status === 'roadmap' && (
                             <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-gray-800 text-gray-600 border-gray-700">PRONTO</span>
+                          )}
+                          {model.level === 'foundational' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-gray-800 text-gray-400 border-gray-700">Base</span>
+                          )}
+                          {model.level === 'mid' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-900/40 text-blue-300 border-blue-800">Mid</span>
+                          )}
+                          {model.level === 'advanced' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-amber-900/40 text-amber-300 border-amber-800">Advanced</span>
                           )}
                         </div>
                       </div>
@@ -2389,7 +2398,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 7: Excel McKinsey Export ─────────────────────────────── */}
+      {/* ── SECTION 7: Excel MBB Consulting Export ──────────────────────── */}
       <section
         id="excel"
         ref={excelRef}
@@ -2399,7 +2408,7 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Export McKinsey-style Excel en un click</h2>
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">Export MBB-grade Excel en un click</h2>
             <p className="text-gray-400 max-w-xl mx-auto">
               9 tabs estructurados con conditional formatting, freeze panes y assumptions log.
             </p>
@@ -2504,7 +2513,7 @@ export default function HomePage() {
               </div>
 
               <div className="ds-card p-4 bg-gradient-to-br from-emerald-950/30 to-gray-900 border-emerald-800/40">
-                <div className="text-xs text-gray-400 mb-1 font-mono">Formato McKinsey</div>
+                <div className="text-xs text-gray-400 mb-1 font-mono">Formato MBB Consulting</div>
                 <div className="text-sm text-gray-200 leading-relaxed">
                   Listo para presentar a Dirección. Navy headers, fuente Calibri, márgenes estándar.
                 </div>

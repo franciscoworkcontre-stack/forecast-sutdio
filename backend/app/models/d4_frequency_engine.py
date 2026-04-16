@@ -27,6 +27,7 @@ class FrequencyRequest(BaseModel):
             FrequencySegment(name="Alta Frecuencia", users=15000, current_freq_per_week=3.0, target_freq_per_week=3.5, weeks_to_achieve=4),
         ]
     )
+    palette: str = 'navy'
 
 
 def run_frequency_forecast(req: FrequencyRequest) -> dict:

@@ -28,6 +28,7 @@ class FunnelRequest(BaseModel):
             FunnelStep(name="Place Order", conversion_rate=0.80),
         ]
     )
+    palette: str = 'navy'
 
 
 def run_funnel_forecast(req: FunnelRequest) -> dict:

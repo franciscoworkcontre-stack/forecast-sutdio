@@ -42,6 +42,7 @@ class NetworkRequest(BaseModel):
             SupplyAddition(week=6, new_supply=60),
         ]
     )
+    palette: str = 'navy'
 
 
 def run_network_forecast(req: NetworkRequest) -> dict:

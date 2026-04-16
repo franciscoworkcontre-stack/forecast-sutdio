@@ -4,20 +4,31 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function D5Inputs({ config, setConfig, vocab }) {
+function D5Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const campaigns = config.campaigns || []
+  const displayCampaigns = mode === 'base' ? campaigns.slice(0, 2) : campaigns
+  const segments = config.churned_segments || []
+  const displaySegments = mode === 'base' ? segments.slice(0, 2) : segments
 
   const updateCamp = (i, field, value) => {
     const next = campaigns.map((c, idx) => idx === i ? { ...c, [field]: value } : c)
     setConfig(p => ({ ...p, campaigns: next }))
   }
 
+  const addCampaign = () => {
+    if (campaigns.length < 4) {
+      setConfig(p => ({ ...p, campaigns: [...(p.campaigns||[]), { name: `Campaña ${(p.campaigns||[]).length+1}`, cost_per_contacted: 3, contact_rate: 0.45, incremental_reactiv_rate: 0.08, orders_per_reactivated: 1.5 }] }))
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="ds-card p-4">
-        <div className="ds-section-header -mx-4 -mt-4 mb-4">Resumen de Usuarios Dormidos</div>
+        <div className="ds-section-header -mx-4 -mt-4 mb-4">
+          Resumen de Usuarios Dormidos {mode === 'base' ? '(2 segmentos)' : '(todos los segmentos)'}
+        </div>
         <div className="grid grid-cols-3 gap-3">
-          {(config.churned_segments || []).map((seg, i) => (
+          {displaySegments.map((seg, i) => (
             <div key={i} className="metric-card">
               <div className="metric-label">{seg.name}</div>
               <div className="metric-value text-xl">{(seg.count / 1000).toFixed(0)}K</div>
@@ -28,9 +39,11 @@ function D5Inputs({ config, setConfig, vocab }) {
       </div>
 
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Campañas de Reactivación</div>
+        <div className="ds-section-header">
+          Campañas de Reactivación {mode === 'base' ? '(2 campañas)' : '(hasta 4 campañas)'}
+        </div>
         <div className="p-4 space-y-4">
-          {campaigns.map((camp, i) => (
+          {displayCampaigns.map((camp, i) => (
             <div key={i} className="ds-card p-3 bg-gray-950/50">
               <input value={camp.name}
                 onChange={e => updateCamp(i, 'name', e.target.value)}
@@ -72,8 +85,40 @@ function D5Inputs({ config, setConfig, vocab }) {
               </div>
             </div>
           ))}
+          {mode === 'advanced' && campaigns.length < 4 && (
+            <button onClick={addCampaign} className="text-xs text-blue-400 hover:text-blue-300 border border-dashed border-blue-900 rounded px-3 py-1.5 w-full transition-colors">
+              + Agregar campaña
+            </button>
+          )}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Grupo holdout y multiplicador de LTV</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Holdout % (control orgánico)</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.holdout_pct || 0.10) * 100)}%</span>
+              </div>
+              <input type="range" min={0.05} max={0.30} step={0.05} value={config.holdout_pct || 0.10}
+                onChange={e => setConfig(p => ({ ...p, holdout_pct: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Multiplicador LTV usuario reactivado</label>
+                <span className="text-amber-400 font-mono text-sm">{(config.ltv_multiplier || 0.7).toFixed(1)}x</span>
+              </div>
+              <input type="range" min={0.3} max={1.5} step={0.1} value={config.ltv_multiplier || 0.7}
+                onChange={e => setConfig(p => ({ ...p, ltv_multiplier: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+              <p className="text-[10px] text-gray-500 mt-1">Usuarios reactivados suelen tener LTV menor que usuarios nuevos.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

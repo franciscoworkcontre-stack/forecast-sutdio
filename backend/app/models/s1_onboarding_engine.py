@@ -21,6 +21,7 @@ class OnboardingRequest(BaseModel):
         default=[0.15, 0.25, 0.40, 0.55, 0.65, 0.72, 0.78, 0.83, 0.87, 0.90, 0.93, 0.95],
         description="Fraction of peak GMV at each week of age"
     )
+    palette: str = 'navy'
 
 
 def run_onboarding_forecast(req: OnboardingRequest) -> dict:

@@ -21,6 +21,7 @@ class DeliveryRequest(BaseModel):
     platform_subsidy_per_order: float = Field(default=15, ge=0)
     capacity_utilization_threshold: float = Field(default=0.85, gt=0, le=1)
     new_couriers_per_week: float = Field(default=20, ge=0)
+    palette: str = 'navy'
 
 
 def run_delivery_forecast(req: DeliveryRequest) -> dict:

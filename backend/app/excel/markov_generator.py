@@ -1,5 +1,5 @@
 """
-McKinsey-style Excel report generator for Markov v3 Forecast Model.
+MBB-grade Excel report generator for Markov v3 Forecast Model.
 Generates 8 tabs: Cover, Exec Summary, Detalle Semanal, Perfiles de Usuario,
 Órdenes por Perfil, Matriz de Transición, Supuestos — Funnel, Log de Supuestos.
 """
@@ -776,8 +776,8 @@ def _create_assumptions_log(wb: Workbook, result: MarkovForecastResult, request:
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-def generate_markov_excel(result: MarkovForecastResult, request: MarkovForecastRequest) -> bytes:
-    """Generate a McKinsey-style Excel workbook for the Markov v3 forecast and return as bytes."""
+def generate_markov_excel(result: MarkovForecastResult, request: MarkovForecastRequest, palette_key: str = 'navy') -> bytes:
+    """Generate an MBB-grade Excel workbook for the Markov v3 forecast and return as bytes."""
     wb = Workbook()
     wb.remove(wb.active)  # remove default sheet
 

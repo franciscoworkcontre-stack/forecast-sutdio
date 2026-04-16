@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function S4Inputs({ config, setConfig, vocab }) {
+function S4Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const rests = config.restaurants || []
 
   const updateRest = (i, field, value) => {
@@ -63,6 +63,31 @@ function S4Inputs({ config, setConfig, vocab }) {
           ))}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Pesos de señales de salud individuales</div>
+          <div className="space-y-2">
+            {[
+              { key: 'w_order_trend', label: 'Tendencia de órdenes (4 sem)', default: 0.35 },
+              { key: 'w_rating', label: 'Rating del restaurante', default: 0.25 },
+              { key: 'w_menu_update', label: 'Días desde última actualización de menú', default: 0.15 },
+              { key: 'w_response_rate', label: 'Tasa de respuesta / aceptación', default: 0.15 },
+              { key: 'w_promo_activity', label: 'Actividad en promos', default: 0.05 },
+              { key: 'w_competitive', label: 'Exposición competitiva', default: 0.05 },
+            ].map(signal => (
+              <div key={signal.key} className="flex items-center gap-3">
+                <span className="text-xs text-gray-400 flex-1">{signal.label}</span>
+                <input type="range" min={0} max={0.60} step={0.05} value={config[signal.key] ?? signal.default}
+                  onChange={e => setConfig(p => ({ ...p, [signal.key]: Number(e.target.value) }))}
+                  className="w-28 accent-amber-500" />
+                <span className="text-amber-400 font-mono text-xs w-10 text-right">{((config[signal.key] ?? signal.default) * 100).toFixed(0)}%</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-500 mt-2">Los pesos se normalizan automáticamente al 100%.</p>
+        </div>
+      )}
     </div>
   )
 }

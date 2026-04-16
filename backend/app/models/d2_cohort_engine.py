@@ -30,6 +30,7 @@ class CohortRequest(BaseModel):
         description="Weekly retention rates, index=weeks since acquisition"
     )
     orders_per_active_per_week: float = Field(default=1.2, gt=0)
+    palette: str = 'navy'
 
 
 def run_cohort_forecast(req: CohortRequest) -> dict:

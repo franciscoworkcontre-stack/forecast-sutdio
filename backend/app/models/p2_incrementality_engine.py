@@ -28,6 +28,7 @@ class IncrementalityRequest(BaseModel):
             CampaignIncrementality(name="2x1 Flash", promoted_orders_per_week=3000, organic_baseline=500, uplift_observed_pct=0.50, discount_per_order=80, cost_per_order=0),
         ]
     )
+    palette: str = 'navy'
 
 
 def run_incrementality_forecast(req: IncrementalityRequest) -> dict:

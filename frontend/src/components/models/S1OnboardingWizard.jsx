@@ -4,7 +4,13 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function S1Inputs({ config, setConfig, vocab }) {
+function S1Inputs({ config, setConfig, vocab, mode = 'base' }) {
+  const MATURATION_PRESETS = {
+    dark_kitchen:   [0.20, 0.35, 0.50, 0.62, 0.72, 0.80, 0.86, 0.90, 0.93, 0.95, 0.97, 0.98],
+    qsr:            [0.15, 0.25, 0.40, 0.55, 0.65, 0.72, 0.78, 0.83, 0.87, 0.90, 0.93, 0.95],
+    full_service:   [0.10, 0.18, 0.28, 0.40, 0.52, 0.62, 0.70, 0.76, 0.82, 0.87, 0.91, 0.94],
+  }
+
   return (
     <div className="space-y-4">
       <div className="ds-card p-4">
@@ -52,7 +58,39 @@ function S1Inputs({ config, setConfig, vocab }) {
           ))}
           <span className="text-xs text-gray-600 ml-2">Visualización</span>
         </div>
+
+        {mode === 'base' && (
+          <div className="mt-4 flex gap-2 flex-wrap">
+            <span className="text-xs text-gray-500">Presets:</span>
+            {Object.entries(MATURATION_PRESETS).map(([key, curve]) => (
+              <button key={key} onClick={() => setConfig(p => ({ ...p, maturation_curve: curve }))}
+                className="text-xs px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:border-emerald-700 hover:text-emerald-400 transition-all capitalize">
+                {key.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Expansión por zonas geográficas</div>
+          <div className="flex justify-between mb-1">
+            <label className="ds-label">Semanas de retraso entre zonas</label>
+            <span className="text-amber-400 font-mono text-sm">{config.zone_delay_weeks || 4} sem</span>
+          </div>
+          <input type="range" min={0} max={12} step={1} value={config.zone_delay_weeks || 4}
+            onChange={e => setConfig(p => ({ ...p, zone_delay_weeks: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+          <div className="flex justify-between mb-1 mt-3">
+            <label className="ds-label">Factor de canibalización del portafolio existente</label>
+            <span className="text-amber-400 font-mono text-sm">{Math.round((config.cannibalization_factor || 0.05) * 100)}%</span>
+          </div>
+          <input type="range" min={0} max={0.3} step={0.01} value={config.cannibalization_factor || 0.05}
+            onChange={e => setConfig(p => ({ ...p, cannibalization_factor: Number(e.target.value) }))}
+            className="w-full accent-amber-500" />
+        </div>
+      )}
     </div>
   )
 }

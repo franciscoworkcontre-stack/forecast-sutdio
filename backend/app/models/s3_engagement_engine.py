@@ -40,6 +40,7 @@ class EngagementRequest(BaseModel):
             orders_per_point_improvement=0.3,
         )
     )
+    palette: str = 'navy'
 
 
 def run_engagement_forecast(req: EngagementRequest) -> dict:

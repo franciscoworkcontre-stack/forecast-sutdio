@@ -5,12 +5,19 @@ import {
 } from 'recharts'
 import GenericWizard from './GenericWizard'
 
-function D3Inputs({ config, setConfig, vocab }) {
+function D3Inputs({ config, setConfig, vocab, mode = 'base' }) {
   const steps = config.funnel_steps || []
+  const displaySteps = mode === 'base' ? steps.slice(0, 4) : steps
 
   const updateStep = (i, field, value) => {
     const next = steps.map((s, idx) => idx === i ? { ...s, [field]: value } : s)
     setConfig(p => ({ ...p, funnel_steps: next }))
+  }
+
+  const addStep = () => {
+    if (steps.length < 6) {
+      setConfig(p => ({ ...p, funnel_steps: [...(p.funnel_steps||[]), { name: `Paso ${(p.funnel_steps||[]).length + 1}`, conversion_rate: 0.70 }] }))
+    }
   }
 
   return (
@@ -39,9 +46,11 @@ function D3Inputs({ config, setConfig, vocab }) {
       </div>
 
       <div className="ds-card overflow-hidden">
-        <div className="ds-section-header">Pasos del Funnel y Tasas de Conversión</div>
+        <div className="ds-section-header">
+          Pasos del Funnel {mode === 'base' ? '(4 pasos principales)' : '(hasta 6 pasos)'}
+        </div>
         <div className="p-4 space-y-3">
-          {steps.map((s, i) => (
+          {displaySteps.map((s, i) => (
             <div key={i} className="flex items-center gap-3">
               <span className="text-xs font-mono text-gray-500 w-5">{i + 1}</span>
               <input value={s.name}
@@ -55,8 +64,39 @@ function D3Inputs({ config, setConfig, vocab }) {
               </div>
             </div>
           ))}
+          {mode === 'advanced' && steps.length < 6 && (
+            <button onClick={addStep} className="text-xs text-blue-400 hover:text-blue-300 border border-dashed border-blue-900 rounded px-3 py-1.5 w-full transition-colors">
+              + Agregar paso
+            </button>
+          )}
         </div>
       </div>
+
+      {mode === 'advanced' && (
+        <div className="ds-card p-4 border-amber-900/40 bg-amber-950/10">
+          <div className="text-xs font-mono font-semibold text-amber-400 mb-3">Avanzado — Split de dispositivo</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Tráfico móvil</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.mobile_pct || 0.70) * 100)}%</span>
+              </div>
+              <input type="range" min={0.3} max={0.95} step={0.05} value={config.mobile_pct || 0.70}
+                onChange={e => setConfig(p => ({ ...p, mobile_pct: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="ds-label">Tráfico pagado</label>
+                <span className="text-amber-400 font-mono text-sm">{Math.round((config.paid_pct || 0.40) * 100)}%</span>
+              </div>
+              <input type="range" min={0.1} max={0.90} step={0.05} value={config.paid_pct || 0.40}
+                onChange={e => setConfig(p => ({ ...p, paid_pct: Number(e.target.value) }))}
+                className="w-full accent-amber-500" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

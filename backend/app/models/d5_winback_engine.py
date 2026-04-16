@@ -40,6 +40,7 @@ class WinbackRequest(BaseModel):
             WinbackCampaign(name="Push Personalizado", cost_per_contacted=2, contact_rate=0.55, incremental_reactiv_rate=0.07, orders_per_reactivated=1.5),
         ]
     )
+    palette: str = 'navy'
 
 
 def run_winback_forecast(req: WinbackRequest) -> dict:

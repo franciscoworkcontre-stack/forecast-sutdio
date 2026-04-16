@@ -20,6 +20,7 @@ class EquilibriumRequest(BaseModel):
     churn_rate_pct: float = Field(default=5.0, ge=0, le=100)
     order_growth_rate_pct_per_week: float = Field(default=2.0, ge=0)
     new_user_growth_pct_per_week: float = Field(default=1.5, ge=0)
+    palette: str = 'navy'
 
 
 def run_equilibrium_forecast(req: EquilibriumRequest) -> dict:
