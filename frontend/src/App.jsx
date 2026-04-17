@@ -18,6 +18,7 @@ import P2IncrementalityWizard from './components/models/P2IncrementalityWizard'
 import P3DeliveryWizard from './components/models/P3DeliveryWizard'
 import P4CompetitiveWizard from './components/models/P4CompetitiveWizard'
 import P5EquilibriumWizard from './components/models/P5EquilibriumWizard'
+import CombinedForecastWizard from './components/combined/CombinedForecastWizard'
 import { fmtOrders, fmtPct, formatDate } from './utils/formatters'
 
 // ── Taxonomy data (mirrors HomePage) ────────────────────────────────────────
@@ -255,6 +256,24 @@ function NewForecastPage() {
                 className="btn-primary text-xs flex-shrink-0 ml-auto"
               >
                 Abrir D1 Markov →
+              </button>
+            </div>
+
+            {/* Combined Forecast entry */}
+            <div className="mt-4 ds-card p-4 flex items-center gap-4 bg-purple-950/10 border-purple-900/30">
+              <div className="text-2xl">🔀</div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="text-sm font-semibold text-gray-200">Combined Forecast</div>
+                  <span className="text-[10px] font-mono bg-amber-700/60 text-amber-300 px-1.5 py-0.5 rounded">BETA</span>
+                </div>
+                <p className="text-xs text-gray-400">Corre múltiples modelos en paralelo y diagnostica tu negocio desde todas las perspectivas a la vez.</p>
+              </div>
+              <button
+                onClick={() => navigate(industry ? `/combine?industry=${industry.id}` : '/combine')}
+                className="btn-secondary text-xs flex-shrink-0 ml-auto"
+              >
+                Abrir Combined →
               </button>
             </div>
           </>
@@ -567,6 +586,7 @@ export default function App() {
         <Route path="/models/p3" element={<P3DeliveryWizard />} />
         <Route path="/models/p4" element={<P4CompetitiveWizard />} />
         <Route path="/models/p5" element={<P5EquilibriumWizard />} />
+        <Route path="/combine" element={<CombinedForecastWizard />} />
       </Routes>
     </BrowserRouter>
   )

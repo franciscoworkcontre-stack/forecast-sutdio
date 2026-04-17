@@ -767,3 +767,220 @@ async def model_sensitivity(model_id: str, raw: _FRequest):
         'base_kpi': round(base_kpi, 2),
         'tornado': results,
     }
+
+
+# ── Combined Forecast Excel Export ────────────────────────────────────────────
+
+from .excel.generic_generator import generate_excel_generic as _gen_excel
+
+
+@app.post("/api/combined/export-excel")
+async def combined_export_excel(request: _FRequest):
+    """
+    Generate a multi-tab MBB Excel for a combined forecast run.
+    Body: { global_config: {...}, models: [{ model_id, model_name, config, result }] }
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid JSON body")
+
+    global_config = body.get("global_config", {})
+    models_data = body.get("models", [])
+
+    if not models_data:
+        raise HTTPException(status_code=422, detail="No model results provided")
+
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+        import io
+        from datetime import datetime
+
+        def _fill(hex_color):
+            return PatternFill(start_color=hex_color, end_color=hex_color, fill_type="solid")
+
+        def _font(color="FFFFFF", size=11, bold=True):
+            return Font(name="Calibri", size=size, bold=bold, color=color)
+
+        def _border(style="thin", color="CCCCCC"):
+            s = Side(border_style=style, color=color)
+            return Border(left=s, right=s, top=s, bottom=s)
+
+        wb = Workbook()
+
+        # ── Summary tab ──
+        ws_sum = wb.active
+        ws_sum.title = "Resumen Combinado"
+
+        currency = global_config.get("currency", "MXN")
+        horizon = global_config.get("horizon_weeks", 12)
+        aov = global_config.get("aov", 290)
+        take_rate = global_config.get("take_rate", 0.22)
+
+        # Banner
+        ws_sum.merge_cells("A1:F1")
+        ws_sum["A1"] = "COMBINED FORECAST — RESUMEN EJECUTIVO"
+        ws_sum["A1"].font = _font("FFFFFF", 14, True)
+        ws_sum["A1"].fill = _fill("1e3a5f")
+        ws_sum["A1"].alignment = Alignment(horizontal="center", vertical="center")
+        ws_sum.row_dimensions[1].height = 32
+
+        ws_sum.merge_cells("A2:F2")
+        ws_sum["A2"] = f"Horizonte: {horizon} semanas | AOV: {currency} {aov} | Take Rate: {take_rate*100:.0f}% | {datetime.utcnow().strftime('%Y-%m-%d')}"
+        ws_sum["A2"].font = _font("94a3b8", 10, False)
+        ws_sum["A2"].fill = _fill("0f172a")
+        ws_sum["A2"].alignment = Alignment(horizontal="center")
+        ws_sum.row_dimensions[2].height = 20
+
+        # Beta disclaimer
+        ws_sum.merge_cells("A3:F3")
+        ws_sum["A3"] = "BETA: Outputs son independientes por modelo — no suman un P&L unificado."
+        ws_sum["A3"].font = _font("d97706", 9, False)
+        ws_sum["A3"].fill = _fill("1c1008")
+        ws_sum["A3"].alignment = Alignment(horizontal="center")
+
+        # Headers
+        headers = ["Modelo", "Nombre", "Tipo", f"Revenue ({currency})", "Órdenes", "KPI adicional"]
+        PERSPECTIVE_COLORS_XL = {"D": "1e3a8a", "S": "14532d", "P": "3b0764"}
+        for ci, h in enumerate(headers, 1):
+            c = ws_sum.cell(row=5, column=ci, value=h)
+            c.font = _font("FFFFFF", 10, True)
+            c.fill = _fill("1e293b")
+            c.border = _border()
+            c.alignment = Alignment(horizontal="center")
+        ws_sum.row_dimensions[5].height = 18
+
+        # Model rows
+        REVENUE_KEYS = {
+            "D2": "total_revenue", "D3": "total_revenue", "D4": "total_revenue", "D5": "total_revenue",
+            "S1": "total_revenue", "S2": "total_revenue", "S3": "incremental_revenue", "S4": "revenue_at_risk",
+            "P1": "total_revenue", "P2": "net_contribution", "P3": "total_revenue",
+            "P4": "revenue_vs_baseline", "P5": "total_revenue",
+        }
+        ORDERS_KEYS = {
+            "D3": "total_orders", "D4": "total_orders", "D5": "total_orders",
+            "S1": "total_orders", "S2": "total_orders", "S3": "incremental_orders_total",
+            "P1": "total_orders", "P2": "total_incremental_orders", "P3": "total_orders",
+            "P4": None, "P5": "total_orders",
+        }
+        TYPE_LABELS = {
+            "D2": "Baseline", "D3": "Baseline", "D4": "Incremental", "D5": "Incremental",
+            "S1": "Baseline", "S2": "Baseline", "S3": "Incremental", "S4": "Riesgo",
+            "P1": "Baseline", "P2": "Incremental", "P3": "Baseline", "P4": "Competitivo", "P5": "Equilibrio",
+        }
+        PERSPECTIVE_MAP = {
+            "D2": "D", "D3": "D", "D4": "D", "D5": "D",
+            "S1": "S", "S2": "S", "S3": "S", "S4": "S",
+            "P1": "P", "P2": "P", "P3": "P", "P4": "P", "P5": "P",
+        }
+
+        for ri, md in enumerate(models_data, 6):
+            mid = md.get("model_id", "").upper()
+            mname = md.get("model_name", mid)
+            summary = (md.get("result") or {}).get("summary", {})
+
+            rev_key = REVENUE_KEYS.get(mid, "total_revenue")
+            ord_key = ORDERS_KEYS.get(mid)
+            rev_val = summary.get(rev_key, 0) or 0
+            ord_val = summary.get(ord_key, "") if ord_key else ""
+            type_label = TYPE_LABELS.get(mid, "—")
+            persp = PERSPECTIVE_MAP.get(mid, "D")
+            persp_color = PERSPECTIVE_COLORS_XL.get(persp, "1e293b")
+
+            # Extra KPI: first unused numeric summary key
+            extra_kpi = ""
+            used = {rev_key, ord_key}
+            for k, v in summary.items():
+                if k not in used and isinstance(v, (int, float)):
+                    extra_kpi = f"{k}: {v:.2f}"
+                    break
+
+            row_data = [mid, mname, type_label, round(rev_val, 0), ord_val, extra_kpi]
+            for ci, val in enumerate(row_data, 1):
+                c = ws_sum.cell(row=ri, column=ci, value=val)
+                c.border = _border("thin", "334155")
+                c.alignment = Alignment(horizontal="center" if ci != 2 else "left", vertical="center")
+                if ci == 1:
+                    c.font = _font("e2e8f0", 9, True)
+                    c.fill = _fill(persp_color)
+                elif ci == 4 and isinstance(val, (int, float)):
+                    is_risk = type_label == "Riesgo"
+                    c.font = Font(name="Calibri", size=10, bold=True,
+                                  color="ef4444" if is_risk else "10b981")
+                    c.number_format = f'"{currency}" #,##0'
+                else:
+                    c.font = Font(name="Calibri", size=9, color="cbd5e1")
+                    c.fill = _fill("0f172a" if ri % 2 == 0 else "111827")
+
+        # Col widths
+        for col, width in [(1, 8), (2, 30), (3, 14), (4, 18), (5, 14), (6, 30)]:
+            ws_sum.column_dimensions[get_column_letter(col)].width = width
+
+        # ── One tab per model ──
+        for md in models_data:
+            mid = md.get("model_id", "").upper()
+            mname = md.get("model_name", mid)
+            result = md.get("result") or {}
+            summary = result.get("summary", {})
+            weekly = result.get("weekly", [])
+
+            tab_title = f"{mid}"[:31]
+            ws = wb.create_sheet(title=tab_title)
+
+            # Tab header
+            ws.merge_cells("A1:D1")
+            ws["A1"] = f"{mid} — {mname}"
+            ws["A1"].font = _font("FFFFFF", 12, True)
+            ws["A1"].fill = _fill(PERSPECTIVE_COLORS_XL.get(PERSPECTIVE_MAP.get(mid, "D"), "1e293b"))
+            ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+            ws.row_dimensions[1].height = 28
+
+            # Summary section
+            ws["A3"] = "RESUMEN"
+            ws["A3"].font = _font("94a3b8", 9, True)
+            for ri2, (k, v) in enumerate(summary.items(), 4):
+                ws.cell(row=ri2, column=1, value=k.replace("_", " ").title()).font = Font(name="Calibri", size=9, color="94a3b8")
+                vc = ws.cell(row=ri2, column=2, value=round(v, 4) if isinstance(v, float) else v)
+                vc.font = Font(name="Calibri", size=9, bold=True, color="e2e8f0")
+
+            # Weekly data section
+            if weekly:
+                start_row = 4 + len(summary) + 2
+                ws.cell(row=start_row, column=1, value="DATOS SEMANALES").font = _font("94a3b8", 9, True)
+                start_row += 1
+
+                if weekly:
+                    headers_weekly = list(weekly[0].keys())
+                    for ci, h in enumerate(headers_weekly, 1):
+                        c = ws.cell(row=start_row, column=ci, value=h)
+                        c.font = _font("FFFFFF", 9, True)
+                        c.fill = _fill("1e293b")
+                        c.alignment = Alignment(horizontal="center")
+
+                    for wi, week_row in enumerate(weekly, start_row + 1):
+                        for ci, h in enumerate(headers_weekly, 1):
+                            v = week_row.get(h, "")
+                            vc = ws.cell(row=wi, column=ci, value=round(v, 4) if isinstance(v, float) else v)
+                            vc.font = Font(name="Calibri", size=9, color="cbd5e1")
+                            vc.fill = PatternFill(start_color="0f172a" if wi % 2 == 0 else "111827",
+                                                  end_color="0f172a" if wi % 2 == 0 else "111827",
+                                                  fill_type="solid")
+
+            # Auto-width
+            for col in ws.columns:
+                max_len = max((len(str(cell.value or "")) for cell in col), default=8)
+                ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 2, 30)
+
+        # ── Stream out ──
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return Response(
+            content=buf.read(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=combined_forecast.xlsx"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Excel generation failed: {str(e)}")
