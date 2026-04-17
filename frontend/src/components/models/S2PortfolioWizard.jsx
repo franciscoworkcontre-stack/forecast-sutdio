@@ -148,17 +148,16 @@ function S2Results({ result, config, vocab, scenario, scMultiplier }) {
       </div>
 
       <div className="ds-card p-4">
-        <div className="ds-section-header -mx-4 -mt-4 mb-4">Revenue: Base vs. Con Cambios (K {config.currency})</div>
+        <div className="ds-section-header -mx-4 -mt-4 mb-4">Uplift de Revenue por Semana (K {config.currency})</div>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={chartData}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}K`} />
-            <Tooltip formatter={(v, n) => [`${config.currency} ${v}K`, n]} />
+            <Tooltip formatter={(v) => [`${config.currency} ${v}K`, 'Uplift']} />
             <Legend />
-            <Bar dataKey="base" fill="#1e3a5f" name="Baseline" />
-            <Bar dataKey="uplift" fill="#10b981" stackId="a" name="Uplift" />
-          </BarChart>
+            <Line type="monotone" dataKey="uplift" stroke="#10b981" strokeWidth={2} dot={{ r: 3, fill: '#10b981' }} name="Uplift" />
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
