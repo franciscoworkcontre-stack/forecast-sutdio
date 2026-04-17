@@ -1,42 +1,47 @@
 """
 Design system for Forecast Studio PPTX decks.
-Dark-first, next-level beyond MBB/BCG.
+Clean white-first design — BCG Smart Simplicity style.
 """
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
 
 # ── Slide canvas ──────────────────────────────────────────────────────────────
-# 16:9 widescreen (standard modern)
 SLIDE_W = 12_192_000   # 13.33 inches in EMU
 SLIDE_H =  6_858_000   #  7.50 inches in EMU
 
-# ── Base dark palette (matches the tool's CSS design system) ──────────────────
-DARK = {
-    'bg':        RGBColor(0x0f, 0x17, 0x2a),   # gray-950  — main background
-    'card':      RGBColor(0x1e, 0x29, 0x3b),   # slate-800 — card fill
-    'border':    RGBColor(0x33, 0x41, 0x55),   # slate-700 — dividers
-    'muted':     RGBColor(0x47, 0x55, 0x69),   # slate-600 — muted elements
-    'secondary': RGBColor(0x94, 0xa3, 0xb8),   # slate-400 — secondary text
-    'primary':   RGBColor(0xe2, 0xe8, 0xf0),   # slate-200 — primary text
-    'white':     RGBColor(0xff, 0xff, 0xff),   # pure white — headline numbers
-    'bear':      RGBColor(0xef, 0x44, 0x44),   # red-500
-    'base':      RGBColor(0x3b, 0x82, 0xf6),   # blue-500
-    'bull':      RGBColor(0x10, 0xb9, 0x81),   # emerald-500
-    'warn':      RGBColor(0xf5, 0x9e, 0x0b),   # amber-500
+# ── Light (white) palette ─────────────────────────────────────────────────────
+LIGHT = {
+    'bg':         RGBColor(0xff, 0xff, 0xff),   # pure white
+    'surface':    RGBColor(0xf8, 0xfa, 0xfc),   # slate-50 — card bg
+    'border':     RGBColor(0xe2, 0xe8, 0xf0),   # slate-200 — dividers
+    'muted':      RGBColor(0x94, 0xa3, 0xb8),   # slate-400 — muted text
+    'secondary':  RGBColor(0x64, 0x74, 0x8b),   # slate-500 — secondary text
+    'primary':    RGBColor(0x1e, 0x29, 0x3b),   # slate-800 — primary text
+    'headline':   RGBColor(0x0f, 0x17, 0x2a),   # slate-950 — headline / big numbers
+    'bear':       RGBColor(0xdc, 0x26, 0x26),   # red-600
+    'base':       RGBColor(0x25, 0x63, 0xeb),   # blue-600
+    'bull':       RGBColor(0x05, 0x96, 0x69),   # emerald-600
+    'warn':       RGBColor(0xd9, 0x77, 0x06),   # amber-600
 }
 
-# ── Perspective accent colors ─────────────────────────────────────────────────
+# Keep DARK as alias so any leftover import doesn't crash
+DARK = LIGHT
+
+# ── Perspective accent colors (vivid, work on white bg) ───────────────────────
 PERSPECTIVE = {
-    'D': RGBColor(0x3b, 0x82, 0xf6),   # blue-500
-    'S': RGBColor(0x10, 0xb9, 0x81),   # emerald-500
-    'P': RGBColor(0x8b, 0x5c, 0xf6),   # violet-500
+    'D': RGBColor(0x25, 0x63, 0xeb),   # blue-600
+    'S': RGBColor(0x05, 0x96, 0x69),   # emerald-600
+    'P': RGBColor(0x79, 0x16, 0xee),   # violet-600
 }
 
-PERSPECTIVE_DARK = {
-    'D': RGBColor(0x1e, 0x3a, 0x8a),   # blue-900
-    'S': RGBColor(0x06, 0x4e, 0x3b),   # emerald-900
-    'P': RGBColor(0x2e, 0x10, 0x65),   # violet-950
+PERSPECTIVE_LIGHT = {
+    'D': RGBColor(0xef, 0xf6, 0xff),   # blue-50
+    'S': RGBColor(0xec, 0xfd, 0xf5),   # emerald-50
+    'P': RGBColor(0xf5, 0xf3, 0xff),   # violet-50
 }
+
+# Keep dark variant for any leftover reference
+PERSPECTIVE_DARK = PERSPECTIVE_LIGHT
 
 PERSPECTIVE_LABEL = {
     'D': 'DEMANDA',
@@ -44,23 +49,23 @@ PERSPECTIVE_LABEL = {
     'P': 'PLATAFORMA',
 }
 
-# ── Palette map (matches frontend PALETTE_OPTIONS + Excel theme.py) ───────────
+# ── Palette accent colors (used for cover bar) ────────────────────────────────
 PALETTE_ACCENT = {
     'navy':   RGBColor(0x1e, 0x3a, 0x5f),
-    'green':  RGBColor(0x14, 0x53, 0x2d),
-    'red':    RGBColor(0x7f, 0x1d, 0x1d),
-    'purple': RGBColor(0x4c, 0x1d, 0x95),
-    'slate':  RGBColor(0x1f, 0x29, 0x37),
-    'orange': RGBColor(0x7c, 0x2d, 0x12),
+    'green':  RGBColor(0x05, 0x96, 0x69),
+    'red':    RGBColor(0xdc, 0x26, 0x26),
+    'purple': RGBColor(0x79, 0x16, 0xee),
+    'slate':  RGBColor(0x47, 0x55, 0x69),
+    'orange': RGBColor(0xea, 0x58, 0x0c),
 }
 
 PALETTE_HIGHLIGHT = {
-    'navy':   RGBColor(0xf5, 0x9e, 0x0b),   # amber
-    'green':  RGBColor(0x63, 0x66, 0xf1),   # indigo
-    'red':    RGBColor(0x0e, 0xa5, 0xe9),   # sky
-    'purple': RGBColor(0x10, 0xb9, 0x81),   # emerald
-    'slate':  RGBColor(0x3b, 0x82, 0xf6),   # blue
-    'orange': RGBColor(0x3b, 0x82, 0xf6),   # blue
+    'navy':   RGBColor(0xd9, 0x77, 0x06),   # amber-600
+    'green':  RGBColor(0x25, 0x63, 0xeb),   # blue-600
+    'red':    RGBColor(0x05, 0x96, 0x69),   # emerald-600
+    'purple': RGBColor(0x05, 0x96, 0x69),   # emerald-600
+    'slate':  RGBColor(0x25, 0x63, 0xeb),   # blue-600
+    'orange': RGBColor(0x25, 0x63, 0xeb),   # blue-600
 }
 
 # ── KPI display metadata ──────────────────────────────────────────────────────
@@ -137,8 +142,6 @@ HEADLINE_KPIS = {
 }
 
 # ── Per-model: which weekly series to chart ───────────────────────────────────
-# series: list of field names in the weekly array
-# Up to 2 series. First is primary (bar/line), second is secondary (right axis)
 CHART_SERIES = {
     'D1': ['orders_total', 'contribution_dollar'],
     'D2': ['total_revenue'],
@@ -148,7 +151,7 @@ CHART_SERIES = {
     'S1': ['total_gmv', 'total_revenue'],
     'S2': ['baseline_orders', 'with_changes_orders'],
     'S3': ['total_orders', 'baseline_orders'],
-    'S4': [],  # uses scored_restaurants — no standard weekly series
+    'S4': [],
     'P1': ['orders'],
     'P2': ['true_incremental_orders', 'incremental_revenue'],
     'P3': ['orders'],
@@ -157,8 +160,7 @@ CHART_SERIES = {
 }
 
 def get_accent(perspective: str, palette: str) -> RGBColor:
-    """Primary accent = perspective color."""
-    return PERSPECTIVE.get(perspective, DARK['base'])
+    return PERSPECTIVE.get(perspective, LIGHT['base'])
 
 def get_palette_highlight(palette: str) -> RGBColor:
     return PALETTE_HIGHLIGHT.get(palette, PALETTE_HIGHLIGHT['navy'])
