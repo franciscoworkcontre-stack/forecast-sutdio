@@ -2323,7 +2323,9 @@ export default function HomePage() {
               Cada iniciativa agrega o resta al total. Mueve los sliders para ver el impacto de cada driver en tiempo real.
             </p>
           </div>
-          <InteractiveWaterfall />
+          <div className="bg-gray-950 rounded-2xl p-6 border border-gray-800">
+            <InteractiveWaterfall />
+          </div>
         </div>
       </section>
 
@@ -2690,14 +2692,14 @@ export default function HomePage() {
 
                 {/* Content */}
                 {(model.status === 'demo' || model.status === 'full') && model.demoId && (
-                  <div className="p-6 bg-white">
+                  <div className="bg-gray-950 p-6 border-t border-gray-800">
                     {renderDemoById(model.demoId, demoInputs, demoOnChange)}
                   </div>
                 )}
 
                 {model.status === 'full' && (
-                  <div className={`px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between`}>
-                    <p className="text-gray-500 text-sm">Prueba el modelo completo con tus datos reales.</p>
+                  <div className={`px-6 py-4 border-t border-gray-800 bg-gray-900 flex items-center justify-between`}>
+                    <p className="text-gray-400 text-sm">Prueba el modelo completo con tus datos reales.</p>
                     <Link to={model.link} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
                       {model.linkLabel}
                     </Link>
@@ -2705,9 +2707,8 @@ export default function HomePage() {
                 )}
 
                 {model.status === 'roadmap' && (
-                  <div className="p-12 text-center bg-white">
-                    <div className="text-slate-300 text-3xl mb-3">⏳</div>
-                    <p className="text-gray-500 text-sm font-semibold mb-1">Modelo en roadmap</p>
+                  <div className="p-12 text-center bg-slate-50 border-t border-slate-100">
+                    <p className="text-gray-400 text-sm font-semibold mb-1">Modelo en roadmap</p>
                     <p className="text-gray-400 text-xs max-w-md mx-auto leading-relaxed">{model.context}</p>
                   </div>
                 )}
