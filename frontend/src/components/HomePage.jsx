@@ -6,6 +6,7 @@ import {
   ReferenceLine, ResponsiveContainer, LabelList, Cell,
   ComposedChart
 } from 'recharts'
+import { Target, SlidersHorizontal, Download, ArrowRight, BarChart2 } from 'lucide-react'
 
 // ── Scroll Reveal Hook ───────────────────────────────────────────────────────
 
@@ -2007,6 +2008,79 @@ function renderDemoById(demoId, inputs, onChange) {
   }
 }
 
+// ── Hero animated preview chart ───────────────────────────────────────────────
+
+const heroChartData = Array.from({ length: 20 }, (_, i) => ({
+  week: `W${i + 1}`,
+  base:      45000 + i * 600  + Math.sin(i * 0.5) * 2000,
+  optimista: 52000 + i * 1000 + Math.sin(i * 0.5) * 2000,
+  pesimista: 39000 + i * 300  + Math.sin(i * 0.5) * 1500,
+}))
+
+function HeroChart() {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl shadow-slate-200/80 p-5 overflow-hidden">
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {[
+          { label: 'Órdenes sem. 20', value: '61.2k', delta: '+11%', color: 'text-blue-600' },
+          { label: 'Revenue total',   value: '$118k', delta: '+16%', color: 'text-emerald-600' },
+          { label: 'LTV / CAC',       value: '3.1×',  delta: '+0.3', color: 'text-violet-600' },
+        ].map(({ label, value, delta, color }) => (
+          <div key={label} className="bg-slate-50 rounded-xl px-3 py-2.5">
+            <div className="text-[10px] text-slate-400 mb-1 font-medium truncate">{label}</div>
+            <div className={`text-base font-bold font-mono ${color} leading-none`}>{value}</div>
+            <div className="text-[10px] text-emerald-500 font-semibold mt-0.5">{delta}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="text-[10px] text-slate-400 font-medium mb-1 flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+        Forecast · 20 semanas · 3 escenarios
+      </div>
+      <ResponsiveContainer width="100%" height={190}>
+        <AreaChart data={heroChartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+          <defs>
+            <linearGradient id="gradOpt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#2563eb" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.01} />
+            </linearGradient>
+            <linearGradient id="gradBase" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#94a3b8" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.01} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <XAxis dataKey="week" tick={{ fontSize: 9, fill: '#cbd5e1' }} interval={4} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 9, fill: '#cbd5e1' }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+          <Tooltip
+            contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 11, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+            formatter={(v, name) => [`${(v/1000).toFixed(1)}k`, name]}
+          />
+          <Area type="monotone" dataKey="pesimista" stroke="#f87171" fill="none" strokeDasharray="4 3" strokeWidth={1.5} name="Pesimista" isAnimationActive animationDuration={2000} animationBegin={600} />
+          <Area type="monotone" dataKey="base"      stroke="#94a3b8" fill="url(#gradBase)" strokeWidth={1.5} name="Base"      isAnimationActive animationDuration={1600} animationBegin={200} />
+          <Area type="monotone" dataKey="optimista" stroke="#2563eb" fill="url(#gradOpt)"  strokeWidth={2}   name="Optimista" isAnimationActive animationDuration={1200} animationBegin={0} />
+        </AreaChart>
+      </ResponsiveContainer>
+
+      {/* Footer */}
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex items-center gap-3 text-[10px] text-slate-400">
+          {[['#2563eb','Optimista'],['#94a3b8','Base'],['#f87171','Pesimista']].map(([c,l]) => (
+            <span key={l} className="flex items-center gap-1">
+              <span className="w-2.5 h-0.5 rounded-full inline-block" style={{ background: c }} />
+              {l}
+            </span>
+          ))}
+        </div>
+        <span className="text-[10px] text-slate-300 font-mono">Excel · PPT</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Main HomePage ─────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -2092,8 +2166,8 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">📊</span>
-            <span className="font-mono font-semibold text-gray-900 text-sm tracking-tight">Forecast Studio</span>
+            <BarChart2 size={18} className="text-blue-600" />
+            <span className="font-semibold text-gray-900 text-sm tracking-tight">Forecast Studio</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
             <a href="#como-funciona" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Cómo funciona</a>
@@ -2103,81 +2177,105 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2">
             <Link to="/forecasts" className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded transition-colors">Ver Forecasts</Link>
-            <Link to="/new" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">Nuevo Forecast →</Link>
+            <Link to="/new" className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+              Nuevo Forecast <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </nav>
 
       {/* ── SECTION 2: Hero ───────────────────────────────────────────────── */}
-      <section className="pt-20 pb-16 bg-gradient-to-b from-slate-50 to-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-medium mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            14 modelos cuantitativos · LATAM-first
-          </div>
+      <section className="pt-16 pb-24 bg-gradient-to-br from-slate-50 via-white to-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[520px]">
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
-            Tu forecast, listo<br />
-            <span className="text-blue-600">en minutos.</span>
-          </h1>
+            {/* Left: copy */}
+            <div className="space-y-8">
+              <div className="space-y-5">
+                <h1 className="text-5xl lg:text-[3.6rem] font-bold text-gray-900 leading-[1.1] tracking-tight">
+                  Proyecta tu<br />negocio con<br />
+                  <span className="text-blue-600">precisión.</span>
+                </h1>
+                <p className="text-gray-500 text-xl leading-relaxed max-w-md">
+                  De una pregunta de negocio a un forecast cuantitativo — con exportación a Excel y PPT — en minutos.
+                </p>
+              </div>
 
-          <p className="text-gray-500 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-            Elige tu pregunta de negocio, ingresa tus parámetros y obtén un forecast cuantitativo — con exportación a Excel y PPT.
-          </p>
-
-          {/* Question cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-10 text-left">
-            {[
-              { q: '¿Cuántas transacciones tendré las próximas semanas?', color: 'blue', link: '/new', label: 'Empezar desde cero' },
-              { q: '¿Cuándo recupero lo que invierto en adquirir usuarios?', color: 'blue', link: '/models/d2', label: 'D2 · LTV / CAC' },
-              { q: '¿Cuántas ventas generarán los proveedores que activo hoy?', color: 'emerald', link: '/models/s1', label: 'S1 · Onboarding' },
-              { q: '¿Cuánto uplift real generan mis promociones?', color: 'purple', link: '/models/p2', label: 'P2 · Incrementality' },
-              { q: '¿Qué pasa si entra un competidor a mi mercado?', color: 'purple', link: '/models/p4', label: 'P4 · Competitive' },
-              { q: '¿Qué usuarios dormidos puedo recuperar con campaña?', color: 'blue', link: '/models/d5', label: 'D5 · Winback' },
-            ].map(({ q, color, link, label }) => {
-              const styles = {
-                blue:    { border: 'border-l-blue-500',    label: 'text-blue-600',    hover: 'hover:border-blue-300 hover:shadow-blue-100' },
-                emerald: { border: 'border-l-emerald-500', label: 'text-emerald-600', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
-                purple:  { border: 'border-l-violet-500',  label: 'text-violet-600',  hover: 'hover:border-violet-300 hover:shadow-violet-100' },
-              }[color]
-              return (
-                <Link
-                  key={q}
-                  to={link}
-                  className={`group bg-white rounded-xl border border-slate-200 border-l-4 ${styles.border} ${styles.hover} p-4 shadow-sm hover:shadow-md transition-all`}
-                >
-                  <p className="text-gray-700 text-sm font-medium leading-snug mb-3 group-hover:text-gray-900">{q}</p>
-                  <span className={`text-[11px] font-mono font-semibold ${styles.label}`}>{label} →</span>
+              <div className="flex items-center gap-4">
+                <Link to="/new" className="inline-flex items-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-200 text-sm">
+                  Crear forecast
+                  <ArrowRight size={16} />
                 </Link>
-              )
-            })}
-          </div>
+                <a href="#como-funciona" className="text-sm text-gray-400 hover:text-gray-700 transition-colors">
+                  ¿Cómo funciona?
+                </a>
+              </div>
 
-          <div className="flex items-center justify-center gap-4">
-            <Link to="/new" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-200 text-sm">
-              Crear forecast desde cero →
-            </Link>
-            <a href="#como-funciona" className="text-gray-400 hover:text-gray-700 text-sm transition-colors">
-              ¿Cómo funciona? ↓
-            </a>
+              <div className="flex items-center gap-8 pt-4 border-t border-slate-100">
+                {[
+                  { value: '14', label: 'modelos' },
+                  { value: '20', label: 'industrias' },
+                  { value: '17', label: 'países LATAM' },
+                ].map(s => (
+                  <div key={s.label}>
+                    <div className="font-mono font-bold text-2xl text-gray-900">{s.value}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: animated forecast preview */}
+            <div className="relative">
+              <div className="absolute -inset-6 bg-gradient-to-br from-blue-100 via-white to-violet-100 rounded-3xl blur-2xl opacity-50 pointer-events-none" />
+              <div className="relative">
+                <HeroChart />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* ── SECTION 2b: How it works ──────────────────────────────────────── */}
-      <section id="como-funciona" className="py-16 border-y border-slate-100 bg-white">
+      <section id="como-funciona" className="py-20 bg-white border-y border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-14">Tres pasos, sin fricción</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { step: '01', icon: '🎯', title: 'Elige tu pregunta', desc: 'Selecciona el modelo que responde tu decisión de negocio — desde proyección de demanda hasta análisis competitivo.', color: 'text-blue-600' },
-              { step: '02', icon: '🎛️', title: 'Ingresa tus parámetros', desc: 'Órdenes base, horizonte de semanas, país. Nada más. El modelo hace el resto.', color: 'text-emerald-600' },
-              { step: '03', icon: '📤', title: 'Exporta el resultado', desc: 'Excel MBB con 9 tabs estructurados + deck PPT con 5 slides listos para boardroom.', color: 'text-violet-600' },
-            ].map(({ step, icon, title, desc, color }) => (
-              <div key={step} className="relative">
-                <div className="text-4xl mb-3">{icon}</div>
-                <div className={`text-xs font-mono font-bold ${color} mb-1 uppercase tracking-wider`}>Paso {step}</div>
-                <h3 className="text-gray-900 font-semibold mb-2">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+              {
+                Icon: Target,
+                bg: 'bg-blue-50', ring: 'ring-blue-100', iconColor: 'text-blue-600',
+                step: '01', stepColor: 'text-blue-600',
+                title: 'Elige tu pregunta',
+                desc: 'Selecciona el modelo que responde tu decisión — demanda, supply o plataforma.',
+              },
+              {
+                Icon: SlidersHorizontal,
+                bg: 'bg-emerald-50', ring: 'ring-emerald-100', iconColor: 'text-emerald-600',
+                step: '02', stepColor: 'text-emerald-600',
+                title: 'Ingresa tus parámetros',
+                desc: 'Órdenes base, horizonte de semanas, país. El modelo hace el cálculo.',
+              },
+              {
+                Icon: Download,
+                bg: 'bg-violet-50', ring: 'ring-violet-100', iconColor: 'text-violet-600',
+                step: '03', stepColor: 'text-violet-600',
+                title: 'Exporta el resultado',
+                desc: 'Excel MBB con 9 tabs + deck PPT con 5 slides. Listos para boardroom.',
+              },
+            ].map(({ Icon, bg, ring, iconColor, step, stepColor, title, desc }) => (
+              <div key={step} className="flex flex-col items-center text-center gap-5">
+                <div className={`relative w-16 h-16 ${bg} rounded-2xl flex items-center justify-center ring-4 ${ring} shadow-sm`}>
+                  <Icon size={26} className={iconColor} strokeWidth={1.75} />
+                  <span className={`absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[9px] font-bold ${stepColor} shadow-sm`}>
+                    {step}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-gray-900 font-semibold mb-2">{title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
