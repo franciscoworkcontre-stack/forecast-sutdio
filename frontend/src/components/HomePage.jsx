@@ -2086,117 +2086,122 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* ── SECTION 1: Navigation ─────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/80 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">📊</span>
-            <span className="font-mono font-semibold text-gray-100 text-sm tracking-tight">Forecast Studio</span>
+            <span className="font-mono font-semibold text-gray-900 text-sm tracking-tight">Forecast Studio</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <a href="#modelos" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Modelos</a>
-            <a href="#industrias" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Industrias</a>
-            <a href="#latam" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Países</a>
-            <a href="#exports" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Exports</a>
+            <a href="#como-funciona" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Cómo funciona</a>
+            <a href="#industrias" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Industrias</a>
+            <a href="#latam" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Países</a>
+            <a href="#modelos" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Modelos</a>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/forecasts" className="btn-ghost text-xs">Ver Forecasts</Link>
-            <Link to="/new" className="btn-primary text-xs">Nuevo Forecast →</Link>
+            <Link to="/forecasts" className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded transition-colors">Ver Forecasts</Link>
+            <Link to="/new" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">Nuevo Forecast →</Link>
           </div>
         </div>
       </nav>
 
       {/* ── SECTION 2: Hero ───────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-950/20 via-gray-950 to-gray-950 pt-16 pb-20">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-emerald-600/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-800/50 text-blue-400 text-xs font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              14 modelos · 20 industrias · LATAM-first
-            </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-50">
-              Forecasting para<br />
-              <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                cualquier marketplace
-              </span>
-            </h1>
-
-            <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-              14 modelos cuantitativos aplicables a 20 industrias. Marketplaces, SaaS, fintech, OTAs — mismo framework, variables adaptadas a cada vertical.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <Link to="/new" className="btn-primary px-6 py-2.5 text-sm font-semibold shadow-lg shadow-blue-900/30">
-                Crear Forecast →
-              </Link>
-              <a href="#industrias" className="btn-ghost px-6 py-2.5 text-sm border border-gray-700">
-                Ver Industrias
-              </a>
-            </div>
-
-            <div className="flex flex-wrap gap-6 pt-2 border-t border-gray-800">
-              {[
-                { value: '14', label: 'Modelos' },
-                { value: '20', label: 'Industrias' },
-                { value: 'MBB', label: 'Excel · PPT' },
-                { value: '100%', label: 'offline' },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="font-mono font-bold text-lg text-gray-100">{s.value}</div>
-                  <div className="text-xs text-gray-500">{s.label}</div>
-                </div>
-              ))}
-            </div>
+      <section className="pt-20 pb-16 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-medium mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            14 modelos cuantitativos · LATAM-first
           </div>
 
-          {/* Right: hero chart */}
-          <div className="ds-card p-4 shadow-xl shadow-blue-900/10">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono text-gray-400">Forecast · 26 semanas · Escenarios</span>
-              <span className="ds-badge-blue text-[10px]">LIVE PREVIEW</span>
-            </div>
-            <ChartErrorBoundary>
-              <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={heroData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="week" tick={{ fontSize: 9 }} interval={4} />
-                <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip content={<HeroTooltip />} />
-                <Legend iconType="line" wrapperStyle={{ fontSize: 10 }} />
-                <Area type="monotone" dataKey="worst" name="Peor caso" stroke="#f87171" fill="#f87171" fillOpacity={0.05} strokeDasharray="4 4" isAnimationActive={true} animationDuration={1200} />
-                <Area type="monotone" dataKey="base" name="Base" stroke="#6b7280" fill="#6b7280" fillOpacity={0.3} isAnimationActive={true} animationDuration={1200} animationBegin={100} />
-                <Area type="monotone" dataKey="withPromos" name="Base + Promos" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} isAnimationActive={true} animationDuration={1200} animationBegin={200} />
-                <Area type="monotone" dataKey="best" name="Mejor caso" stroke="#34d399" fill="#34d399" fillOpacity={0.05} strokeDasharray="4 4" isAnimationActive={true} animationDuration={1200} animationBegin={300} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </ChartErrorBoundary></div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
+            Tu forecast, listo<br />
+            <span className="text-blue-600">en minutos.</span>
+          </h1>
+
+          <p className="text-gray-500 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+            Elige tu pregunta de negocio, ingresa tus parámetros y obtén un forecast cuantitativo — con exportación a Excel y PPT.
+          </p>
+
+          {/* Question cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-10 text-left">
+            {[
+              { q: '¿Cuántas transacciones tendré las próximas semanas?', color: 'blue', link: '/new', label: 'Empezar desde cero' },
+              { q: '¿Cuándo recupero lo que invierto en adquirir usuarios?', color: 'blue', link: '/models/d2', label: 'D2 · LTV / CAC' },
+              { q: '¿Cuántas ventas generarán los proveedores que activo hoy?', color: 'emerald', link: '/models/s1', label: 'S1 · Onboarding' },
+              { q: '¿Cuánto uplift real generan mis promociones?', color: 'purple', link: '/models/p2', label: 'P2 · Incrementality' },
+              { q: '¿Qué pasa si entra un competidor a mi mercado?', color: 'purple', link: '/models/p4', label: 'P4 · Competitive' },
+              { q: '¿Qué usuarios dormidos puedo recuperar con campaña?', color: 'blue', link: '/models/d5', label: 'D5 · Winback' },
+            ].map(({ q, color, link, label }) => {
+              const styles = {
+                blue:    { border: 'border-l-blue-500',    label: 'text-blue-600',    hover: 'hover:border-blue-300 hover:shadow-blue-100' },
+                emerald: { border: 'border-l-emerald-500', label: 'text-emerald-600', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
+                purple:  { border: 'border-l-violet-500',  label: 'text-violet-600',  hover: 'hover:border-violet-300 hover:shadow-violet-100' },
+              }[color]
+              return (
+                <Link
+                  key={q}
+                  to={link}
+                  className={`group bg-white rounded-xl border border-slate-200 border-l-4 ${styles.border} ${styles.hover} p-4 shadow-sm hover:shadow-md transition-all`}
+                >
+                  <p className="text-gray-700 text-sm font-medium leading-snug mb-3 group-hover:text-gray-900">{q}</p>
+                  <span className={`text-[11px] font-mono font-semibold ${styles.label}`}>{label} →</span>
+                </Link>
+              )
+            })}
+          </div>
+
+          <div className="flex items-center justify-center gap-4">
+            <Link to="/new" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-200 text-sm">
+              Crear forecast desde cero →
+            </Link>
+            <a href="#como-funciona" className="text-gray-400 hover:text-gray-700 text-sm transition-colors">
+              ¿Cómo funciona? ↓
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 2b: How it works ──────────────────────────────────────── */}
+      <section id="como-funciona" className="py-16 border-y border-slate-100 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+            {[
+              { step: '01', icon: '🎯', title: 'Elige tu pregunta', desc: 'Selecciona el modelo que responde tu decisión de negocio — desde proyección de demanda hasta análisis competitivo.', color: 'text-blue-600' },
+              { step: '02', icon: '🎛️', title: 'Ingresa tus parámetros', desc: 'Órdenes base, horizonte de semanas, país. Nada más. El modelo hace el resto.', color: 'text-emerald-600' },
+              { step: '03', icon: '📤', title: 'Exporta el resultado', desc: 'Excel MBB con 9 tabs estructurados + deck PPT con 5 slides listos para boardroom.', color: 'text-violet-600' },
+            ].map(({ step, icon, title, desc, color }) => (
+              <div key={step} className="relative">
+                <div className="text-4xl mb-3">{icon}</div>
+                <div className={`text-xs font-mono font-bold ${color} mb-1 uppercase tracking-wider`}>Paso {step}</div>
+                <h3 className="text-gray-900 font-semibold mb-2">{title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── SECTION 3: Animated Stats Counters ───────────────────────────── */}
       <section
         ref={statsRef}
-        className={`py-16 border-y border-gray-800 bg-gray-900/30 transition-all duration-700 ${
+        className={`py-16 bg-slate-50 border-y border-slate-200 transition-all duration-700 ${
           statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { count: c1, label: 'Modelos cuantitativos', suffix: '' },
-              { count: c2, label: 'Industrias cubiertas', suffix: '' },
-              { count: c3, label: 'Semanas de horizonte', suffix: '' },
-              { count: c4, label: 'Tabs Excel · 5 slides PPT por modelo', suffix: '' },
-            ].map(({ count, label, suffix }) => (
+              { count: c1, label: 'Modelos cuantitativos' },
+              { count: c2, label: 'Industrias cubiertas' },
+              { count: c3, label: 'Semanas de horizonte' },
+              { count: c4, label: 'Tabs Excel · 5 slides PPT' },
+            ].map(({ count, label }) => (
               <div key={label} className="space-y-2">
-                <div className="text-5xl font-mono font-bold text-blue-400">
-                  {count}{suffix}
+                <div className="text-5xl font-mono font-bold text-blue-600">
+                  {count}
                 </div>
                 <div className="text-sm text-gray-500">{label}</div>
               </div>
@@ -2205,174 +2210,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 4: Model Taxonomy ─────────────────────────────────────── */}
-      <section
-        id="modelos"
-        ref={modelsRef}
-        className={`py-20 transition-all duration-700 ${
-          modelsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400 text-xs font-mono mb-4">
-              MBB Consulting · 14 modelos cuantitativos · 3 perspectivas
-            </div>
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">¿Cuál es tu pregunta de negocio?</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
-              Cada modelo responde una pregunta específica. Selecciona el modelo que se alinea
-              con tu decisión — los marcados con <span className="text-blue-400 font-mono">DEMO</span> tienen
-              una simulación interactiva, y <span className="text-purple-400 font-mono">WIZARD</span> tiene
-              un wizard completo de 7 pasos.
-            </p>
-          </div>
-
-          {/* 3-column taxonomy grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-            {Object.entries(TAXONOMY).map(([key, persp]) => {
-              const cs = COLOR_STYLES[persp.color]
-              return (
-                <div key={key} className="rounded-xl border border-gray-800 overflow-hidden">
-                  <div className={`px-4 py-3 ${cs.headerBg} border-b border-gray-800`}>
-                    <div className={`${cs.text} font-mono font-bold text-sm tracking-wide`}>{key} — {persp.label}</div>
-                    <div className="text-gray-500 text-xs mt-0.5">{persp.sublabel}</div>
-                  </div>
-                  {persp.models.map((model) => (
-                    <button
-                      key={model.id}
-                      onClick={() => handleModelSelect(model)}
-                      className={`w-full text-left px-4 py-3 border-b border-gray-800/60 last:border-0 transition-all hover:bg-gray-800/40 ${
-                        selectedModel === model.id ? 'bg-gray-800/70' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className={`font-mono text-[11px] font-bold ${cs.text} flex-shrink-0`}>{model.id}</span>
-                            <span className="text-gray-200 text-xs font-semibold leading-tight">{model.name}</span>
-                          </div>
-                          <p className="text-gray-500 text-[11px] leading-snug">{model.question}</p>
-                        </div>
-                        <div className="flex-shrink-0 mt-0.5 flex flex-col gap-0.5 items-end">
-                          {model.status === 'full' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-purple-900/50 text-purple-300 border-purple-800">WIZARD</span>
-                          )}
-                          {model.status === 'demo' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-900/50 text-blue-400 border-blue-800">DEMO</span>
-                          )}
-                          {model.status === 'roadmap' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-gray-800 text-gray-600 border-gray-700">PRONTO</span>
-                          )}
-                          {model.level === 'foundational' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-gray-800 text-gray-400 border-gray-700">Base</span>
-                          )}
-                          {model.level === 'mid' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-900/40 text-blue-300 border-blue-800">Mid</span>
-                          )}
-                          {model.level === 'advanced' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-amber-900/40 text-amber-300 border-amber-800">Advanced</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Detail / Demo panel */}
-          {selectedModel ? (() => {
-            const found = findTaxonomyModel(selectedModel)
-            if (!found) return null
-            const { model, persp } = found
-            const cs = COLOR_STYLES[persp.color]
-            const demoInputs = model.demoId ? (modelInputs[model.demoId] || {}) : {}
-            const demoOnChange = model.demoId ? (vals) => updateModelInputs(model.demoId, vals) : null
-
-            return (
-              <div className="rounded-xl border border-gray-700 overflow-hidden">
-                {/* Header */}
-                <div className={`px-5 py-4 ${cs.headerBg} border-b border-gray-700`}>
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`font-mono text-sm font-bold ${cs.text}`}>{model.id}</span>
-                        <span className="text-gray-100 font-semibold">{model.name}</span>
-                      </div>
-                      <p className={`text-xs font-semibold ${cs.text} mb-1`}>{model.question}</p>
-                      <p className="text-gray-400 text-xs leading-relaxed max-w-xl">{model.context}</p>
-                    </div>
-                    <div className="lg:max-w-xs px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-700 flex-shrink-0">
-                      <div className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1.5">💡 Insight clave</div>
-                      <p className={`text-xs leading-relaxed ${cs.text}`}>{model.insight}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                {(model.status === 'demo' || model.status === 'full') && model.demoId && (
-                  <div className="p-6">
-                    {renderDemoById(model.demoId, demoInputs, demoOnChange)}
-                  </div>
-                )}
-
-                {model.status === 'full' && (
-                  <div className={`px-6 py-4 border-t border-gray-700 flex items-center justify-between ${model.demoId ? '' : 'pt-6'}`}>
-                    <p className="text-gray-400 text-sm">Prueba el modelo completo con tus datos reales.</p>
-                    <Link to={model.link} className="btn-primary text-sm">
-                      {model.linkLabel}
-                    </Link>
-                  </div>
-                )}
-
-                {model.status === 'roadmap' && (
-                  <div className="p-12 text-center">
-                    <div className="text-gray-700 text-3xl mb-3">⏳</div>
-                    <p className="text-gray-400 text-sm font-semibold mb-1">Modelo en roadmap</p>
-                    <p className="text-gray-600 text-xs max-w-md mx-auto leading-relaxed">{model.context}</p>
-                  </div>
-                )}
-              </div>
-            )
-          })() : (
-            <div className="border border-dashed border-gray-800 rounded-xl p-8 text-center">
-              <p className="text-gray-600 text-sm">Selecciona un modelo de la tabla para ver su descripción detallada y demo interactiva</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── SECTION 5: Interactive Waterfall ─────────────────────────────── */}
+      {/* ── SECTION 4: Interactive Waterfall ─────────────────────────────── */}
       <section
         ref={waterfallRef}
-        className={`py-20 bg-gray-900/20 border-y border-gray-800 transition-all duration-700 ${
+        className={`py-20 bg-slate-50 border-y border-slate-200 transition-all duration-700 ${
           waterfallVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Modelo Combinado — construye tu forecast capa por capa</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              Cada iniciativa agrega (o resta) órdenes al total. Mueve los sliders para ver el impacto de cada driver.
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Construye tu forecast capa por capa</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Cada iniciativa agrega o resta al total. Mueve los sliders para ver el impacto de cada driver en tiempo real.
             </p>
           </div>
           <InteractiveWaterfall />
         </div>
       </section>
 
-      {/* ── SECTION 6: LATAM Coverage ─────────────────────────────────────── */}
+      {/* ── SECTION 5: LATAM Coverage ─────────────────────────────────────── */}
       <section
         id="latam"
         ref={latamRef}
-        className={`py-20 transition-all duration-700 ${
+        className={`py-20 bg-white transition-all duration-700 ${
           latamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">17 países de LATAM configurados</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">17 países de LATAM configurados</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
               Feriados, ciclos de pago, temporadas de lluvia y patrones semanales pre-cargados por país.
             </p>
           </div>
@@ -2381,18 +2248,18 @@ export default function HomePage() {
             {countries.map((country) => (
               <div
                 key={country.name}
-                className="ds-card p-3 cursor-default hover:border-blue-700 hover:bg-blue-950/30 transition-all duration-200 group"
+                className="bg-white border border-slate-200 rounded-lg p-3 cursor-default hover:border-blue-300 hover:shadow-sm transition-all duration-200 group"
               >
                 <div className="text-2xl mb-1">{country.flag}</div>
-                <div className="text-xs font-semibold text-gray-200 mb-1">{country.name}</div>
+                <div className="text-xs font-semibold text-gray-800 mb-1">{country.name}</div>
                 <div className="space-y-0.5 mb-2">
                   {country.facts.map((f) => (
-                    <div key={f} className="text-[10px] text-gray-500 leading-tight">{f}</div>
+                    <div key={f} className="text-[10px] text-gray-400 leading-tight">{f}</div>
                   ))}
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <Sparkline data={country.pattern} />
-                  <div className="flex justify-between text-[8px] text-gray-600 mt-0.5">
+                  <div className="flex justify-between text-[8px] text-gray-400 mt-0.5">
                     <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
                   </div>
                 </div>
@@ -2402,19 +2269,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 7: Exports ──────────────────────────────────────────── */}
+      {/* ── SECTION 6: Exports ──────────────────────────────────────────── */}
       <section
         id="exports"
         ref={excelRef}
-        className={`py-20 bg-gray-900/20 border-y border-gray-800 transition-all duration-700 ${
+        className={`py-20 bg-slate-50 border-y border-slate-200 transition-all duration-700 ${
           excelVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Outputs listos para boardroom en un click</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Excel MBB con 9 tabs estructurados + deck PPT dark con 5 slides por modelo. Hipótesis Minto Pyramid, KPIs headline y gráfico de serie semanal incluidos.
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Outputs listos para boardroom en un click</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Excel MBB con 9 tabs estructurados + deck PPT con 5 slides por modelo. Hipótesis Minto Pyramid, KPIs headline y gráfico de serie semanal incluidos.
             </p>
           </div>
 
@@ -2511,7 +2378,7 @@ export default function HomePage() {
                 ].map((text) => (
                   <div key={text} className="flex items-start gap-3">
                     <span className="font-bold mt-0.5 text-emerald-400">✓</span>
-                    <span className="text-sm text-gray-300">{text}</span>
+                    <span className="text-sm text-gray-600">{text}</span>
                   </div>
                 ))}
               </div>
@@ -2527,14 +2394,14 @@ export default function HomePage() {
                 ].map((text) => (
                   <div key={text} className="flex items-start gap-3">
                     <span className="font-bold mt-0.5 text-violet-400">✓</span>
-                    <span className="text-sm text-gray-300">{text}</span>
+                    <span className="text-sm text-gray-600">{text}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="ds-card p-4 bg-gradient-to-br from-violet-950/30 to-gray-900 border-violet-800/40">
-                <div className="text-xs text-gray-400 mb-1 font-mono">Dark theme · Minto Pyramid</div>
-                <div className="text-sm text-gray-200 leading-relaxed">
+              <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
+                <div className="text-xs text-violet-600 mb-1 font-mono">Minto Pyramid</div>
+                <div className="text-sm text-gray-700 leading-relaxed">
                   El título de cada slide es la hipótesis derivada de los datos — no un label, una conclusión.
                 </div>
               </div>
@@ -2557,21 +2424,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 8: Industries ─────────────────────────────────────────── */}
+      {/* ── SECTION 7: Industries ─────────────────────────────────────────── */}
       <section
         id="industrias"
         ref={industriesRef}
-        className={`py-20 bg-gray-950 border-t border-gray-800/60 transition-all duration-700 ${
+        className={`py-20 bg-white border-t border-slate-100 transition-all duration-700 ${
           industriesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-800/50 text-purple-400 text-xs font-mono mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-violet-600 text-xs font-medium mb-4">
               14 modelos × 20 industrias
             </div>
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Un framework, cualquier industria</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Un framework, cualquier industria</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-sm leading-relaxed">
               Los modelos de Markov, cohortes, funnel y supply side aplican a cualquier marketplace o plataforma. Solo cambian las variables — la lógica es la misma.
             </p>
           </div>
@@ -2585,20 +2452,20 @@ export default function HomePage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                   {catIndustries.map(ind => (
-                    <div key={ind.id} className="ds-card p-3 hover:border-gray-600 transition-colors group">
+                    <div key={ind.id} className="bg-white border border-slate-200 rounded-lg p-3 hover:border-slate-300 hover:shadow-sm transition-all group">
                       <div className="flex items-start gap-2 mb-2">
                         <span className="text-xl leading-none">{ind.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-gray-200 leading-tight">{ind.name}</div>
-                          <div className="text-[10px] text-gray-500 mt-0.5 truncate">{ind.demand} → {ind.supply}</div>
+                          <div className="text-xs font-semibold text-gray-800 leading-tight">{ind.name}</div>
+                          <div className="text-[10px] text-gray-400 mt-0.5 truncate">{ind.demand} → {ind.supply}</div>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {ind.models.map(m => (
-                          <span key={m} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">{m}</span>
+                          <span key={m} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">{m}</span>
                         ))}
                       </div>
-                      <p className="text-[10px] text-gray-500 leading-snug line-clamp-2">{ind.insight}</p>
+                      <p className="text-[10px] text-gray-400 leading-snug line-clamp-2">{ind.insight}</p>
                     </div>
                   ))}
                 </div>
@@ -2606,13 +2473,13 @@ export default function HomePage() {
             )
           })}
 
-          <div className="mt-6 ds-card p-5 bg-gradient-to-r from-blue-950/30 to-purple-950/20 border-blue-800/40">
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-5">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
               <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-100 mb-1">¿Tu industria no está aquí?</div>
-                <p className="text-xs text-gray-400">Los modelos son agnósticos a la industria. Si tienes usuarios, proveedores y transacciones, el framework aplica. Abre un forecast y adapta las variables a tu contexto.</p>
+                <div className="text-sm font-semibold text-gray-900 mb-1">¿Tu industria no está aquí?</div>
+                <p className="text-xs text-gray-500">Los modelos son agnósticos a la industria. Si tienes usuarios, proveedores y transacciones, el framework aplica.</p>
               </div>
-              <Link to="/new" className="btn-primary text-xs flex-shrink-0 whitespace-nowrap">
+              <Link to="/new" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors flex-shrink-0 whitespace-nowrap">
                 Crear Forecast →
               </Link>
             </div>
@@ -2620,22 +2487,157 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── SECTION 8: Model Taxonomy (para curiosos) ─────────────────────── */}
+      <section
+        id="modelos"
+        ref={modelsRef}
+        className={`py-20 bg-slate-50 border-t border-slate-200 transition-all duration-700 ${
+          modelsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200 text-slate-600 text-xs font-mono mb-4">
+              14 modelos cuantitativos · 3 perspectivas
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Explora todos los modelos</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-sm leading-relaxed">
+              Cada modelo responde una pregunta específica. Haz click en cualquiera para ver la demo interactiva y entrar al wizard.
+            </p>
+          </div>
+
+          {/* 3-column taxonomy grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            {Object.entries(TAXONOMY).map(([key, persp]) => {
+              const cs = COLOR_STYLES[persp.color]
+              return (
+                <div key={key} className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+                  <div className={`px-4 py-3 ${cs.headerBg} border-b border-slate-200`}>
+                    <div className={`${cs.text} font-mono font-bold text-sm tracking-wide`}>{key} — {persp.label}</div>
+                    <div className="text-gray-500 text-xs mt-0.5">{persp.sublabel}</div>
+                  </div>
+                  {persp.models.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => handleModelSelect(model)}
+                      className={`w-full text-left px-4 py-3 border-b border-slate-100 last:border-0 transition-all hover:bg-slate-50 ${
+                        selectedModel === model.id ? 'bg-slate-100' : 'bg-white'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className={`font-mono text-[11px] font-bold ${cs.text} flex-shrink-0`}>{model.id}</span>
+                            <span className="text-gray-800 text-xs font-semibold leading-tight">{model.name}</span>
+                          </div>
+                          <p className="text-gray-400 text-[11px] leading-snug">{model.question}</p>
+                        </div>
+                        <div className="flex-shrink-0 mt-0.5 flex flex-col gap-0.5 items-end">
+                          {model.status === 'full' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-violet-50 text-violet-600 border-violet-200">WIZARD</span>
+                          )}
+                          {model.status === 'demo' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-50 text-blue-600 border-blue-200">DEMO</span>
+                          )}
+                          {model.status === 'roadmap' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-400 border-slate-200">PRONTO</span>
+                          )}
+                          {model.level === 'foundational' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-500 border-slate-200">Base</span>
+                          )}
+                          {model.level === 'mid' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-50 text-blue-500 border-blue-200">Mid</span>
+                          )}
+                          {model.level === 'advanced' && (
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">Advanced</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Detail / Demo panel */}
+          {selectedModel ? (() => {
+            const found = findTaxonomyModel(selectedModel)
+            if (!found) return null
+            const { model, persp } = found
+            const cs = COLOR_STYLES[persp.color]
+            const demoInputs = model.demoId ? (modelInputs[model.demoId] || {}) : {}
+            const demoOnChange = model.demoId ? (vals) => updateModelInputs(model.demoId, vals) : null
+
+            return (
+              <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+                {/* Header */}
+                <div className={`px-5 py-4 ${cs.headerBg} border-b border-slate-200`}>
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`font-mono text-sm font-bold ${cs.text}`}>{model.id}</span>
+                        <span className="text-gray-900 font-semibold">{model.name}</span>
+                      </div>
+                      <p className={`text-xs font-semibold ${cs.text} mb-1`}>{model.question}</p>
+                      <p className="text-gray-500 text-xs leading-relaxed max-w-xl">{model.context}</p>
+                    </div>
+                    <div className="lg:max-w-xs px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 flex-shrink-0">
+                      <div className="text-slate-400 text-[10px] font-mono uppercase tracking-widest mb-1.5">💡 Insight clave</div>
+                      <p className={`text-xs leading-relaxed ${cs.text}`}>{model.insight}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {(model.status === 'demo' || model.status === 'full') && model.demoId && (
+                  <div className="p-6 bg-white">
+                    {renderDemoById(model.demoId, demoInputs, demoOnChange)}
+                  </div>
+                )}
+
+                {model.status === 'full' && (
+                  <div className={`px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between`}>
+                    <p className="text-gray-500 text-sm">Prueba el modelo completo con tus datos reales.</p>
+                    <Link to={model.link} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
+                      {model.linkLabel}
+                    </Link>
+                  </div>
+                )}
+
+                {model.status === 'roadmap' && (
+                  <div className="p-12 text-center bg-white">
+                    <div className="text-slate-300 text-3xl mb-3">⏳</div>
+                    <p className="text-gray-500 text-sm font-semibold mb-1">Modelo en roadmap</p>
+                    <p className="text-gray-400 text-xs max-w-md mx-auto leading-relaxed">{model.context}</p>
+                  </div>
+                )}
+              </div>
+            )
+          })() : (
+            <div className="border border-dashed border-slate-300 rounded-xl p-8 text-center bg-white">
+              <p className="text-slate-400 text-sm">Selecciona un modelo para ver su descripción detallada y demo interactiva</p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ── SECTION 9: Technical Details ──────────────────────────────────── */}
       <section
         ref={techRef}
-        className={`py-20 transition-all duration-700 ${
+        className={`py-20 bg-white border-t border-slate-100 transition-all duration-700 ${
           techVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Arquitectura de fórmulas</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Arquitectura de fórmulas</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
               Cada modelo tiene una ecuación explícita. Sin cajas negras.
             </p>
           </div>
 
-          <div className="ds-card p-6 mb-8 overflow-x-auto">
+          <div className="bg-gray-950 border border-gray-800 rounded-xl p-6 mb-8 overflow-x-auto">
             <div className="text-[10px] font-mono text-gray-500 mb-3 uppercase tracking-widest">Formula · Forecast Final[W]</div>
             <pre className="text-sm leading-loose">
               <span className="text-gray-400">{'Forecast Final[W] ='}</span>{'\n'}
@@ -2656,28 +2658,28 @@ export default function HomePage() {
                 title: 'Validación doble',
                 desc: 'Pydantic v2 en backend. Zod en frontend. Todo input validado antes de calcular.',
                 badge: 'Pydantic v2 + Zod',
-                color: 'border-blue-800/50',
+                color: 'border-blue-200',
               },
               {
                 icon: '⚙️',
                 title: '100% backend calc',
                 desc: 'Python + NumPy. Todos los modelos corren server-side. El frontend solo visualiza.',
                 badge: 'Python + NumPy',
-                color: 'border-emerald-800/50',
+                color: 'border-emerald-200',
               },
               {
                 icon: '🗄️',
                 title: 'SQLite local',
                 desc: 'Sin dependencias externas. Los forecasts se guardan en SQLite. Corre offline.',
                 badge: 'SQLite · sin cloud',
-                color: 'border-purple-800/50',
+                color: 'border-violet-200',
               },
             ].map(({ icon, title, desc, badge, color }) => (
-              <div key={title} className={`ds-card p-5 border ${color}`}>
+              <div key={title} className={`bg-white border ${color} rounded-xl p-5 shadow-sm`}>
                 <div className="text-2xl mb-3">{icon}</div>
-                <div className="font-semibold text-gray-100 mb-2">{title}</div>
-                <div className="text-sm text-gray-400 leading-relaxed mb-3">{desc}</div>
-                <code className="text-xs font-mono text-blue-400 bg-gray-950 px-2 py-1 rounded border border-gray-800">{badge}</code>
+                <div className="font-semibold text-gray-900 mb-2">{title}</div>
+                <div className="text-sm text-gray-500 leading-relaxed mb-3">{desc}</div>
+                <code className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">{badge}</code>
               </div>
             ))}
           </div>
@@ -2687,43 +2689,41 @@ export default function HomePage() {
       {/* ── SECTION 10: CTA Footer ─────────────────────────────────────────── */}
       <section
         ref={ctaRef}
-        className={`py-24 bg-gradient-to-br from-blue-950/30 via-gray-950 to-gray-950 border-t border-gray-800 transition-all duration-700 ${
+        className={`py-24 bg-blue-600 transition-all duration-700 ${
           ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <div className="w-12 h-1 bg-blue-500 mx-auto mb-8 rounded" />
-          <h2 className="text-4xl font-bold text-gray-100 mb-4">
+          <h2 className="text-4xl font-bold text-white mb-4">
             ¿Listo para construir<br />tu forecast?
           </h2>
-          <p className="text-gray-400 text-lg mb-8 leading-relaxed">
-            Setup en 5 minutos. Sin cuenta. Sin API keys.<br />
-            Corre 100% local o en Vercel.
+          <p className="text-blue-100 text-lg mb-8 leading-relaxed">
+            Elige tu pregunta, ingresa tus parámetros y exporta en minutos.
           </p>
           <Link
             to="/new"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-xl shadow-blue-900/30"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-blue-50 text-blue-600 font-semibold text-lg rounded-xl transition-colors shadow-xl"
           >
             → Crear mi primer forecast
           </Link>
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-blue-200">
             <span>✓ Sin registro</span>
-            <span>✓ 100% offline</span>
-            <span>✓ Open source</span>
+            <span>✓ Sin API keys</span>
+            <span>✓ Export a Excel y PPT</span>
           </div>
         </div>
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="py-6 border-t border-gray-800 bg-gray-950">
+      <footer className="py-6 border-t border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
-          <div className="font-mono text-sm text-gray-500">
+          <div className="font-mono text-sm text-gray-400">
             📊 Forecast Studio · Modelos cuantitativos para LATAM
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-600">
-            <Link to="/forecasts" className="hover:text-gray-400 transition-colors">Mis Forecasts</Link>
-            <Link to="/new" className="hover:text-gray-400 transition-colors">Nuevo Forecast</Link>
-            <Link to="/settings" className="hover:text-gray-400 transition-colors">Settings</Link>
+          <div className="flex items-center gap-4 text-xs text-gray-400">
+            <Link to="/forecasts" className="hover:text-gray-700 transition-colors">Mis Forecasts</Link>
+            <Link to="/new" className="hover:text-gray-700 transition-colors">Nuevo Forecast</Link>
+            <Link to="/settings" className="hover:text-gray-700 transition-colors">Settings</Link>
           </div>
         </div>
       </footer>
