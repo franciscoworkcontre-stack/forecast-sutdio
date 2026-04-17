@@ -72,7 +72,7 @@ def test_p_and_l():
     req.levers = [Lever(id="ddc", name="DDC", lever_type="conversion", active=True, base_uplift=0.10)]
     result = run_markov_forecast(req)
     for w in result.weeks:
-        assert w.total_spend >= 0
+        assert w.total_gastos >= 0
         assert w.gmv >= 0
         assert w.net_revenue == pytest.approx(w.gmv * 0.22, rel=0.01)
 

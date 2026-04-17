@@ -120,7 +120,7 @@ const STEPS = [
 ]
 
 const DEFAULT_PROFILES = [
-  { id: 'A', name: 'EFO (1ra orden)', initial_users: 50000 },
+  { id: 'A', name: 'Usuario primera orden', initial_users: 50000 },
   { id: 'B', name: '2da Orden', initial_users: 30000 },
   { id: 'C', name: 'Churneado', initial_users: 80000 },
   { id: 'D', name: 'Baja Frecuencia', initial_users: 120000 },
@@ -147,12 +147,12 @@ const DEFAULT_FUNNEL = {
 }
 
 const DEFAULT_LEVERS = [
-  { id: 'popup', name: 'Food Pop-Up', lever_type: 'traffic', active: false, base_uplift: 0.12 },
-  { id: 'pgot', name: 'PGoT (Push Personalizado)', lever_type: 'traffic', active: false, base_uplift: 0.08 },
-  { id: 'cross_sell', name: 'Cross-sell (Rides/Otros)', lever_type: 'traffic', active: false, base_uplift: 0.05 },
-  { id: 'ddc', name: 'DDC Free (Free Delivery)', lever_type: 'conversion', active: false, base_uplift: 0.08 },
+  { id: 'inapp1', name: 'In App Comm 1', lever_type: 'traffic', active: false, base_uplift: 0.12 },
+  { id: 'banner', name: 'Banner', lever_type: 'traffic', active: false, base_uplift: 0.08 },
+  { id: 'cross_sell', name: 'Cross-sell', lever_type: 'traffic', active: false, base_uplift: 0.05 },
+  { id: 'membresia', name: 'Membresía', lever_type: 'conversion', active: false, base_uplift: 0.08 },
   { id: 'coupon', name: 'Cupón de Descuento', lever_type: 'conversion', active: false, base_uplift: 0.12 },
-  { id: 'bxsy', name: 'BxSy (2x1 / Bundle)', lever_type: 'conversion', active: false, base_uplift: 0.15 },
+  { id: 'promo_bundle', name: 'Promo Bundle', lever_type: 'conversion', active: false, base_uplift: 0.15 },
 ]
 
 const DEFAULT_COSTS = {
@@ -653,8 +653,8 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
     avg_weekly_sessions: 'Cuántas veces en promedio abre la app cada usuario activo por semana. Alta frecuencia: 2-4 sesiones. Nuevos: 0.8-1.5.',
     see_vertical_pct: 'De las sesiones, qué % resulta en que el usuario ve la sección de food delivery. Impacta directo el tráfico al funnel.',
     entry_topic: 'Qué % del tráfico entra por el Topic Page (página principal de la vertical). Los tres entry points deben sumar ≈ 1.0.',
-    p1_topic: 'P1 = Click-through rate. De los que ven la sección, qué % hace click en un restaurante. Típico: 25-45%.',
-    p2_topic: 'P2 = Purchase rate. De los que entran a un restaurante, qué % completa la orden. Típico: 10-25%.',
+    p1_topic: 'Conversión de entrada. De los que ven la sección, qué % hace click. Típico: 25-45%.',
+    p2_topic: 'Conversión de compra. De los que hacen click, qué % completa la transacción. Típico: 10-25%.',
   }
 
   const ALL_COLUMNS = [
@@ -664,19 +664,19 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
     { key: 'entry_topic', label: 'Topic', group: 'Entry Share', tooltip: TOOLTIPS.entry_topic },
     { key: 'entry_feed', label: 'Feed', group: 'Entry Share' },
     { key: 'entry_filter', label: 'Filter', group: 'Entry Share' },
-    { key: 'p1_topic', label: 'P1 Topic', group: 'Conversión', tooltip: TOOLTIPS.p1_topic },
-    { key: 'p1_feed', label: 'P1 Feed', group: 'Conversión' },
-    { key: 'p1_filter', label: 'P1 Filter', group: 'Conversión' },
-    { key: 'p2_topic', label: 'P2 Topic', group: 'Conversión', tooltip: TOOLTIPS.p2_topic },
-    { key: 'p2_feed', label: 'P2 Feed', group: 'Conversión' },
-    { key: 'p2_filter', label: 'P2 Filter', group: 'Conversión' },
+    { key: 'p1_topic', label: 'Ent. Topic', group: 'Conversión', tooltip: TOOLTIPS.p1_topic },
+    { key: 'p1_feed', label: 'Ent. Feed', group: 'Conversión' },
+    { key: 'p1_filter', label: 'Ent. Filter', group: 'Conversión' },
+    { key: 'p2_topic', label: 'Compra Topic', group: 'Conversión', tooltip: TOOLTIPS.p2_topic },
+    { key: 'p2_feed', label: 'Compra Feed', group: 'Conversión' },
+    { key: 'p2_filter', label: 'Compra Filter', group: 'Conversión' },
   ]
 
   const BASE_COLUMNS = [
     { key: 'open_app_pct', label: '% Open App', group: 'Actividad', tooltip: TOOLTIPS.open_app_pct },
     { key: 'avg_weekly_sessions', label: 'Sessions/sem', group: 'Actividad', tooltip: TOOLTIPS.avg_weekly_sessions },
-    { key: 'p1_topic', label: 'P1 (click)', group: 'Conversión', tooltip: TOOLTIPS.p1_topic },
-    { key: 'p2_topic', label: 'P2 (compra)', group: 'Conversión', tooltip: TOOLTIPS.p2_topic },
+    { key: 'p1_topic', label: 'Conv. entrada', group: 'Conversión', tooltip: TOOLTIPS.p1_topic },
+    { key: 'p2_topic', label: 'Conv. compra', group: 'Conversión', tooltip: TOOLTIPS.p2_topic },
   ]
 
   const COLUMNS = mode === 'base' ? BASE_COLUMNS : ALL_COLUMNS
@@ -715,7 +715,7 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
                     <th className="text-left px-2 py-1 w-24" />
                     <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Actividad</th>
                     <th colSpan={3} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Entry Share</th>
-                    <th colSpan={6} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Conversión (P1 × P2)</th>
+                    <th colSpan={6} className="text-center py-1 text-gray-500 uppercase tracking-widest border-b border-gray-800">Conv. entrada × Conv. compra</th>
                   </tr>
                   <tr className="border-b border-gray-800">
                     <th className="text-left px-2 py-1 text-gray-400">Perfil</th>
@@ -806,11 +806,31 @@ function StepFunnel({ config, setConfig, onNext, onBack }) {
 
 // ── Step 4: Levers ───────────────────────────────────────────────────────────
 
+let _leverCounter = 0
+
 function StepLevers({ config, setConfig, onNext, onBack }) {
   const levers = config.levers
   const ramp = config.ramp_config
   const acq = config.acquisition
   const [mode, setMode] = useState('base')
+
+  const addLever = () => {
+    _leverCounter++
+    setConfig(prev => ({
+      ...prev,
+      levers: [...prev.levers, {
+        id: `custom_${_leverCounter}`,
+        name: 'Nuevo lever',
+        lever_type: 'conversion',
+        active: true,
+        base_uplift: 0.10
+      }]
+    }))
+  }
+
+  const removeLever = (id) => {
+    setConfig(prev => ({ ...prev, levers: prev.levers.filter(l => l.id !== id) }))
+  }
 
   const updateLever = (id, field, val) => {
     setConfig(prev => ({
@@ -844,6 +864,9 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
         <div className="ds-section-header flex items-center justify-between">
           <span>Levers Activos</span>
           <div className="flex items-center gap-2">
+            <button onClick={addLever} className="text-[10px] px-2 py-0.5 rounded border border-emerald-700 text-emerald-400 hover:bg-emerald-900/30 transition-all">
+              + Agregar lever
+            </button>
             {['base', 'advanced'].map(m => (
               <button key={m} onClick={() => setMode(m)}
                 className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
@@ -914,6 +937,10 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
                     </span>
                   </div>
                 )}
+
+                <button onClick={() => removeLever(l.id)} className="flex-shrink-0 text-gray-700 hover:text-red-400 transition-colors text-sm ml-1" title="Eliminar lever">
+                  ✕
+                </button>
               </div>
             ))}
           </div>
@@ -1010,7 +1037,7 @@ function StepLevers({ config, setConfig, onNext, onBack }) {
         {acq.active && (
           <div className="grid grid-cols-2 gap-3 mt-3">
             {[
-              { key: 'efo_share', label: 'EFO Share', tooltip: '% de órdenes totales que son primeras órdenes del usuario. Típico: 15-25% en mercados maduros, 25-35% en crecimiento.', fmt: v => `${(v * 100).toFixed(0)}%`, min: 0, max: 0.5, step: 0.01 },
+              { key: 'efo_share', label: 'Share primera orden', tooltip: '% de órdenes totales que son primeras órdenes del usuario. Típico: 15-25% en mercados maduros, 25-35% en crecimiento.', fmt: v => `${(v * 100).toFixed(0)}%`, min: 0, max: 0.5, step: 0.01 },
               { key: 'alpha', label: 'Alpha (α)', tooltip: 'Qué % de las órdenes incrementales se traduce en usuarios nuevos permanentes. Típico: 30-50%.', fmt: v => `${(v * 100).toFixed(0)}%`, min: 0, max: 1, step: 0.01 },
               { key: 'wow_cap', label: 'WoW Cap', tooltip: 'Límite de crecimiento semana a semana de nuevos usuarios. 50% = no pueden más que doblar cada semana.', fmt: v => `${(v * 100).toFixed(0)}%`, min: 0, max: 2, step: 0.05 },
               { key: 'new_user_orders_ratio', label: 'Órdenes/nuevo user', tooltip: 'Cuántas órdenes hace un nuevo usuario en su primera semana activa.', fmt: v => v.toFixed(1), min: 0.1, max: 5, step: 0.1 },
@@ -1065,12 +1092,12 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
 
   const COST_COLS = [
     { key: 'pct_w_coupon', label: '% usuarios', tooltip: 'Qué % de los usuarios de este perfil redime cupones' },
-    { key: 'gasto_cupon',  label: 'Gasto/cupón', tooltip: `Gasto P2C por cupón redimido (${config.currency})` },
+    { key: 'gasto_cupon',  label: 'Gasto/cupón', tooltip: `Gasto trigger cupones por cupón redimido (${config.currency})` },
     { key: 'coupon_redeem', label: '% redención', tooltip: 'De los que tienen cupón, qué % lo usa' },
-    { key: 'pct_w_ddc',   label: '% usuarios', tooltip: 'Qué % de usuarios de este perfil usa el Free Delivery Club' },
-    { key: 'gasto_ddc',   label: 'Gasto/orden', tooltip: `Gasto P2C por orden con free delivery (${config.currency})` },
-    { key: 'pct_w_bxsy',  label: '% usuarios', tooltip: 'Qué % de usuarios aprovecha las promos 2x1 o bundle' },
-    { key: 'gasto_bxsy',  label: 'Gasto/orden', tooltip: `Gasto B2C por orden con promo BxSy/bundle (${config.currency})` },
+    { key: 'pct_w_ddc',   label: '% usuarios', tooltip: 'Qué % de usuarios de este perfil tiene Membresía activa' },
+    { key: 'gasto_ddc',   label: 'Gasto/orden', tooltip: `Costo de Membresía por orden (${config.currency})` },
+    { key: 'pct_w_bxsy',  label: '% usuarios', tooltip: 'Qué % de usuarios aprovecha promos de tipo bundle/promo' },
+    { key: 'gasto_bxsy',  label: 'Gasto/orden', tooltip: `Gasto trigger promocional por orden (${config.currency})` },
     { key: 'bxsy_redeem', label: '% redención', tooltip: 'De los que tienen la promo activa, qué % la usa' },
   ]
 
@@ -1078,7 +1105,7 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
     <div className="space-y-6">
       <div className="ds-card p-4 bg-amber-950/20 border-amber-900/50">
         <p className="text-xs text-amber-300">
-          Esta pantalla define los <strong>gastos comerciales</strong> por perfil. <strong>Gastos P2C</strong> (Plataforma→Consumidor): cupones y free delivery, financiados por la plataforma. <strong>Gastos B2C</strong> (Negocio→Consumidor): promos tipo BxSy o bundle, financiadas por la plataforma o el restaurante. El modelo calcula <strong>CM = Net Revenue − Total Gastos</strong>.
+          Esta pantalla define los <strong>gastos comerciales</strong> por perfil. <strong>Gasto trigger cupones</strong>: cupones y membresías, financiados por la plataforma. <strong>Gasto trigger promocional</strong>: promos tipo bundle, financiadas por la plataforma o el proveedor. El modelo calcula <strong>CM = Net Revenue − Total Gastos</strong>.
         </p>
       </div>
 
@@ -1089,9 +1116,9 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
             <thead>
               <tr>
                 <th className="text-left px-2 py-1 w-20 text-gray-400">Perfil</th>
-                <th colSpan={3} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto P2C — Cupón</th>
-                <th colSpan={2} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto P2C — Free Delivery</th>
-                <th colSpan={3} className="text-center py-1 text-amber-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto B2C — Promo/Bundle</th>
+                <th colSpan={3} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto trigger cupones</th>
+                <th colSpan={2} className="text-center py-1 text-blue-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Membresía</th>
+                <th colSpan={3} className="text-center py-1 text-amber-500/70 border-b border-gray-800 uppercase tracking-wider text-[10px]">Gasto trigger promocional</th>
               </tr>
               <tr className="border-b border-gray-800">
                 <th className="px-2 py-1" />
