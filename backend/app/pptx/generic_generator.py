@@ -164,7 +164,7 @@ def _slide_cover(prs, model_id, model_name, perspective, palette, config, insigh
 
 # ── Slide 2 — Headline Metrics (bento grid) ───────────────────────────────────
 
-def _slide_metrics(prs, model_id, model_name, perspective, palette, config, result):
+def _slide_metrics(prs, model_id, model_name, perspective, palette, config, result, insights=None):
     slide_layout = prs.slide_layouts[6]
     slide = prs.slides.add_slide(slide_layout)
     _set_slide_bg(slide, DARK['bg'])
@@ -178,19 +178,23 @@ def _slide_metrics(prs, model_id, model_name, perspective, palette, config, resu
     # Top accent stripe
     _rect(slide, 0, 0, W, 0.06, accent)
 
-    # Slide label
+    # Slide label — eyebrow
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'MÉTRICAS CLAVE', 8, accent, bold=True)
 
-    # Hypothesis title
+    # Hypothesis title — insight[0] or fallback
+    hypothesis = (insights or [None])[0] or f'{model_name} — resumen ejecutivo'
+    # Keep to one line: truncate gracefully
+    if len(hypothesis) > 90:
+        hypothesis = hypothesis[:88] + '…'
+    _text_box(slide, 0.35, 0.45, 12.5, 0.58,
+              hypothesis, 15, DARK['white'], bold=True)
+
+    # KPI context
     primary_kpis = HEADLINE_KPIS.get(model_id, list(summary.keys())[:4])
     non_null = [(k, summary[k]) for k in primary_kpis if k in summary and summary[k] is not None]
     if not non_null:
         non_null = [(k, v) for k, v in summary.items() if isinstance(v, (int, float, bool, str))][:4]
-
-    _text_box(slide, 0.35, 0.45, 12.5, 0.55,
-              f'{model_name} — resumen ejecutivo',
-              16, DARK['white'], bold=True)
 
     # Divider
     _rect(slide, 0.35, 1.05, 12.6, 0.025, DARK['border'])
@@ -236,7 +240,7 @@ def _slide_metrics(prs, model_id, model_name, perspective, palette, config, resu
 
 # ── Slide 3 — Trend Chart ─────────────────────────────────────────────────────
 
-def _slide_chart(prs, model_id, model_name, perspective, palette, config, result):
+def _slide_chart(prs, model_id, model_name, perspective, palette, config, result, insights=None):
     slide_layout = prs.slide_layouts[6]
     slide = prs.slides.add_slide(slide_layout)
     _set_slide_bg(slide, DARK['bg'])
@@ -252,9 +256,11 @@ def _slide_chart(prs, model_id, model_name, perspective, palette, config, result
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'EVOLUCIÓN TEMPORAL', 8, accent, bold=True)
 
+    hypothesis = (insights or [None, None])[1] or f'{model_name} — proyección semana a semana'
+    if len(hypothesis) > 90:
+        hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 12.5, 0.55,
-              f'{model_name} — proyección semana a semana',
-              16, DARK['white'], bold=True)
+              hypothesis, 16, DARK['white'], bold=True)
 
     _rect(slide, 0.35, 1.05, 12.6, 0.025, DARK['border'])
 
@@ -337,7 +343,7 @@ def _slide_chart(prs, model_id, model_name, perspective, palette, config, result
 
 # ── Slide 4 — Scenarios Bear / Base / Bull ────────────────────────────────────
 
-def _slide_scenarios(prs, model_id, model_name, perspective, palette, config, result):
+def _slide_scenarios(prs, model_id, model_name, perspective, palette, config, result, insights=None):
     slide_layout = prs.slide_layouts[6]
     slide = prs.slides.add_slide(slide_layout)
     _set_slide_bg(slide, DARK['bg'])
@@ -353,9 +359,11 @@ def _slide_scenarios(prs, model_id, model_name, perspective, palette, config, re
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'ESCENARIOS', 8, accent, bold=True)
 
+    hypothesis = (insights or [None, None, None])[2] or 'Bear (×0.6) · Base (×1.0) · Bull (×1.4)'
+    if len(hypothesis) > 90:
+        hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 12.5, 0.55,
-              'Bear (×0.6) · Base (×1.0) · Bull (×1.4)',
-              16, DARK['white'], bold=True)
+              hypothesis, 16, DARK['white'], bold=True)
     _rect(slide, 0.35, 1.05, 12.6, 0.025, DARK['border'])
 
     SCENARIOS = [
@@ -425,9 +433,11 @@ def _slide_insights(prs, model_id, model_name, perspective, palette, config, res
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'INSIGHTS & SUPUESTOS', 8, accent, bold=True)
 
+    hypothesis = (insights or [None, None, None, None])[3] or 'Hallazgos clave del modelo'
+    if len(hypothesis) > 90:
+        hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 7.5, 0.55,
-              'Hallazgos clave del modelo',
-              16, DARK['white'], bold=True)
+              hypothesis, 16, DARK['white'], bold=True)
     _rect(slide, 0.35, 1.05, 12.6, 0.025, DARK['border'])
 
     # Insight bullets (left panel)
@@ -512,9 +522,9 @@ def generate_pptx_generic(
     persp = perspective.upper() if perspective else 'D'
 
     _slide_cover    (prs, mid, model_name, persp, palette, config, insights)
-    _slide_metrics  (prs, mid, model_name, persp, palette, config, result)
-    _slide_chart    (prs, mid, model_name, persp, palette, config, result)
-    _slide_scenarios(prs, mid, model_name, persp, palette, config, result)
+    _slide_metrics  (prs, mid, model_name, persp, palette, config, result, insights)
+    _slide_chart    (prs, mid, model_name, persp, palette, config, result, insights)
+    _slide_scenarios(prs, mid, model_name, persp, palette, config, result, insights)
     _slide_insights (prs, mid, model_name, persp, palette, config, result, insights)
 
     buf = io.BytesIO()

@@ -337,6 +337,36 @@ async def markov_export_excel(request: MarkovForecastRequest):
     )
 
 
+@app.post("/api/markov/export-pptx")
+async def markov_export_pptx(raw: _FRequest):
+    """Run Markov forecast and return a 5-slide dark-theme PPTX."""
+    from .pptx.generic_generator import generate_pptx_generic as _gen_pptx
+
+    try:
+        body = await raw.json()
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid JSON body")
+
+    insights = body.pop('_insights', [])
+    palette  = body.get('palette', 'navy')
+
+    try:
+        req_obj = MarkovForecastRequest(**body)
+        raw_result = run_markov_forecast(req_obj)
+        result = raw_result if isinstance(raw_result, dict) else raw_result.model_dump()
+        config = req_obj.model_dump()
+        pptx_bytes = _gen_pptx(result, config, 'D1', 'Markov Cohort Engine', 'D', insights, palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    filename = f"d1_markov_{datetime.now().strftime('%Y%m%d')}.pptx"
+    return Response(
+        content=pptx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 # ── Wizard Model Routes (D2-P5) ────────────────────────────────────────────────
 
 from .models.d2_cohort_engine import CohortRequest, run_cohort_forecast
@@ -621,6 +651,7 @@ async def p5_export_excel(request: EquilibriumRequest):
 
 # ── PPTX Export Routes (D2–P5) ────────────────────────────────────────────────
 
+from fastapi import Request as _FRequest
 from .pptx.generic_generator import generate_pptx_generic as _gen_pptx
 
 _MODEL_META = {
@@ -720,8 +751,6 @@ async def submit_feedback(payload: FeedbackPayload):
 
 
 # ── Sensitivity / Tornado Analysis ────────────────────────────────────────────
-
-from fastapi import Request as _FRequest
 
 _SENSITIVITY_MAP = {
     'd2': (CohortRequest,      run_cohort_forecast,      'total_revenue'),

@@ -22,6 +22,27 @@ function fmtN(v) {
   return String(v)
 }
 
+// ── D1 — Markov Cohort Engine ─────────────────────────────────────────────────
+export function interpretD1(summary = {}, config = {}) {
+  const c = config.currency || 'MXN'
+  const h = config.horizon_weeks || 12
+  const lines = []
+
+  if (summary.total_orders != null && summary.total_incremental != null)
+    lines.push(`${fmtN(summary.total_orders)} órdenes totales en ${h} semanas — ${fmtN(summary.total_incremental)} son incrementales por levers`)
+
+  if (summary.total_revenue != null && summary.total_contribution != null)
+    lines.push(`Revenue neto: ${fmt(summary.total_revenue, c)} · Contribución: ${fmt(summary.total_contribution, c)}`)
+
+  if (summary.avg_contribution_pct != null)
+    lines.push(`Margen de contribución promedio: ${((summary.avg_contribution_pct || 0) * 100).toFixed(1)}% sobre el revenue neto`)
+
+  if (summary.avg_cost_per_order != null)
+    lines.push(`Costo promedio por orden (incentivos): ${fmt(summary.avg_cost_per_order, c)}`)
+
+  return lines.slice(0, 4)
+}
+
 // ── D2 — Cohort Retention & LTV ──────────────────────────────────────────────
 export function interpretD2(summary = {}, config = {}) {
   const c = config.currency || 'MXN'
@@ -290,6 +311,7 @@ export function interpretP5(summary = {}, config = {}) {
 
 // ── Router ────────────────────────────────────────────────────────────────────
 const INTERPRETERS = {
+  D1: interpretD1,
   D2: interpretD2, D3: interpretD3, D4: interpretD4, D5: interpretD5,
   S1: interpretS1, S2: interpretS2, S3: interpretS3, S4: interpretS4,
   P1: interpretP1, P2: interpretP2, P3: interpretP3, P4: interpretP4,

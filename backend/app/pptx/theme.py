@@ -97,10 +97,18 @@ KPI_LABELS = {
     'uplift_pct':                       'Uplift Portfolio',
     'total_costs':                      'Costos Totales',
     'incremental_orders_total':         'Órdenes Incrementales',
+    'total_incremental':                'Órdenes Incrementales',
+    'total_contribution':               'Contribución Total',
+    'avg_contribution_pct':             'Margen Contribución',
+    'avg_cost_per_order':               'Costo por Orden',
+    'total_gastos':                     'Gastos Totales',
+    'n_profiles':                       'Perfiles Activos',
+    'n_active_levers':                  'Levers Activos',
 }
 
 # ── Per-model: which 4 summary keys to show as headline cards ─────────────────
 HEADLINE_KPIS = {
+    'D1': ['total_orders', 'total_revenue', 'total_contribution', 'avg_contribution_pct'],
     'D2': ['total_revenue', 'avg_ltv_cac', 'best_channel', 'total_orders'],
     'D3': ['total_orders', 'overall_conversion_rate', 'biggest_drop_step', 'total_revenue'],
     'D4': ['total_orders', 'total_revenue', 'total_users', 'horizon_weeks'],
@@ -120,6 +128,7 @@ HEADLINE_KPIS = {
 # series: list of field names in the weekly array
 # Up to 2 series. First is primary (bar/line), second is secondary (right axis)
 CHART_SERIES = {
+    'D1': ['orders_total', 'contribution_dollar'],
     'D2': ['cumulative_revenue'],
     'D3': ['weekly_orders'],
     'D4': ['total_orders'],

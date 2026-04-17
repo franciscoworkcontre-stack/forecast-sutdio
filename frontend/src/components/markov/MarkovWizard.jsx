@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { getInsights } from '../../utils/interpretations'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -1204,7 +1205,7 @@ function generateNarrative(result, config, vocab) {
 
 const SCENARIO_MULTIPLIERS = { bear: 0.60, base: 1.0, bull: 1.40 }
 
-function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vocab = DEFAULT_VOCAB }) {
+function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, onExportPPT, pptLoading, vocab = DEFAULT_VOCAB }) {
   const [tab, setTab] = useState('weekly')
   const [scenario, setScenario] = useState('base')
   const { weeks, summary } = result
@@ -1266,10 +1267,16 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
       {/* Action bar */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs text-gray-500 font-mono">Resultados del Forecast Markov v3</span>
-        <button onClick={onExportExcel} disabled={excelLoading}
-          className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50">
-          {excelLoading ? '⏳ Generando...' : '📥 Exportar Excel MBB Consulting →'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={onExportPPT} disabled={pptLoading}
+            className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 disabled:opacity-50">
+            {pptLoading ? '⏳ Generando...' : '↓ PPT'}
+          </button>
+          <button onClick={onExportExcel} disabled={excelLoading}
+            className="btn-secondary flex items-center gap-2 text-sm px-5 py-2.5 disabled:opacity-50">
+            {excelLoading ? '⏳ Generando...' : '📥 Excel MBB →'}
+          </button>
+        </div>
       </div>
 
       {/* Auto-narrative key findings */}
@@ -1512,8 +1519,11 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
           Exportar CSV
           <HelperTooltip text="Descarga los datos semanales en formato CSV." />
         </button>
-        <button onClick={onExportExcel} disabled={excelLoading} className="btn-primary text-xs disabled:opacity-50">
-          {excelLoading ? 'Generando...' : 'Exportar Excel (CEO) →'}
+        <button onClick={onExportPPT} disabled={pptLoading} className="btn-primary text-xs disabled:opacity-50">
+          {pptLoading ? 'Generando...' : '↓ PPT'}
+        </button>
+        <button onClick={onExportExcel} disabled={excelLoading} className="btn-secondary text-xs disabled:opacity-50">
+          {excelLoading ? 'Generando...' : 'Excel →'}
         </button>
         <MarkovShareButton config={config} />
         <button onClick={() => window.print()} className="btn-secondary text-xs">Imprimir / PDF</button>
@@ -1574,6 +1584,7 @@ export default function MarkovWizard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [excelLoading, setExcelLoading] = useState(false)
+  const [pptLoading, setPptLoading] = useState(false)
 
   const buildBody = (cfg) => ({
     name: cfg.name,
@@ -1601,6 +1612,32 @@ export default function MarkovWizard() {
       ...cfg.costs[p.id],
     })),
   })
+
+  const exportPPT = async () => {
+    if (!result) return
+    setPptLoading(true)
+    try {
+      const insights = getInsights('D1', result.summary, { currency: config.currency, horizon_weeks: config.horizon_weeks })
+      const body = { ...buildBody(config), _insights: insights }
+      const resp = await fetch('/api/markov/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!resp.ok) throw new Error('Error generando PPTX')
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `d1_markov_${config.name.replace(/\s+/g, '_')}.pptx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert('Error exportando PPT: ' + e.message)
+    } finally {
+      setPptLoading(false)
+    }
+  }
 
   const exportExcel = async () => {
     setExcelLoading(true)
@@ -1722,7 +1759,7 @@ export default function MarkovWizard() {
           <StepCosts config={config} setConfig={setConfig} onRun={runForecast} onBack={() => setStep(4)} loading={loading} error={error} />
         )}
         {step === 6 && result && (
-          <MarkovResults result={result} config={config} onBack={() => setStep(5)} onExportExcel={exportExcel} excelLoading={excelLoading} vocab={vocab} />
+          <MarkovResults result={result} config={config} onBack={() => setStep(5)} onExportExcel={exportExcel} excelLoading={excelLoading} onExportPPT={exportPPT} pptLoading={pptLoading} vocab={vocab} />
         )}
       </main>
     </div>
