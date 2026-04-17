@@ -2,6 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ── lifted from Forecast Studio Design System ─────────── */
+:root {
+  color-scheme: dark;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* Canvas */
+  --bg:           #030712;   /* gray-950 */
+  --bg-panel:     #111827;   /* gray-900 */
+  --bg-input:     #1f2937;   /* gray-800 */
+  --bg-hover:     rgb(31 41 55 / 0.3);
+
+  /* Foreground */
+  --fg:           #f9fafb;
+  --fg-strong:    #ffffff;
+  --fg-muted:     #9ca3af;   /* gray-400 */
+  --fg-subtle:    #6b7280;   /* gray-500 */
+  --fg-faint:     #4b5563;   /* gray-600 */
+  --fg-on-bg:     #d1d5db;   /* gray-300 */
+
+  /* Borders */
+  --border:       #374151;   /* gray-700 */
+  --border-panel: #1f2937;   /* gray-800 */
+
+  /* Perspective accents */
+  --demanda:          #2563eb;
+  --demanda-hi:       #60a5fa;
+  --demanda-wash:     #0f2550;
+  --demanda-border:   #1e40af;
+
+  --oferta:           #059669;
+  --oferta-hi:        #34d399;
+  --oferta-wash:      #04291f;
+  --oferta-border:    #065f46;
+
+  --plataforma:       #7916ee;
+  --plataforma-hi:    #a78bfa;
+  --plataforma-wash:  #2a145e;
+  --plataforma-border:#5b21b6;
+
+  /* Semantic signals */
+  --positive:  #34d399;
+  --negative:  #f87171;
+  --warning:   #fbbf24;
+  --formula:   #60a5fa;
+  --highlight: #a78bfa;
+
+  /* Shadows */
+  --shadow-glow: 0 0 24px 4px rgb(59 130 246 / 0.12);
+
+  /* Motion */
+  --ease:      ease-out;
+  --dur-fast:  120ms;
+  --dur:       200ms;
+  --dur-slow:  500ms;
+  --dur-reveal:700ms;
+}
+
+/* Light theme — PPTX / homepage surface */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg:       #ffffff;
+  --bg-panel: #f8fafc;
+  --bg-input: #ffffff;
+  --fg:       #0f172a;
+  --fg-muted: #64748b;
+  --fg-subtle:#94a3b8;
+  --border:   #e2e8f0;
+  --demanda:  #2563eb;
+  --oferta:   #059669;
+  --plataforma:#7916ee;
+  --positive: #059669;
+  --negative: #dc2626;
+  --warning:  #d97706;
+}
+
 @layer base {
   :root {
     color-scheme: dark;
@@ -41,17 +119,34 @@
     @apply text-gray-400 text-xs font-medium tracking-wide uppercase;
   }
 
-  /* Panel / Card */
+  /* Panel / Card — border-gray-700 for a visible edge against gray-900 bg */
   .ds-card {
-    @apply bg-gray-900 border border-gray-800 rounded-lg;
+    @apply bg-gray-900 border border-gray-700 rounded-lg;
   }
 
-  /* Section header */
+  /* Section header — opaque bg + readable text */
   .ds-section-header {
     @apply flex items-center gap-1.5
-           text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 py-2
-           border-b border-gray-800 bg-gray-900/50;
+           text-xs font-semibold text-gray-200 uppercase tracking-widest px-4 py-2
+           border-b border-gray-700 bg-gray-800;
   }
+
+  /* Eyebrow — mono uppercase section label */
+  .eyebrow {
+    font-family: var(--font-mono);
+    @apply text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400;
+  }
+
+  /* Model ID chip — D1 / S2 / P5 */
+  .model-id {
+    font-family: var(--font-mono);
+    @apply text-[10px] font-bold px-1.5 py-0.5 rounded border;
+    color: var(--demanda-hi);
+    background: var(--demanda-wash);
+    border-color: var(--demanda-border);
+  }
+  .model-id[data-p="S"] { color: var(--oferta-hi);     background: var(--oferta-wash);     border-color: var(--oferta-border); }
+  .model-id[data-p="P"] { color: var(--plataforma-hi); background: var(--plataforma-wash); border-color: var(--plataforma-border); }
 
   /* Mono number display */
   .ds-number {
@@ -63,24 +158,32 @@
     @apply font-mono text-blue-400 text-xs bg-gray-950 border border-gray-800 rounded p-3 leading-relaxed;
   }
 
-  /* Badge */
+  /* Badge — opaque backgrounds for real contrast on dark cards */
   .ds-badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-mono;
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-mono border;
   }
   .ds-badge-green {
-    @apply ds-badge bg-emerald-900/50 text-emerald-400 border border-emerald-800;
+    @apply ds-badge text-emerald-200 border-emerald-700;
+    background: #04291f;
   }
   .ds-badge-red {
-    @apply ds-badge bg-red-900/50 text-red-400 border border-red-800;
+    @apply ds-badge text-red-200 border-red-800;
+    background: #3b0e0e;
   }
   .ds-badge-amber {
-    @apply ds-badge bg-amber-900/50 text-amber-400 border border-amber-800;
+    @apply ds-badge text-amber-200 border-amber-700;
+    background: #3a2408;
   }
   .ds-badge-blue {
-    @apply ds-badge bg-blue-900/50 text-blue-400 border border-blue-800;
+    @apply ds-badge text-blue-200 border-blue-800;
+    background: #0f2550;
+  }
+  .ds-badge-violet {
+    @apply ds-badge text-violet-200 border-violet-700;
+    background: #2a145e;
   }
   .ds-badge-gray {
-    @apply ds-badge bg-gray-800 text-gray-400 border border-gray-700;
+    @apply ds-badge bg-gray-800 text-gray-200 border-gray-600;
   }
 
   /* Button variants */
@@ -100,6 +203,12 @@
   .btn-danger {
     @apply px-4 py-2 bg-red-900/50 hover:bg-red-800 text-red-400 hover:text-red-300 text-sm
            font-medium rounded-md border border-red-800 transition-colors;
+  }
+  /* Floating action button (Feedback pill) */
+  .btn-fab {
+    @apply px-3.5 py-2 rounded-full text-[11px] font-mono font-semibold text-gray-300
+           bg-gray-800 border border-gray-700 shadow-lg
+           hover:bg-blue-700 hover:text-white hover:border-blue-600 transition-all;
   }
 
   /* Tab */
@@ -131,13 +240,13 @@
     @apply text-2xl font-mono font-semibold text-gray-100;
   }
   .metric-label {
-    @apply text-xs text-gray-500 uppercase tracking-wide;
+    @apply text-xs text-gray-300 uppercase tracking-wide;
   }
   .metric-delta-pos {
-    @apply text-xs font-mono text-emerald-400;
+    @apply text-xs font-mono text-emerald-300;
   }
   .metric-delta-neg {
-    @apply text-xs font-mono text-red-400;
+    @apply text-xs font-mono text-red-300;
   }
 
   /* Tooltip */
@@ -147,26 +256,26 @@
   }
 }
 
-/* Recharts dark theme overrides */
+/* Recharts dark theme overrides — matches design system chart tokens */
 .recharts-cartesian-grid line {
-  stroke: #374151 !important;
+  stroke: var(--bg-input) !important; /* #1f2937 */
 }
 .recharts-text {
-  fill: #9ca3af !important;
+  fill: var(--fg-muted) !important;   /* #9ca3af */
 }
 .recharts-legend-item-text {
-  color: #9ca3af !important;
+  color: var(--fg-muted) !important;
 }
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #1f2937 !important;
-  border: 1px solid #374151 !important;
+  background: var(--bg-panel) !important;   /* #111827 */
+  border: 1px solid var(--border) !important; /* #374151 */
   border-radius: 6px !important;
 }
 .recharts-default-tooltip .recharts-tooltip-label {
-  color: #d1d5db !important;
+  color: var(--fg-on-bg) !important;  /* #d1d5db */
 }
 .recharts-default-tooltip .recharts-tooltip-item {
-  color: #9ca3af !important;
+  color: var(--fg-muted) !important;
 }
 
 /* Animation */
