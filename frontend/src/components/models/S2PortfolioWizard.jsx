@@ -212,6 +212,19 @@ const modelConfig = {
       { tier_name: 'Premium', delta_count: 50, delta_conversion: 0.01 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'restaurant_tiers',
+      filename: 's2_tiers_template.csv',
+      description: 'Tiers de restaurantes (uno por fila)',
+      headers: ['name', 'count', 'traffic_share', 'conversion_rate', 'avg_aov_multiplier'],
+      exampleRows: [
+        ['Premium', 500, 0.30, 0.18, 1.4],
+        ['Standard', 2000, 0.50, 0.12, 1.0],
+        ['Economy', 3000, 0.20, 0.08, 0.75],
+      ],
+    },
+  ],
 }
 
 export default function S2PortfolioWizard() {

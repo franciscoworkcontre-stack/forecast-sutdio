@@ -237,6 +237,19 @@ const modelConfig = {
     retention_curve: [1.0, 0.65, 0.55, 0.45, 0.38, 0.32, 0.27, 0.23],
     orders_per_active_per_week: 1.2,
   },
+  csvTemplates: [
+    {
+      key: 'channels',
+      filename: 'd2_channels_template.csv',
+      description: 'Canales de adquisición (un canal por fila)',
+      headers: ['name', 'cac', 'weekly_new_users'],
+      exampleRows: [
+        ['Paid Search', 180, 500],
+        ['Social Media', 120, 800],
+        ['Referral', 60, 300],
+      ],
+    },
+  ],
 }
 
 export default function D2CohortWizard() {

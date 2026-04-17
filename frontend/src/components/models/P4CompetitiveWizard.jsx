@@ -228,6 +228,19 @@ const modelConfig = {
     ],
     our_response: { type: 'match', cost_per_week: 50000 },
   },
+  csvTemplates: [
+    {
+      key: 'competitor_scenarios',
+      filename: 'p4_competidores_template.csv',
+      description: 'Escenarios competitivos (uno por fila). type: price_cut | new_entry | exit',
+      headers: ['name', 'type', 'magnitude_pct', 'week_of_event'],
+      exampleRows: [
+        ['Competidor A reduce precios', 'price_cut', 15, 3],
+        ['Nuevo entrante', 'new_entry', 5, 6],
+        ['Salida de competidor', 'exit', 8, 10],
+      ],
+    },
+  ],
 }
 
 export default function P4CompetitiveWizard() {

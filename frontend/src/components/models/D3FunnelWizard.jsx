@@ -210,6 +210,21 @@ const modelConfig = {
       { name: 'Place Order', conversion_rate: 0.80 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'funnel_steps',
+      filename: 'd3_funnel_steps_template.csv',
+      description: 'Pasos del funnel (un paso por fila, en orden)',
+      headers: ['name', 'conversion_rate'],
+      exampleRows: [
+        ['App Open', 0.55],
+        ['Browse Restaurant', 0.40],
+        ['View Menu', 0.60],
+        ['Add to Cart', 0.45],
+        ['Place Order', 0.80],
+      ],
+    },
+  ],
 }
 
 export default function D3FunnelWizard() {

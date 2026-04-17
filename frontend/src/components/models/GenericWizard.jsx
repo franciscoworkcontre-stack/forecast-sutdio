@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, Cell, ReferenceLine,
 } from 'recharts'
 import HelperTooltip from '../ui/HelperTooltip'
+import AssumptionBadge from '../ui/AssumptionBadge'
 
 // ── Industry vocabulary ────────────────────────────────────────────────────────
 
@@ -287,11 +288,14 @@ function TornadoChart({ modelId, config }) {
 
 // ── Config upload/download ────────────────────────────────────────────────────
 
-function ConfigTransfer({ config, setConfig, modelId }) {
+function ConfigTransfer({ config, setConfig, modelId, csvTemplates = [] }) {
   const fileRef = useRef(null)
+  const arrayFileRef = useRef(null)
+  const [activeTemplate, setActiveTemplate] = useState(null)
   const [msg, setMsg] = useState(null)
 
-  const downloadTemplate = () => {
+  // ── Scalar config template ──
+  const downloadScalarTemplate = () => {
     const scalars = Object.entries(config)
       .filter(([, v]) => typeof v !== 'object' || v === null)
     const csvLines = [
@@ -300,70 +304,123 @@ function ConfigTransfer({ config, setConfig, modelId }) {
     ]
     const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `${modelId.toLowerCase()}_template.csv`; a.click()
+    const a = document.createElement('a'); a.href = url
+    a.download = `${modelId.toLowerCase()}_config_template.csv`; a.click()
     URL.revokeObjectURL(url)
   }
 
-  const handleUpload = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleScalarUpload = (e) => {
+    const file = e.target.files?.[0]; if (!file) return
     const reader = new FileReader()
     reader.onload = (ev) => {
       try {
         const lines = ev.target.result.split('\n').filter(Boolean)
         const parsed = {}
         lines.slice(1).forEach(line => {
-          const parts = line.split(',')
-          if (parts.length < 2) return
-          const key = parts[0].trim()
-          const raw = parts[1].trim()
-          const num = Number(raw)
-          parsed[key] = isNaN(num) ? raw : num
+          const parts = line.split(','); if (parts.length < 2) return
+          const key = parts[0].trim(); const raw = parts[1].trim()
+          const num = Number(raw); parsed[key] = isNaN(num) ? raw : num
         })
         const validKeys = Object.keys(config).filter(k => parsed[k] !== undefined)
         if (validKeys.length === 0) {
-          setMsg({ type: 'error', text: 'El archivo no contiene columnas reconocidas. Usa la plantilla descargada.' })
-          return
+          setMsg({ type: 'error', text: 'Sin columnas reconocidas. Usa la plantilla descargada.' }); return
         }
-        const update = {}
-        validKeys.forEach(k => { update[k] = parsed[k] })
+        const update = {}; validKeys.forEach(k => { update[k] = parsed[k] })
         setConfig(prev => ({ ...prev, ...update }))
-        setMsg({ type: 'ok', text: `${validKeys.length} parámetros actualizados desde el CSV.` })
+        setMsg({ type: 'ok', text: `${validKeys.length} parámetros actualizados.` })
         setTimeout(() => setMsg(null), 3000)
-      } catch {
-        setMsg({ type: 'error', text: 'Error al leer el CSV. Verifica el formato.' })
-      }
+      } catch { setMsg({ type: 'error', text: 'Error al leer el CSV.' }) }
     }
-    reader.readAsText(file)
-    e.target.value = ''
+    reader.readAsText(file); e.target.value = ''
+  }
+
+  // ── Array / table template ──
+  const downloadArrayTemplate = (tpl) => {
+    const headerLine = tpl.headers.join(',')
+    const exampleLines = (tpl.exampleRows || []).map(row => row.join(','))
+    const lines = [headerLine, ...exampleLines]
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url
+    a.download = tpl.filename || `${modelId.toLowerCase()}_${tpl.key}_template.csv`; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleArrayUpload = (e, tpl) => {
+    const file = e.target.files?.[0]; if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const lines = ev.target.result.split('\n').filter(Boolean)
+        if (lines.length < 2) { setMsg({ type: 'error', text: 'CSV vacío o sin filas de datos.' }); return }
+        const headers = lines[0].split(',').map(h => h.trim())
+        // Validate headers match template
+        const missingCols = tpl.headers.filter(h => !headers.includes(h))
+        if (missingCols.length > 0) {
+          setMsg({ type: 'error', text: `Columnas faltantes: ${missingCols.join(', ')}. Usa la plantilla descargada.` }); return
+        }
+        const rows = lines.slice(1).map(line => {
+          const vals = line.split(',').map(v => v.trim())
+          const obj = {}
+          headers.forEach((h, i) => {
+            const raw = vals[i] ?? ''
+            const num = Number(raw)
+            obj[h] = isNaN(num) || raw === '' ? raw : num
+          })
+          return obj
+        }).filter(row => Object.values(row).some(v => v !== '' && v !== null))
+
+        if (rows.length === 0) { setMsg({ type: 'error', text: 'Sin filas válidas en el archivo.' }); return }
+        setConfig(prev => ({ ...prev, [tpl.key]: rows }))
+        setMsg({ type: 'ok', text: `${rows.length} filas cargadas en ${tpl.key}.` })
+        setTimeout(() => setMsg(null), 3000)
+      } catch { setMsg({ type: 'error', text: 'Error al leer el CSV.' }) }
+    }
+    reader.readAsText(file); e.target.value = ''
   }
 
   return (
-    <div className="ds-card p-4 border-dashed border-gray-700">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="ds-card p-4 border-dashed border-gray-700 space-y-3">
+      <div className="flex items-center gap-2">
         <span className="text-xs font-mono font-semibold text-gray-300">Datos desde archivo</span>
-        <HelperTooltip text="Descarga la plantilla CSV con los parámetros del modelo. Rellena los valores y vuelve a subir el archivo para poblar los inputs automáticamente. Solo se aceptan las columnas de la plantilla (sin columnas extra)." />
+        <HelperTooltip text="Descarga la plantilla CSV estandarizada para este modelo. Rellena los valores y sube el archivo para poblar los inputs. Solo se aceptan las columnas de la plantilla — sin columnas adicionales." />
       </div>
-      <div className="flex gap-2 flex-wrap">
-        <button onClick={downloadTemplate} className="btn-secondary text-xs flex items-center gap-1.5">
-          Descargar plantilla CSV
-        </button>
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="btn-secondary text-xs flex items-center gap-1.5"
-        >
-          Subir CSV
-        </button>
-        <input ref={fileRef} type="file" accept=".csv" onChange={handleUpload} className="hidden" />
+
+      {/* Scalar (global config) template */}
+      <div>
+        <p className="text-[10px] text-gray-500 mb-1.5 font-mono">Config general (escalares)</p>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={downloadScalarTemplate} className="btn-secondary text-xs">Plantilla Config CSV</button>
+          <label className="btn-secondary text-xs cursor-pointer">
+            Subir Config CSV
+            <input type="file" accept=".csv" onChange={handleScalarUpload} className="hidden" />
+          </label>
+        </div>
       </div>
+
+      {/* Array / table templates */}
+      {csvTemplates.map(tpl => (
+        <div key={tpl.key}>
+          <p className="text-[10px] text-gray-500 mb-1.5 font-mono">
+            {tpl.description || tpl.key} ({tpl.headers.join(', ')})
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => downloadArrayTemplate(tpl)} className="btn-secondary text-xs">
+              Plantilla {tpl.key} CSV
+            </button>
+            <label className="btn-secondary text-xs cursor-pointer">
+              Subir {tpl.key} CSV
+              <input type="file" accept=".csv" onChange={e => handleArrayUpload(e, tpl)} className="hidden" />
+            </label>
+          </div>
+        </div>
+      ))}
+
       {msg && (
-        <p className={`text-xs mt-2 font-mono ${msg.type === 'ok' ? 'text-emerald-400' : 'text-red-400'}`}>
-          {msg.text}
-        </p>
+        <p className={`text-xs font-mono ${msg.type === 'ok' ? 'text-emerald-400' : 'text-red-400'}`}>{msg.text}</p>
       )}
-      <p className="text-[10px] text-gray-600 italic mt-2">
-        Formato estándar: columnas fijas de la plantilla. No se aceptan columnas adicionales.
+      <p className="text-[10px] text-gray-600 italic">
+        Columnas fijas de la plantilla. No se aceptan columnas adicionales.
       </p>
     </div>
   )
@@ -468,6 +525,7 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
           <input type="number" value={config.aov}
             onChange={e => setConfig(p => ({ ...p, aov: Number(e.target.value) }))}
             className="ds-input w-full" />
+          <AssumptionBadge field="aov" value={config.aov} industry={config.industry || 'food_delivery'} />
           <p className="text-xs text-gray-600 italic mt-2">Valor promedio por {vocab.transaction.toLowerCase()}</p>
         </div>
         <div className="ds-card p-4">
@@ -484,7 +542,8 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
           <div className="flex justify-between text-[10px] text-gray-600 mt-1 mb-2">
             <span>5%</span><span>50%</span>
           </div>
-          <div className="flex gap-1 flex-wrap">
+          <AssumptionBadge field="take_rate" value={config.take_rate} industry={config.industry || 'food_delivery'} />
+          <div className="flex gap-1 flex-wrap mt-2">
             {[
               { label: 'Food DL', val: 0.22 },
               { label: 'E-comm', val: 0.12 },
@@ -530,7 +589,7 @@ function ShareButton({ config }) {
 
   const copy = () => {
     const hash = configToHash(config)
-    const url = `${window.location.origin}${window.location.pathname}#cfg=${hash}`
+    const url = `${window.location.origin}${window.location.pathname}#cfg=${hash}&run=1`
     navigator.clipboard?.writeText(url).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -551,12 +610,63 @@ function ShareButton({ config }) {
   )
 }
 
+// ── A/B comparison ────────────────────────────────────────────────────────────
+
+function ABComparison({ resultA, resultB, labelA = 'Config A', labelB = 'Config B' }) {
+  if (!resultA || !resultB) return null
+  const sA = resultA?.summary || {}
+  const sB = resultB?.summary || {}
+  const keys = [...new Set([...Object.keys(sA), ...Object.keys(sB)])]
+    .filter(k => typeof sA[k] === 'number' || typeof sB[k] === 'number')
+  if (keys.length === 0) return null
+  return (
+    <div className="ds-card overflow-hidden print:break-before-page">
+      <div className="ds-section-header">Comparación A / B
+        <HelperTooltip text="Compara dos configuraciones del mismo modelo. Ejecuta con Config A, guarda, cambia inputs, vuelve a ejecutar con Config B." side="left" />
+      </div>
+      <div className="overflow-x-auto">
+        <table className="ds-table w-full text-xs">
+          <thead>
+            <tr>
+              <th>Métrica</th>
+              <th className="text-center text-blue-400">{labelA}</th>
+              <th className="text-center text-emerald-400">{labelB}</th>
+              <th className="text-center">Δ A→B</th>
+            </tr>
+          </thead>
+          <tbody>
+            {keys.map(k => {
+              const a = sA[k] ?? 0; const b = sB[k] ?? 0
+              const delta = a !== 0 ? ((b - a) / Math.abs(a) * 100) : null
+              return (
+                <tr key={k}>
+                  <td className="text-gray-300 font-medium">{k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</td>
+                  <td className="text-center text-blue-400 font-mono">
+                    {Math.abs(a) >= 1000 ? `${(a/1000).toFixed(1)}K` : a.toFixed(2)}
+                  </td>
+                  <td className="text-center text-emerald-400 font-mono">
+                    {Math.abs(b) >= 1000 ? `${(b/1000).toFixed(1)}K` : b.toFixed(2)}
+                  </td>
+                  <td className={`text-center font-mono font-bold ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                    {delta !== null ? `${delta > 0 ? '+' : ''}${delta.toFixed(1)}%` : '—'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 // ── Main GenericWizard ────────────────────────────────────────────────────────
 
 export default function GenericWizard({ modelConfig }) {
   const {
     modelId, modelName, perspective, apiPath, description,
     InputsComponent, ResultsComponent, defaultConfig,
+    csvTemplates = [],
   } = modelConfig
 
   const [searchParams] = useSearchParams()
@@ -590,9 +700,23 @@ export default function GenericWizard({ modelConfig }) {
   const [scenario, setScenario] = useState('base')
   const [excelLoading, setExcelLoading] = useState(false)
   const [mode, setMode] = useState('base')
+  // A/B comparison
+  const [resultA, setResultA] = useState(null)
+  const [configA, setConfigA] = useState(null)
+  const [abMode, setAbMode] = useState(false)
+  // Auto-run on permalink
+  const [autoRun, setAutoRun] = useState(() => window.location.hash.includes('run=1'))
 
   const colors = PERSPECTIVE_COLORS[perspective] || PERSPECTIVE_COLORS.D
   const scMultiplier = SCENARIOS.find(s => s.id === scenario)?.multiplier ?? 1.0
+
+  // Auto-run on permalink load
+  useEffect(() => {
+    if (autoRun && window.location.hash.includes('cfg=')) {
+      setAutoRun(false)
+      handleCalculate()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCalculate = async () => {
     setLoading(true)
@@ -745,7 +869,7 @@ export default function GenericWizard({ modelConfig }) {
 
             <div className="mt-4 space-y-3">
               <AnnotationBox config={config} setConfig={setConfig} />
-              <ConfigTransfer config={config} setConfig={setConfig} modelId={modelId} />
+              <ConfigTransfer config={config} setConfig={setConfig} modelId={modelId} csvTemplates={csvTemplates} />
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -815,11 +939,14 @@ export default function GenericWizard({ modelConfig }) {
               <TornadoChart modelId={modelId} config={config} />
             </div>
 
+            {/* A/B comparison */}
+            {abMode && <div className="mt-4"><ABComparison resultA={resultA} resultB={result} labelA="Config A (guardada)" labelB="Config B (actual)" /></div>}
+
             {/* Footer actions */}
-            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-gray-800 pt-6">
+            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-gray-800 pt-6 print:hidden">
               <button onClick={() => setStep(1)} className="btn-secondary text-xs">← Editar Inputs</button>
               <button onClick={handleExportJSON} className="btn-secondary text-xs">Exportar JSON</button>
-              <button onClick={handleExportCSV} className="btn-secondary text-xs">
+              <button onClick={handleExportCSV} className="btn-secondary text-xs flex items-center gap-1">
                 Exportar CSV
                 <HelperTooltip text="Descarga los datos semanales detallados en formato CSV. Útil para importar en Excel, Sheets o Tableau." />
               </button>
@@ -831,6 +958,18 @@ export default function GenericWizard({ modelConfig }) {
                 {excelLoading ? 'Generando...' : 'Exportar Excel (CEO) →'}
               </button>
               <ShareButton config={config} />
+              <button
+                onClick={() => {
+                  if (!abMode) { setResultA(result); setConfigA(config); setAbMode(true) }
+                  else { setAbMode(false); setResultA(null) }
+                }}
+                className={`btn-secondary text-xs ${abMode ? 'border-amber-700 text-amber-400' : ''}`}
+                title="Guarda este resultado como A, luego ajusta y recalcula para comparar"
+              >
+                {abMode ? 'Salir modo A/B' : 'Modo A/B'}
+                <HelperTooltip text="Guarda el resultado actual como escenario A. Ajusta los inputs y recalcula — el nuevo resultado aparece como B para comparar lado a lado." />
+              </button>
+              <button onClick={() => window.print()} className="btn-secondary text-xs">Imprimir / PDF</button>
               <Link to="/new" className="text-xs text-gray-500 hover:text-gray-300 ml-auto">
                 Nuevo Forecast →
               </Link>

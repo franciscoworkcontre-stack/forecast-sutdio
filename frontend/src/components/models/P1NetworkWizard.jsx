@@ -206,6 +206,30 @@ const modelConfig = {
       { week: 6, new_supply: 60 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'zones',
+      filename: 'p1_zonas_template.csv',
+      description: 'Zonas geográficas (una por fila)',
+      headers: ['name', 'supply_count', 'demand_weekly', 'fulfillment_rate'],
+      exampleRows: [
+        ['Centro', 500, 50000, 0.88],
+        ['Norte', 200, 25000, 0.75],
+        ['Sur', 100, 15000, 0.65],
+      ],
+    },
+    {
+      key: 'supply_growth_plan',
+      filename: 'p1_plan_oferta_template.csv',
+      description: 'Plan de crecimiento de oferta (un evento por fila)',
+      headers: ['week', 'new_supply'],
+      exampleRows: [
+        [2, 50],
+        [4, 80],
+        [6, 60],
+      ],
+    },
+  ],
 }
 
 export default function P1NetworkWizard() {

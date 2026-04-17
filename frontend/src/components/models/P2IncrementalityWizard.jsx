@@ -201,6 +201,19 @@ const modelConfig = {
       { name: '2x1 Flash', promoted_orders_per_week: 3000, organic_baseline: 500, uplift_observed_pct: 0.50, discount_per_order: 80, cost_per_order: 0 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'campaigns',
+      filename: 'p2_campanas_incrementalidad_template.csv',
+      description: 'Campañas de promoción (una por fila)',
+      headers: ['name', 'promoted_orders_per_week', 'organic_baseline', 'uplift_observed_pct', 'discount_per_order', 'cost_per_order'],
+      exampleRows: [
+        ['Cupón -20%', 5000, 1200, 0.35, 58, 0],
+        ['Free Delivery', 8000, 2000, 0.25, 0, 30],
+        ['2x1 Flash', 3000, 500, 0.50, 80, 0],
+      ],
+    },
+  ],
 }
 
 export default function P2IncrementalityWizard() {

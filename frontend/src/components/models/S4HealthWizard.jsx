@@ -194,6 +194,19 @@ const modelConfig = {
       { name: 'Noodle Box', weekly_orders: 200, order_trend_pct: 8, rating: 4.6, days_since_menu_update: 10, response_rate: 0.98 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'restaurants',
+      filename: 's4_restaurantes_salud_template.csv',
+      description: 'Restaurantes con métricas de salud (uno por fila)',
+      headers: ['name', 'weekly_orders', 'order_trend_pct', 'rating', 'days_since_menu_update', 'response_rate'],
+      exampleRows: [
+        ['El Rancho', 180, -15, 3.8, 90, 0.70],
+        ['Sushi Oishi', 250, 5, 4.5, 14, 0.92],
+        ['Tacos Don Pedro', 120, -8, 3.5, 60, 0.60],
+      ],
+    },
+  ],
 }
 
 export default function S4HealthWizard() {

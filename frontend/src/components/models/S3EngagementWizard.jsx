@@ -200,6 +200,19 @@ const modelConfig = {
       orders_per_point_improvement: 0.3,
     },
   },
+  csvTemplates: [
+    {
+      key: 'restaurants',
+      filename: 's3_restaurants_template.csv',
+      description: 'Tiers de restaurantes (high / medium / low)',
+      headers: ['tier', 'count', 'avg_weekly_orders', 'engagement_score'],
+      exampleRows: [
+        ['high', 300, 250, 80],
+        ['medium', 1200, 120, 55],
+        ['low', 2500, 40, 30],
+      ],
+    },
+  ],
 }
 
 export default function S3EngagementWizard() {

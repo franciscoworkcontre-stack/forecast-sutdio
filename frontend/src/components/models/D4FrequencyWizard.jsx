@@ -191,6 +191,19 @@ const modelConfig = {
       { name: 'Alta Frecuencia', users: 15000, current_freq_per_week: 3.0, target_freq_per_week: 3.5, weeks_to_achieve: 4 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'segments',
+      filename: 'd4_segments_template.csv',
+      description: 'Segmentos de usuarios (un segmento por fila)',
+      headers: ['name', 'users', 'current_freq_per_week', 'target_freq_per_week', 'weeks_to_achieve'],
+      exampleRows: [
+        ['Baja Frecuencia', 50000, 0.5, 1.0, 8],
+        ['Frecuencia Media', 30000, 1.5, 2.0, 6],
+        ['Alta Frecuencia', 15000, 3.0, 3.5, 4],
+      ],
+    },
+  ],
 }
 
 export default function D4FrequencyWizard() {

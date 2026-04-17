@@ -225,6 +225,29 @@ const modelConfig = {
       { name: 'Push Personalizado', cost_per_contacted: 2, contact_rate: 0.55, incremental_reactiv_rate: 0.07, orders_per_reactivated: 1.5 },
     ],
   },
+  csvTemplates: [
+    {
+      key: 'churned_segments',
+      filename: 'd5_segmentos_dormidos_template.csv',
+      description: 'Segmentos de usuarios dormidos (uno por fila)',
+      headers: ['name', 'count', 'recency_weeks', 'organic_reactiv_rate'],
+      exampleRows: [
+        ['1-4 sem inactivo', 15000, 3, 0.05],
+        ['1-3 meses inactivo', 40000, 8, 0.02],
+        ['+3 meses inactivo', 80000, 20, 0.005],
+      ],
+    },
+    {
+      key: 'campaigns',
+      filename: 'd5_campanas_winback_template.csv',
+      description: 'Campañas de reactivación (una por fila)',
+      headers: ['name', 'cost_per_contacted', 'contact_rate', 'incremental_reactiv_rate', 'orders_per_reactivated'],
+      exampleRows: [
+        ['Email Cupón 20%', 5, 0.40, 0.10, 2],
+        ['Push Personalizado', 2, 0.55, 0.07, 1.5],
+      ],
+    },
+  ],
 }
 
 export default function D5WinbackWizard() {

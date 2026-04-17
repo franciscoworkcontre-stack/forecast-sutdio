@@ -221,3 +221,34 @@
 .counter-number {
   text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
+
+/* ── Print / PDF styles ────────────────────────────────────────────────────── */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body { background: #fff !important; color: #111 !important; font-size: 11pt; }
+
+  header.sticky,
+  .print\:hidden { display: none !important; }
+
+  .ds-card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+    margin-bottom: 12pt;
+  }
+
+  .ds-section-header {
+    background: #1e3a5f !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .metric-card { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+
+  .btn-primary, .btn-secondary, .btn-ghost { display: none !important; }
+
+  main { padding: 0 !important; }
+
+  @page { margin: 1.5cm; size: A4; }
+}

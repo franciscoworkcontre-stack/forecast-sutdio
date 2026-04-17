@@ -5,6 +5,79 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ReferenceLine, ResponsiveContainer
 } from 'recharts'
+import HelperTooltip from '../ui/HelperTooltip'
+
+// ── Shared helpers (inline for Markov parity) ─────────────────────────────────
+
+function _configToHash(cfg) {
+  try {
+    const str = JSON.stringify(cfg)
+    const bytes = new TextEncoder().encode(str)
+    let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b) })
+    return btoa(bin)
+  } catch { return '' }
+}
+
+function _downloadCSV(rows, filename) {
+  if (!rows?.length) return
+  const headers = Object.keys(rows[0])
+  const lines = [headers.join(','), ...rows.map(r => headers.map(h => r[h] ?? '').join(','))]
+  const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }))
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url)
+}
+
+function MarkovScenarioTable({ result }) {
+  const s = result?.summary || {}
+  const kpis = Object.entries(s).filter(([, v]) => typeof v === 'number')
+  if (!kpis.length) return null
+  return (
+    <div className="ds-card overflow-hidden">
+      <div className="ds-section-header flex items-center gap-1">
+        Escenarios Bear / Base / Bull
+        <HelperTooltip text="Aplica multiplicadores al componente incremental del forecast. Bear = ×0.6 (pesimista), Bull = ×1.4 (optimista)." side="left" />
+      </div>
+      <div className="overflow-x-auto">
+        <table className="ds-table w-full text-xs">
+          <thead><tr>
+            <th>Métrica</th>
+            <th className="text-center text-red-400">Bear ×0.6</th>
+            <th className="text-center text-blue-400">Base ×1.0</th>
+            <th className="text-center text-emerald-400">Bull ×1.4</th>
+            <th className="text-center">Amplitud</th>
+          </tr></thead>
+          <tbody>
+            {kpis.map(([k, v]) => {
+              const bear = v * 0.6; const bull = v * 1.4
+              const spread = v !== 0 ? Math.round((bull - bear) / Math.abs(v) * 100) : 0
+              return (
+                <tr key={k}>
+                  <td className="text-gray-300 font-medium">{k.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())}</td>
+                  <td className="text-center text-red-400 font-mono">{Math.abs(bear)>=1000?`${(bear/1000).toFixed(1)}K`:bear.toFixed(1)}</td>
+                  <td className="text-center text-blue-400 font-mono font-bold">{Math.abs(v)>=1000?`${(v/1000).toFixed(1)}K`:v.toFixed(1)}</td>
+                  <td className="text-center text-emerald-400 font-mono">{Math.abs(bull)>=1000?`${(bull/1000).toFixed(1)}K`:bull.toFixed(1)}</td>
+                  <td className="text-center text-gray-500 font-mono">±{spread}%</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function MarkovShareButton({ config }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    const url = `${window.location.origin}${window.location.pathname}#cfg=${_configToHash(config)}&run=1`
+    navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
+  return (
+    <button onClick={copy} className="btn-secondary text-xs" title="Copiar enlace con config actual">
+      {copied ? 'Copiado!' : 'Compartir enlace'}
+    </button>
+  )
+}
 
 // ── Industry vocabulary adaptation ───────────────────────────────────────────
 
@@ -1057,6 +1130,22 @@ function StepCosts({ config, setConfig, onRun, onBack, loading, error }) {
         </div>
       </div>
 
+      {/* Annotation layer */}
+      <div className="ds-card p-4 border-amber-900/30">
+        <label className="ds-label block mb-2 flex items-center gap-1">
+          Anotaciones y Supuestos
+          <HelperTooltip text="Escribe supuestos clave, contexto de mercado o notas para quien lea el reporte. Se incluyen en el Excel exportado." />
+        </label>
+        <textarea
+          rows={3}
+          value={config.annotations || ''}
+          onChange={e => setConfig(p => ({ ...p, annotations: e.target.value }))}
+          placeholder="Ej: Supuestos basados en Q3 2024. AOV ajustado por inflación..."
+          className="ds-input w-full resize-y text-xs leading-relaxed font-mono"
+        />
+        <p className="text-[10px] text-gray-600 italic mt-1">Incluido en el Excel exportado.</p>
+      </div>
+
       {error && (
         <div className="ds-card p-4 bg-red-950/30 border-red-800 text-red-400 text-sm font-mono">
           ⚠ {error}
@@ -1404,20 +1493,31 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
         </div>
       )}
 
-      <div className="flex gap-3 mt-6">
-        <button onClick={onBack} className="btn-secondary">← Editar Inputs</button>
+      {/* Scenario comparison table */}
+      <div className="mt-6">
+        <MarkovScenarioTable result={result} />
+      </div>
+
+      <div className="flex flex-wrap gap-3 mt-6 border-t border-gray-800 pt-6 print:hidden">
+        <button onClick={onBack} className="btn-secondary text-xs">← Editar Inputs</button>
         <button onClick={() => {
           const json = JSON.stringify({ config, result }, null, 2)
           const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
           const a = document.createElement('a')
-          a.href = url
-          a.download = `markov_${config.name.replace(/ /g, '_')}.json`
-          a.click()
+          a.href = url; a.download = `markov_${config.name.replace(/ /g, '_')}.json`; a.click()
           URL.revokeObjectURL(url)
-        }} className="btn-secondary">
-          ↓ Exportar JSON
+        }} className="btn-secondary text-xs">Exportar JSON</button>
+        <button onClick={() => _downloadCSV(result?.weeks || [], `markov_${config.name.replace(/ /g,'_')}_semanas.csv`)}
+          className="btn-secondary text-xs">
+          Exportar CSV
+          <HelperTooltip text="Descarga los datos semanales en formato CSV." />
         </button>
-        <Link to="/new" className="btn-primary">+ Nuevo Forecast</Link>
+        <button onClick={onExportExcel} disabled={excelLoading} className="btn-primary text-xs disabled:opacity-50">
+          {excelLoading ? 'Generando...' : 'Exportar Excel (CEO) →'}
+        </button>
+        <MarkovShareButton config={config} />
+        <button onClick={() => window.print()} className="btn-secondary text-xs">Imprimir / PDF</button>
+        <Link to="/new" className="text-xs text-gray-500 hover:text-gray-300 ml-auto">Nuevo Forecast →</Link>
       </div>
     </div>
   )
@@ -1425,13 +1525,25 @@ function MarkovResults({ result, config, onBack, onExportExcel, excelLoading, vo
 
 // ── MarkovWizard (main component) ────────────────────────────────────────────
 
+function _hashToConfig(hash) {
+  try {
+    const bin = atob(hash); const bytes = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+    return JSON.parse(new TextDecoder().decode(bytes))
+  } catch { return null }
+}
+
 export default function MarkovWizard() {
   const [searchParams] = useSearchParams()
   const industryId = searchParams.get('industry') || 'food_delivery'
   const vocab = INDUSTRY_VOCAB[industryId] ?? DEFAULT_VOCAB
 
   const [step, setStep] = useState(0)
-  const [config, setConfig] = useState({
+  const [config, setConfig] = useState(() => {
+    const hash = window.location.hash
+    const match = hash.match(/#cfg=([^&]+)/)
+    if (match) { const restored = _hashToConfig(match[1]); if (restored) return restored }
+    return {
     name: `${vocab.label} — Forecast Markov`,
     country: vocab.country,
     horizon_weeks: 12,
@@ -1455,6 +1567,8 @@ export default function MarkovWizard() {
     costs: DEFAULT_COSTS,
     use_seasonality: false,
     palette: 'navy',
+    annotations: '',
+    }
   })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
