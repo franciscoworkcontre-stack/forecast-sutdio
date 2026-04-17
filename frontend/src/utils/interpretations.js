@@ -71,7 +71,7 @@ export function interpretD3(summary = {}, config = {}) {
   const lines = []
 
   if (summary.overall_conversion_rate != null)
-    lines.push(`Conversión total del funnel: ${(summary.overall_conversion_rate * 100).toFixed(2)}% de visitantes convierten en orden`)
+    lines.push(`Conversión total del funnel: ${(summary.overall_conversion_rate).toFixed(2)}% de visitantes convierten en orden`)
 
   if (summary.biggest_drop_step)
     lines.push(`Mayor caída de conversión en: "${summary.biggest_drop_step}"`)
@@ -91,17 +91,14 @@ export function interpretD4(summary = {}, config = {}) {
   const h = config.horizon_weeks || 12
   const lines = []
 
-  if (summary.total_orders != null)
-    lines.push(`${fmtN(summary.total_orders)} órdenes incrementales proyectadas en ${h} semanas`)
+  if (summary.total_incremental_orders != null)
+    lines.push(`${fmtN(summary.total_incremental_orders)} órdenes incrementales proyectadas en ${h} semanas`)
+
+  if (summary.incremental_revenue != null)
+    lines.push(`Revenue incremental total: ${fmt(summary.incremental_revenue, c)}`)
 
   if (summary.total_revenue != null)
-    lines.push(`Revenue incremental total: ${fmt(summary.total_revenue, c)}`)
-
-  if (summary.avg_freq_lift != null)
-    lines.push(`Frecuencia promedio: +${summary.avg_freq_lift?.toFixed(2)} órdenes/usuario/semana`)
-
-  if (summary.total_users != null)
-    lines.push(`Usuarios impactados en el modelo: ${fmtN(summary.total_users)}`)
+    lines.push(`Revenue total del portfolio: ${fmt(summary.total_revenue, c)}`)
 
   return lines.slice(0, 4)
 }
@@ -112,8 +109,8 @@ export function interpretD5(summary = {}, config = {}) {
   const h = config.horizon_weeks || 12
   const lines = []
 
-  if (summary.total_reactivated != null)
-    lines.push(`${fmtN(summary.total_reactivated)} usuarios reactivados en ${h} semanas`)
+  if (summary.total_reactivated_users != null)
+    lines.push(`${fmtN(summary.total_reactivated_users)} usuarios reactivados en ${h} semanas`)
 
   if (summary.blended_roi != null)
     lines.push(`ROI combinado de campañas: ${summary.blended_roi.toFixed(2)}x`)
@@ -121,8 +118,8 @@ export function interpretD5(summary = {}, config = {}) {
   if (summary.total_revenue != null)
     lines.push(`Revenue generado por reactivación: ${fmt(summary.total_revenue, c)}`)
 
-  if (summary.total_campaign_cost != null)
-    lines.push(`Costo total de campañas: ${fmt(summary.total_campaign_cost, c)}`)
+  if (summary.total_cost != null)
+    lines.push(`Costo total de campañas: ${fmt(summary.total_cost, c)}`)
 
   return lines.slice(0, 4)
 }
