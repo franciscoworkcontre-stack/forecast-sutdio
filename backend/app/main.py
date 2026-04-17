@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response, Request as _FRequest
 from fastapi.middleware.cors import CORSMiddleware
 
 from .models.schemas import (
@@ -354,6 +354,9 @@ async def markov_export_pptx(raw: _FRequest):
         req_obj = MarkovForecastRequest(**body)
         raw_result = run_markov_forecast(req_obj)
         result = raw_result if isinstance(raw_result, dict) else raw_result.model_dump()
+        # Markov uses 'weeks'; generic generator expects 'weekly'
+        if 'weeks' in result and 'weekly' not in result:
+            result['weekly'] = result['weeks']
         config = req_obj.model_dump()
         pptx_bytes = _gen_pptx(result, config, 'D1', 'Markov Cohort Engine', 'D', insights, palette)
     except Exception as e:
@@ -651,7 +654,6 @@ async def p5_export_excel(request: EquilibriumRequest):
 
 # ── PPTX Export Routes (D2–P5) ────────────────────────────────────────────────
 
-from fastapi import Request as _FRequest
 from .pptx.generic_generator import generate_pptx_generic as _gen_pptx
 
 _MODEL_META = {
@@ -854,7 +856,7 @@ async def model_sensitivity(model_id: str, raw: _FRequest):
 
 # ── Combined Forecast Excel Export ────────────────────────────────────────────
 
-from .excel.generic_generator import generate_excel_generic as _gen_excel
+from .excel.generic_generator import generate_generic_excel as _gen_excel
 
 
 @app.post("/api/combined/export-excel")

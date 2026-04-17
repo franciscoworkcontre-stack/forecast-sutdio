@@ -129,19 +129,19 @@ HEADLINE_KPIS = {
 # Up to 2 series. First is primary (bar/line), second is secondary (right axis)
 CHART_SERIES = {
     'D1': ['orders_total', 'contribution_dollar'],
-    'D2': ['cumulative_revenue'],
-    'D3': ['weekly_orders'],
-    'D4': ['total_orders'],
-    'D5': ['total_reactivated'],
-    'S1': ['weekly_orders'],
-    'S2': ['weekly_orders'],
+    'D2': ['total_revenue'],
+    'D3': ['orders', 'revenue'],
+    'D4': ['total_orders', 'incremental'],
+    'D5': ['reactivated', 'revenue'],
+    'S1': ['total_gmv', 'total_revenue'],
+    'S2': ['baseline_orders', 'with_changes_orders'],
     'S3': ['total_orders', 'baseline_orders'],
-    'S4': [],  # uses scored_restaurants instead
+    'S4': [],  # uses scored_restaurants — no standard weekly series
     'P1': ['orders'],
-    'P2': ['net_contribution'],
-    'P3': ['actual_orders'],
+    'P2': ['true_incremental_orders', 'incremental_revenue'],
+    'P3': ['orders'],
     'P4': ['our_orders'],
-    'P5': ['net_contribution'],
+    'P5': ['orders', 'gross_revenue'],
 }
 
 def get_accent(perspective: str, palette: str) -> RGBColor:

@@ -295,11 +295,17 @@ def _slide_chart(prs, model_id, model_name, perspective, palette, config, result
             )
             chart = graphic_frame.chart
 
-            # Style chart
-            chart.chart_area.fill.solid()
-            chart.chart_area.fill.fore_color.rgb = DARK['card']
-            chart.plot_area.fill.solid()
-            chart.plot_area.fill.fore_color.rgb = DARK['card']
+            # Style chart backgrounds (API varies by pptx version)
+            try:
+                chart.chart_area.fill.solid()
+                chart.chart_area.fill.fore_color.rgb = DARK['card']
+            except Exception:
+                pass
+            try:
+                chart.plot_area.fill.solid()
+                chart.plot_area.fill.fore_color.rgb = DARK['card']
+            except Exception:
+                pass
 
             chart.has_legend = len(series_keys) > 1
             if chart.has_legend:
