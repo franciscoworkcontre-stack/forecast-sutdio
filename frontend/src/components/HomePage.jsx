@@ -566,7 +566,7 @@ function ModelA4({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Ajusta tu forecast por factores predecibles: qué día de la semana es, si hay feriado, si estamos en quincena, si hay lluvia. La demanda de food delivery varía ±40% solo por estos factores.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Ajusta tu forecast por factores predecibles: qué día de la semana es, si hay feriado, si estamos en quincena, si hay lluvia. La demanda varía ±40% solo por estos factores según el vertical.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
           <p className="text-gray-400 text-sm">Siempre. La estacionalidad debe aplicarse a cualquier forecast — es la capa que convierte un número plano en una proyección realista.</p>
         </div>
@@ -668,9 +668,9 @@ function ModelA5({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Modela el crecimiento de un mercado nuevo desde cero. Combina la curva de adopción de usuarios (S-curve) con la capacidad de supply (restaurantes y couriers). Identifica cuál de los dos es el cuello de botella.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el crecimiento de un mercado nuevo desde cero. Combina la curva de adopción de usuarios (S-curve) con la capacidad de supply. Identifica cuál de los dos es el cuello de botella.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Estás lanzando en una ciudad donde no tienes presencia. NO uses este modelo para agregar restaurantes a un mercado maduro — usa A2 para eso.</p>
+          <p className="text-gray-400 text-sm">Estás lanzando en una ciudad donde no tienes presencia. NO uses este modelo en un mercado maduro — usa A2 para eso.</p>
         </div>
         <ModelSlider
           label="TAM (usuarios potenciales)"
@@ -687,10 +687,10 @@ function ModelA5({ inputs, onChange }) {
           onChange={v => onChange({ ...inputs, adopcion: v })}
         />
         <ModelSlider
-          label="Capacidad de couriers (órdenes/semana)"
+          label="Capacidad de supply (transacciones/semana)"
           value={couriers} min={5000} max={200000} step={5000}
           format={v => `${(v / 1000).toFixed(0)}k`}
-          explanation="El límite físico de tu flota. Si la demanda supera esto, el modelo la capea — mostrándote que necesitas más couriers antes de seguir creciendo."
+          explanation="El límite físico de tu supply. Si la demanda supera esto, el modelo lo capea — mostrándote que necesitas más capacidad antes de seguir creciendo."
           onChange={v => onChange({ ...inputs, couriers: v })}
         />
         <ResultCallout results={[
@@ -961,7 +961,7 @@ function ModelC1({ inputs, onChange }) {
           label="Crecimiento del mercado (%/mes)"
           value={growth} min={0} max={5} step={0.1}
           format={v => `${v.toFixed(1)}%/mes`}
-          explanation="La adopción general de food delivery en la zona crece independientemente de las acciones de las plataformas."
+          explanation="El crecimiento orgánico del mercado en la zona, independiente de las acciones de las plataformas."
           onChange={v => onChange({ ...inputs, growth: v })}
         />
         <ResultCallout results={[
@@ -2133,7 +2133,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-              14 modelos cuantitativos aplicables a 20 industrias. Desde food delivery hasta SaaS, fintech y OTAs — mismo framework, variables adaptadas.
+              14 modelos cuantitativos aplicables a 20 industrias. Marketplaces, SaaS, fintech, OTAs — mismo framework, variables adaptadas a cada vertical.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -2714,7 +2714,7 @@ export default function HomePage() {
       <footer className="py-6 border-t border-gray-800 bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
           <div className="font-mono text-sm text-gray-500">
-            📊 Forecast Studio · Built for LATAM Food Delivery Operations
+            📊 Forecast Studio · Modelos cuantitativos para LATAM
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-600">
             <Link to="/forecasts" className="hover:text-gray-400 transition-colors">Mis Forecasts</Link>
