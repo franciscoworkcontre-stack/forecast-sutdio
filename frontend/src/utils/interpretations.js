@@ -58,8 +58,8 @@ export function interpretD2(summary = {}, config = {}) {
   if (summary.best_channel)
     lines.push(`Canal más eficiente: ${summary.best_channel}`)
 
-  if (summary.total_orders != null)
-    lines.push(`${fmtN(summary.total_orders)} órdenes totales generadas por cohortes activas`)
+  if (config.horizon_weeks != null)
+    lines.push(`Horizonte de proyección: ${config.horizon_weeks} semanas`)
 
   return lines.slice(0, 4)
 }
@@ -136,11 +136,11 @@ export function interpretS1(summary = {}, config = {}) {
   if (summary.total_revenue != null)
     lines.push(`Revenue acumulado de nuevos restaurantes: ${fmt(summary.total_revenue, c)}`)
 
-  if (summary.total_orders != null)
-    lines.push(`${fmtN(summary.total_orders)} órdenes totales generadas`)
+  if (summary.total_gmv != null)
+    lines.push(`GMV total generado por nuevos restaurantes: ${fmt(summary.total_gmv, c)}`)
 
-  if (summary.avg_weekly_orders != null)
-    lines.push(`Promedio de ${summary.avg_weekly_orders.toFixed(0)} órdenes/restaurante/semana al alcanzar madurez`)
+  if (summary.final_week_gmv != null)
+    lines.push(`GMV en la última semana del horizonte: ${fmt(summary.final_week_gmv, c)}`)
 
   return lines.slice(0, 4)
 }
@@ -153,14 +153,14 @@ export function interpretS2(summary = {}, config = {}) {
   if (summary.uplift_pct != null)
     lines.push(`Uplift de portfolio por cambios propuestos: ${summary.uplift_pct.toFixed(1)}%`)
 
-  if (summary.total_revenue != null)
-    lines.push(`Revenue total del portfolio: ${fmt(summary.total_revenue, c)}`)
+  if (summary.total_with_changes_revenue != null)
+    lines.push(`Revenue total con cambios propuestos: ${fmt(summary.total_with_changes_revenue, c)}`)
 
-  if (summary.total_orders != null)
-    lines.push(`${fmtN(summary.total_orders)} órdenes totales`)
+  if (summary.total_baseline_revenue != null)
+    lines.push(`Revenue baseline (sin cambios): ${fmt(summary.total_baseline_revenue, c)}`)
 
-  if (summary.delta_orders != null)
-    lines.push(`${summary.delta_orders > 0 ? '+' : ''}${fmtN(summary.delta_orders)} órdenes/semana por el cambio de mix`)
+  if (summary.total_uplift_revenue != null)
+    lines.push(`Revenue incremental por cambio de mix: ${fmt(summary.total_uplift_revenue, c)}`)
 
   return lines.slice(0, 4)
 }
@@ -237,8 +237,8 @@ export function interpretP2(summary = {}, config = {}) {
   if (summary.total_weekly_incremental_revenue != null)
     lines.push(`Revenue incremental neto/semana: ${fmt(summary.total_weekly_incremental_revenue, c)}`)
 
-  if (summary.net_contribution != null)
-    lines.push(`Net contribution total del periodo: ${fmt(summary.net_contribution, c)}`)
+  if (summary.total_weekly_cost != null)
+    lines.push(`Costo semanal de promociones: ${fmt(summary.total_weekly_cost, c)}`)
 
   return lines.slice(0, 4)
 }
@@ -254,14 +254,14 @@ export function interpretP3(summary = {}, config = {}) {
   else
     lines.push(`Sin cuello de botella de flota en el horizonte de ${h} semanas`)
 
-  if (summary.total_orders != null)
-    lines.push(`${fmtN(summary.total_orders)} órdenes totales con la flota actual`)
-
   if (summary.total_revenue != null)
     lines.push(`Revenue de delivery: ${fmt(summary.total_revenue, c)}`)
 
-  if (summary.total_couriers != null)
-    lines.push(`Flota final: ${fmtN(summary.total_couriers)} repartidores activos`)
+  if (summary.total_contribution != null)
+    lines.push(`Contribución neta del periodo: ${fmt(summary.total_contribution, c)}`)
+
+  if (summary.final_couriers != null)
+    lines.push(`Flota final: ${fmtN(summary.final_couriers)} repartidores activos`)
 
   return lines.slice(0, 4)
 }
@@ -297,11 +297,11 @@ export function interpretP5(summary = {}, config = {}) {
   if (summary.ltv_cac_ratio != null)
     lines.push(`LTV/CAC ratio: ${summary.ltv_cac_ratio.toFixed(2)}x`)
 
-  if (summary.total_revenue != null)
-    lines.push(`Revenue total proyectado: ${fmt(summary.total_revenue, c)}`)
+  if (summary.total_gross_revenue != null)
+    lines.push(`Revenue bruto proyectado: ${fmt(summary.total_gross_revenue, c)}`)
 
-  if (summary.total_costs != null)
-    lines.push(`Costos totales del periodo: ${fmt(summary.total_costs, c)}`)
+  if (summary.total_net_contribution != null)
+    lines.push(`Net contribution acumulada: ${fmt(summary.total_net_contribution, c)}`)
 
   return lines.slice(0, 4)
 }
