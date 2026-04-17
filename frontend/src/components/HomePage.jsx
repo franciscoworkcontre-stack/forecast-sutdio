@@ -2193,11 +2193,12 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="space-y-5">
                 <h1 className="text-5xl lg:text-[3.6rem] font-bold text-gray-900 leading-[1.1] tracking-tight">
-                  Proyecta tu<br />negocio con<br />
-                  <span className="text-blue-600">precisión.</span>
+                  Tu forecast,<br />
+                  <span className="text-blue-600">gratis,</span><br />
+                  en minutos.
                 </h1>
                 <p className="text-gray-500 text-xl leading-relaxed max-w-md">
-                  De una pregunta de negocio a un forecast cuantitativo — con exportación a Excel y PPT — en minutos.
+                  Elige tu pregunta de negocio, ingresa tus parámetros y obtén un Excel y PPT listos para impresionar a cualquier directivo.
                 </p>
               </div>
 
