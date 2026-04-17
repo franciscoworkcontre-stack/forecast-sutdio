@@ -183,7 +183,7 @@ def _slide_metrics(prs, model_id, model_name, perspective, palette, config, resu
               'MÉTRICAS CLAVE', 8, accent, bold=True)
 
     # Hypothesis title — insight[0] or fallback
-    hypothesis = (insights or [None])[0] or f'{model_name} — resumen ejecutivo'
+    hypothesis = (insights[0] if insights and len(insights) > 0 else None) or f'{model_name} — resumen ejecutivo'
     # Keep to one line: truncate gracefully
     if len(hypothesis) > 90:
         hypothesis = hypothesis[:88] + '…'
@@ -256,7 +256,7 @@ def _slide_chart(prs, model_id, model_name, perspective, palette, config, result
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'EVOLUCIÓN TEMPORAL', 8, accent, bold=True)
 
-    hypothesis = (insights or [None, None])[1] or f'{model_name} — proyección semana a semana'
+    hypothesis = (insights[1] if insights and len(insights) > 1 else None) or f'{model_name} — proyección semana a semana'
     if len(hypothesis) > 90:
         hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 12.5, 0.55,
@@ -365,7 +365,7 @@ def _slide_scenarios(prs, model_id, model_name, perspective, palette, config, re
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'ESCENARIOS', 8, accent, bold=True)
 
-    hypothesis = (insights or [None, None, None])[2] or 'Bear (×0.6) · Base (×1.0) · Bull (×1.4)'
+    hypothesis = (insights[2] if insights and len(insights) > 2 else None) or 'Bear (×0.6) · Base (×1.0) · Bull (×1.4)'
     if len(hypothesis) > 90:
         hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 12.5, 0.55,
@@ -439,7 +439,7 @@ def _slide_insights(prs, model_id, model_name, perspective, palette, config, res
     _text_box(slide, 0.35, 0.12, 3.0, 0.28,
               'INSIGHTS & SUPUESTOS', 8, accent, bold=True)
 
-    hypothesis = (insights or [None, None, None, None])[3] or 'Hallazgos clave del modelo'
+    hypothesis = (insights[3] if insights and len(insights) > 3 else None) or 'Hallazgos clave del modelo'
     if len(hypothesis) > 90:
         hypothesis = hypothesis[:88] + '…'
     _text_box(slide, 0.35, 0.45, 7.5, 0.55,

@@ -435,15 +435,31 @@ def _build_data_tab(wb, result: dict, model_name: str, palette: dict):
                 break
 
     if data_list and isinstance(data_list[0], dict):
-        headers = list(data_list[0].keys())
-        _write_header_row(ws, row2, [h.replace('_', ' ').title() for h in headers], palette, height=24)
+        # Flatten nested dicts into separate columns (e.g. by_channel: {A: 1, B: 2} → by_channel_A, by_channel_B)
+        flat_headers = []
+        for hk, hv in data_list[0].items():
+            if isinstance(hv, dict):
+                for sub_k in hv.keys():
+                    flat_headers.append((hk, sub_k, f"{hk}_{sub_k}"))
+            else:
+                flat_headers.append((hk, None, hk))
+
+        display_names = [
+            (f"{col_k.replace('_', ' ').title()} — {sub_k.replace('_', ' ').title()}" if sub_k else col_k.replace('_', ' ').title())
+            for col_k, sub_k, _ in flat_headers
+        ]
+        _write_header_row(ws, row2, display_names, palette, height=24)
         ws.freeze_panes = f"A{row2 + 1}"
         row2 += 1
         for i, item in enumerate(data_list):
             bg = light if i % 2 == 0 else "FFFFFF"
             is_accent = (i == 0 or i == len(data_list) - 1)
-            for col, hk in enumerate(headers, start=1):
-                val = item.get(hk)
+            for col, (hk, sub_k, _) in enumerate(flat_headers, start=1):
+                raw = item.get(hk)
+                val = raw.get(sub_k) if isinstance(raw, dict) and sub_k else raw
+                # Final safety: convert any remaining non-scalar to string
+                if isinstance(val, (dict, list)):
+                    val = str(val)
                 cell = ws.cell(row=row2, column=col, value=val)
                 cell.fill = _fill(accent + "22") if is_accent else _fill(bg)
                 cell.font = _font(color="222222", size=10, bold=is_accent)
@@ -452,7 +468,7 @@ def _build_data_tab(wb, result: dict, model_name: str, palette: dict):
                 if isinstance(val, float):
                     if abs(val) >= 1000:
                         cell.number_format = '#,##0'
-                    elif 'pct' in hk or 'rate' in hk:
+                    elif 'pct' in (hk if sub_k is None else sub_k) or 'rate' in (hk if sub_k is None else sub_k):
                         cell.number_format = '0.00%' if abs(val) <= 1 else '#,##0.0'
                     else:
                         cell.number_format = '#,##0.00'
