@@ -2104,7 +2104,7 @@ export default function HomePage() {
             <a href="#modelos" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Modelos</a>
             <a href="#industrias" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Industrias</a>
             <a href="#latam" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Países</a>
-            <a href="#excel" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Excel Export</a>
+            <a href="#exports" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">Exports</a>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/forecasts" className="btn-ghost text-xs">Ver Forecasts</Link>
@@ -2149,7 +2149,7 @@ export default function HomePage() {
               {[
                 { value: '14', label: 'Modelos' },
                 { value: '20', label: 'Industrias' },
-                { value: 'MBB', label: 'Excel Export' },
+                { value: 'MBB', label: 'Excel · PPT' },
                 { value: '100%', label: 'offline' },
               ].map((s) => (
                 <div key={s.label}>
@@ -2197,7 +2197,7 @@ export default function HomePage() {
               { count: c1, label: 'Modelos cuantitativos', suffix: '' },
               { count: c2, label: 'Industrias cubiertas', suffix: '' },
               { count: c3, label: 'Semanas de horizonte', suffix: '' },
-              { count: c4, label: 'Tabs Excel MBB Consulting', suffix: '' },
+              { count: c4, label: 'Tabs Excel · 5 slides PPT por modelo', suffix: '' },
             ].map(({ count, label, suffix }) => (
               <div key={label} className="space-y-2">
                 <div className="text-5xl font-mono font-bold text-blue-400">
@@ -2398,9 +2398,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 7: Excel MBB Consulting Export ──────────────────────── */}
+      {/* ── SECTION 7: Exports ──────────────────────────────────────────── */}
       <section
-        id="excel"
+        id="exports"
         ref={excelRef}
         className={`py-20 bg-gray-900/20 border-y border-gray-800 transition-all duration-700 ${
           excelVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -2408,9 +2408,9 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-100 mb-3">Export MBB-grade Excel en un click</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              9 tabs estructurados con conditional formatting, freeze panes y assumptions log.
+            <h2 className="text-3xl font-bold text-gray-100 mb-3">Outputs listos para boardroom en un click</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Excel MBB con 9 tabs estructurados + deck PPT dark con 5 slides por modelo. Hipótesis Minto Pyramid, KPIs headline y gráfico de serie semanal incluidos.
             </p>
           </div>
 
@@ -2497,25 +2497,41 @@ export default function HomePage() {
 
             {/* Right side bullets */}
             <div className="space-y-6">
-              <div className="space-y-3">
+              <div className="space-y-1 mb-2">
+                <div className="text-[10px] font-mono text-blue-400 uppercase tracking-widest mb-2">Excel · 9 tabs</div>
                 {[
-                  { icon: '✓', text: '9 tabs automáticos', color: 'text-emerald-400' },
-                  { icon: '✓', text: 'Conditional formatting (verde/rojo)', color: 'text-emerald-400' },
-                  { icon: '✓', text: 'Freeze panes + auto column widths', color: 'text-emerald-400' },
-                  { icon: '✓', text: 'Print area configurado', color: 'text-emerald-400' },
-                  { icon: '✓', text: 'Assumptions Log para auditoría', color: 'text-emerald-400' },
-                ].map(({ icon, text, color }) => (
+                  '9 tabs automáticos (Cover → Assumptions Log)',
+                  'Conditional formatting verde/rojo',
+                  'Freeze panes + auto column widths',
+                  'Assumptions Log para auditoría',
+                ].map((text) => (
                   <div key={text} className="flex items-start gap-3">
-                    <span className={`font-bold mt-0.5 ${color}`}>{icon}</span>
+                    <span className="font-bold mt-0.5 text-emerald-400">✓</span>
                     <span className="text-sm text-gray-300">{text}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="ds-card p-4 bg-gradient-to-br from-emerald-950/30 to-gray-900 border-emerald-800/40">
-                <div className="text-xs text-gray-400 mb-1 font-mono">Formato MBB Consulting</div>
+              <div className="space-y-1 mb-4">
+                <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-2">PPT · 5 slides</div>
+                {[
+                  'Cover con nombre del modelo y perspectiva',
+                  'KPI cards headline (4 métricas)',
+                  'Gráfico de serie semanal',
+                  'Tabla de escenarios comparativos',
+                  'Insights — títulos Minto Pyramid',
+                ].map((text) => (
+                  <div key={text} className="flex items-start gap-3">
+                    <span className="font-bold mt-0.5 text-violet-400">✓</span>
+                    <span className="text-sm text-gray-300">{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="ds-card p-4 bg-gradient-to-br from-violet-950/30 to-gray-900 border-violet-800/40">
+                <div className="text-xs text-gray-400 mb-1 font-mono">Dark theme · Minto Pyramid</div>
                 <div className="text-sm text-gray-200 leading-relaxed">
-                  Listo para presentar a Dirección. Navy headers, fuente Calibri, márgenes estándar.
+                  El título de cada slide es la hipótesis derivada de los datos — no un label, una conclusión.
                 </div>
               </div>
 
@@ -2524,11 +2540,11 @@ export default function HomePage() {
                   onClick={handleExcelDemo}
                   className="w-full btn-primary py-3 text-sm font-semibold"
                 >
-                  Descargar Excel de ejemplo →
+                  Ver demo de exports →
                 </button>
                 {excelToast && (
                   <div className="absolute -top-12 left-0 right-0 bg-emerald-900 border border-emerald-700 rounded-lg px-4 py-2 text-emerald-300 text-xs font-mono text-center animate-fade-in">
-                    ✓ En un forecast real, el Excel se generaría aquí
+                    ✓ Crea un forecast real para generar Excel y PPT
                   </div>
                 )}
               </div>
