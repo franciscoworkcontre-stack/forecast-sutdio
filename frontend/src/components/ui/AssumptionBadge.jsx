@@ -6,16 +6,17 @@ import HelperTooltip from './HelperTooltip'
  * AssumptionBadge — shows inline warning when a field value is outside benchmark range.
  *
  * Usage:
- *   <AssumptionBadge field="take_rate" value={0.55} industry="food_delivery" />
+ *   <AssumptionBadge field="take_rate" value={0.55} industry="food_delivery" currency="MXN" />
  *
  * Props:
  *   field     — benchmark key (e.g. 'take_rate', 'cac', 'aov')
  *   value     — current numeric value
  *   industry  — industry id (optional, falls back to default)
+ *   currency  — active currency code (e.g. 'MXN'). Skips checks in a different native currency.
  *   inline    — if true, renders as a tiny inline badge next to the label
  */
-export default function AssumptionBadge({ field, value, industry = 'default', inline = false }) {
-  const warn = checkBenchmark(field, value, industry)
+export default function AssumptionBadge({ field, value, industry = 'default', currency = null, inline = false }) {
+  const warn = checkBenchmark(field, value, industry, currency)
   if (!warn) return null
 
   const isDanger  = warn.level === 'danger'

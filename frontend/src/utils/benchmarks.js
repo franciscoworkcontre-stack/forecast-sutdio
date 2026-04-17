@@ -89,11 +89,20 @@ export const FIELD_BENCHMARKS = {
   },
 }
 
+// Currency codes that mean the field is denominated in a fiat currency
+const CURRENCY_CODES = new Set(['MXN', 'BRL', 'COP', 'CLP', 'ARS', 'PEN', 'USD', 'EUR'])
+
 /**
  * Get warning level for a field value.
  * Returns null (ok), 'warning' (borderline), or 'danger' (outlier).
+ *
+ * @param {string} fieldKey
+ * @param {number} value
+ * @param {string} industry
+ * @param {string} currency  — active currency (e.g. 'MXN'). When provided, skips checks
+ *                             whose benchmark unit is a different currency to avoid false alarms.
  */
-export function checkBenchmark(fieldKey, value, industry = 'default') {
+export function checkBenchmark(fieldKey, value, industry = 'default', currency = null) {
   if (value === null || value === undefined || value === '') return null
 
   const fieldDef = FIELD_BENCHMARKS[fieldKey]
@@ -105,24 +114,32 @@ export function checkBenchmark(fieldKey, value, industry = 'default') {
   const numVal = typeof value === 'string' ? parseFloat(value) : value
   if (isNaN(numVal)) return null
 
-  // For percentage fields (take_rate, conversion_rate, etc.), value is 0–1
-  // For display purposes they're shown as %, but stored as decimals
-  const displayVal = numVal
-
   const { min, max, tip, unit } = range
 
-  if (displayVal < min) {
+  // Skip currency-denominated benchmarks when the user is operating in a different currency.
+  // The benchmark min/max values are expressed in the benchmark's native currency, so
+  // comparing them to a value in BRL or CLP would produce spurious warnings.
+  if (currency && unit && CURRENCY_CODES.has(unit) && unit !== currency) {
+    return null
+  }
+
+  // Replace hardcoded currency placeholder with the active currency in tip text
+  const activeCurrency = currency || unit || ''
+  const resolvedTip = tip ? tip.replace(/MXN|BRL|COP|CLP|ARS|PEN/g, activeCurrency) : ''
+  const displayUnit = CURRENCY_CODES.has(unit) && currency ? currency : (unit || '')
+
+  if (numVal < min) {
     return {
       level: 'warning',
-      text: `Por debajo del mínimo típico (${min}${unit ? ' ' + unit : ''})`,
-      tip: tip || '',
+      text: `Por debajo del mínimo típico (${min}${displayUnit ? ' ' + displayUnit : ''})`,
+      tip: resolvedTip,
     }
   }
-  if (displayVal > max) {
+  if (numVal > max) {
     return {
       level: 'danger',
-      text: `Fuera del rango habitual — máximo típico: ${max}${unit ? ' ' + unit : ''}`,
-      tip: tip || '',
+      text: `Fuera del rango habitual — máximo típico: ${max}${displayUnit ? ' ' + displayUnit : ''}`,
+      tip: resolvedTip,
     }
   }
   return null

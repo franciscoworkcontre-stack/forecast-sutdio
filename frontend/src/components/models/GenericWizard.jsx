@@ -530,7 +530,7 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
           <input type="number" value={config.aov}
             onChange={e => setConfig(p => ({ ...p, aov: Number(e.target.value) }))}
             className="ds-input w-full" />
-          <AssumptionBadge field="aov" value={config.aov} industry={config.industry || 'food_delivery'} />
+          <AssumptionBadge field="aov" value={config.aov} industry={config.industry || 'food_delivery'} currency={config.currency} />
           <p className="text-xs text-gray-600 italic mt-2">Valor promedio por {vocab.transaction.toLowerCase()}</p>
         </div>
         <div className="ds-card p-4">
@@ -547,7 +547,7 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
           <div className="flex justify-between text-[10px] text-gray-600 mt-1 mb-2">
             <span>5%</span><span>50%</span>
           </div>
-          <AssumptionBadge field="take_rate" value={config.take_rate} industry={config.industry || 'food_delivery'} />
+          <AssumptionBadge field="take_rate" value={config.take_rate} industry={config.industry || 'food_delivery'} currency={config.currency} />
           <div className="flex gap-1 flex-wrap mt-2">
             {[
               { label: 'Food DL', val: 0.22 },
