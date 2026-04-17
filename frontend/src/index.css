@@ -224,31 +224,80 @@
 
 /* ── Print / PDF styles ────────────────────────────────────────────────────── */
 @media print {
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Force exact color rendering — mandatory for dark backgrounds */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-  body { background: #fff !important; color: #111 !important; font-size: 11pt; }
+  @page {
+    size: A4 portrait;
+    margin: 1.2cm 1.5cm;
+  }
 
+  /* Keep dark background for brand consistency */
+  body {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    font-size: 10pt;
+    font-family: 'Calibri', 'Inter', sans-serif;
+  }
+
+  /* Hide interactive chrome */
   header.sticky,
-  .print\:hidden { display: none !important; }
+  .print\:hidden,
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost { display: none !important; }
 
+  /* Page layout */
+  main { padding: 0 !important; max-width: 100% !important; }
+
+  /* Print header — model title as page header */
+  main::before {
+    content: 'Forecast Studio';
+    display: block;
+    font-size: 7pt;
+    color: #475569;
+    text-align: right;
+    border-bottom: 0.5pt solid #334155;
+    padding-bottom: 4pt;
+    margin-bottom: 14pt;
+  }
+
+  /* Cards stay dark */
   .ds-card {
-    background: #fff !important;
-    border: 1px solid #ccc !important;
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
     break-inside: avoid;
-    margin-bottom: 12pt;
+    margin-bottom: 10pt;
+    page-break-inside: avoid;
   }
 
   .ds-section-header {
     background: #1e3a5f !important;
-    color: #fff !important;
-    -webkit-print-color-adjust: exact;
+    color: #ffffff !important;
   }
 
-  .metric-card { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+  /* Metric cards */
+  .metric-card {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+  }
 
-  .btn-primary, .btn-secondary, .btn-ghost { display: none !important; }
+  .metric-value { color: #ffffff !important; }
+  .metric-label { color: #94a3b8 !important; }
 
-  main { padding: 0 !important; }
+  /* Insights panel breaks cleanly */
+  .insights-panel { page-break-before: auto; }
 
-  @page { margin: 1.5cm; size: A4; }
+  /* Charts — force full width in print */
+  .recharts-wrapper { width: 100% !important; }
+
+  /* Table styles */
+  .ds-table th { background: #1e3a5f !important; color: #fff !important; }
+  .ds-table td { border-color: #334155 !important; }
+
+  /* Scenario table — keep column colors */
+  .text-red-400  { color: #ef4444 !important; }
+  .text-blue-400 { color: #3b82f6 !important; }
+  .text-emerald-400 { color: #10b981 !important; }
+  .text-amber-400   { color: #f59e0b !important; }
 }

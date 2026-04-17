@@ -619,6 +619,60 @@ async def p5_export_excel(request: EquilibriumRequest):
                     headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
+# ── PPTX Export Routes (D2–P5) ────────────────────────────────────────────────
+
+from .pptx.generic_generator import generate_pptx_generic as _gen_pptx
+
+_MODEL_META = {
+    'd2': ('D2', 'Cohort Retention & LTV',             'D', CohortRequest,         run_cohort_forecast),
+    'd3': ('D3', 'Funnel Conversion',                   'D', FunnelRequest,          run_funnel_forecast),
+    'd4': ('D4', 'Frequency & Wallet Share',            'D', FrequencyRequest,       run_frequency_forecast),
+    'd5': ('D5', 'Reactivation & Winback',              'D', WinbackRequest,         run_winback_forecast),
+    's1': ('S1', 'Restaurant Onboarding & Maturation',  'S', OnboardingRequest,      run_onboarding_forecast),
+    's2': ('S2', 'Portfolio & Selection Effect',        'S', PortfolioRequest,       run_portfolio_forecast),
+    's3': ('S3', 'Restaurant Engagement',               'S', EngagementRequest,      run_engagement_forecast),
+    's4': ('S4', 'Restaurant Health Score',             'S', S4HealthRequest,        run_health_forecast),
+    'p1': ('P1', 'Network Effects & Liquidity',         'P', NetworkRequest,         run_network_forecast),
+    'p2': ('P2', 'Incrementality & Cannibalization',    'P', IncrementalityRequest,  run_incrementality_forecast),
+    'p3': ('P3', 'Delivery Economics & Capacity',       'P', DeliveryRequest,        run_delivery_forecast),
+    'p4': ('P4', 'Competitive Dynamics',                'P', CompetitiveRequest,     run_competitive_forecast),
+    'p5': ('P5', 'Marketplace Equilibrium',             'P', EquilibriumRequest,     run_equilibrium_forecast),
+}
+
+
+@app.post("/api/models/{model_id}/export-pptx")
+async def export_pptx(model_id: str, request: _FRequest):
+    mid = model_id.lower()
+    if mid not in _MODEL_META:
+        raise HTTPException(status_code=404, detail=f"Model '{model_id}' not found")
+
+    model_code, model_name, perspective, RequestClass, engine_fn = _MODEL_META[mid]
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid JSON body")
+
+    insights = body.pop('_insights', [])
+    palette  = body.get('palette', 'navy')
+
+    try:
+        req_obj = RequestClass(**body)
+        raw = engine_fn(req_obj)
+        result = raw if isinstance(raw, dict) else raw.model_dump()
+        config = req_obj.model_dump()
+        pptx_bytes = _gen_pptx(result, config, model_code, model_name, perspective, insights, palette)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    filename = f"{mid}_{model_code.lower()}_{datetime.now().strftime('%Y%m%d')}.pptx"
+    return Response(
+        content=pptx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 # ── Feedback Endpoint ──────────────────────────────────────────────────────────
 
 from pydantic import BaseModel as _BM

@@ -8,3 +8,4 @@ numpy==1.26.4
 python-multipart==0.0.9
 aiofiles==23.2.1
 resend==2.4.0
+python-pptx==0.6.23

@@ -6,6 +6,9 @@ import {
 } from 'recharts'
 import HelperTooltip from '../ui/HelperTooltip'
 import AssumptionBadge from '../ui/AssumptionBadge'
+import { getInsights } from '../../utils/interpretations'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // ── Industry vocabulary ────────────────────────────────────────────────────────
 
@@ -111,30 +114,32 @@ function downloadCSV(rows, filename) {
 
 // ── Key findings generator ────────────────────────────────────────────────────
 
-function generateFindings(result, modelId, vocab) {
-  const s = result?.summary || {}
-  const findings = []
-  if (s.total_revenue)                   findings.push(`Revenue total en el horizonte: ${s.currency || ''} ${(s.total_revenue / 1000).toFixed(0)}K`)
-  if (s.total_orders)                    findings.push(`${(s.total_orders / 1000).toFixed(1)}K ${vocab.transactions.toLowerCase()} totales proyectadas`)
-  if (s.best_channel)                    findings.push(`Canal más eficiente: ${s.best_channel}`)
-  if (s.avg_ltv_cac)                     findings.push(`LTV/CAC promedio: ${s.avg_ltv_cac}x`)
-  if (s.ltv_cac_ratio)                   findings.push(`LTV/CAC: ${s.ltv_cac_ratio}x — ${s.is_sustainable ? 'negocio sostenible' : 'revisar economía unitaria'}`)
-  if (s.breakeven_weekly_orders)         findings.push(`Breakeven: ${(s.breakeven_weekly_orders / 1000).toFixed(0)}K ${vocab.transactions.toLowerCase()}/semana`)
-  if (s.biggest_drop_step)              findings.push(`Mayor pérdida en el funnel: "${s.biggest_drop_step}"`)
-  if (s.overall_conversion_rate)        findings.push(`Conversión total del funnel: ${s.overall_conversion_rate.toFixed(1)}%`)
-  if (s.best_campaign)                  findings.push(`Campaña con mejor ROI: ${s.best_campaign}`)
-  if (s.blended_roi !== undefined)       findings.push(`ROI combinado de campañas: ${(s.blended_roi * 100).toFixed(0)}%`)
-  if (s.blended_cannibalization_rate_pct) findings.push(`Tasa de canibalización: ${s.blended_cannibalization_rate_pct.toFixed(0)}% de órdenes`)
-  if (s.bottleneck_week)                 findings.push(`Cuello de botella en semana ${s.bottleneck_week} — flota saturada`)
-  if (s.at_risk_count)                   findings.push(`${s.at_risk_count} restaurantes en riesgo de churn`)
-  if (s.revenue_at_risk)                 findings.push(`Revenue en riesgo: ${(s.revenue_at_risk / 1000).toFixed(0)}K en el horizonte`)
-  if (s.roi !== undefined)               findings.push(`ROI del programa: ${(s.roi * 100).toFixed(0)}%`)
-  if (s.avg_health_score)                findings.push(`Score de salud promedio: ${s.avg_health_score}/100`)
-  if (s.uplift_pct)                      findings.push(`Uplift del portafolio: +${s.uplift_pct.toFixed(1)}% revenue`)
-  if (s.final_phase)                     findings.push(`Fase de liquidez: ${s.final_phase.replace('_', ' ')}`)
-  if (s.final_share_pct)                 findings.push(`Market share final: ${s.final_share_pct.toFixed(1)}%`)
-  if (s.total_restaurants_added)         findings.push(`${s.total_restaurants_added} restaurantes activados en el horizonte`)
-  return findings.slice(0, 4)
+// InsightsPanel uses model-specific factual insight generators
+function InsightsPanel({ modelId, result, config, colors }) {
+  const insights = result ? getInsights(modelId, result.summary, config) : []
+  if (!insights.length) return null
+  const dotColors = [colors.header, 'text-amber-400', 'text-emerald-400', 'text-purple-400']
+  return (
+    <div className="ds-card p-4 mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">Insights del Modelo</div>
+        <HelperTooltip text="Hechos concretos derivados directamente de los outputs del modelo. Sin interpretación subjetiva — solo los números y lo que dicen." />
+      </div>
+      <div className="space-y-2">
+        {insights.map((text, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5 ${
+              i === 0 ? 'bg-blue-900/60 text-blue-300' :
+              i === 1 ? 'bg-amber-900/60 text-amber-300' :
+              i === 2 ? 'bg-emerald-900/60 text-emerald-300' :
+              'bg-purple-900/60 text-purple-300'
+            }`}>{i + 1}</div>
+            <p className="text-sm text-gray-200 leading-relaxed">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 // ── Scenario comparison table ─────────────────────────────────────────────────
@@ -704,6 +709,7 @@ export default function GenericWizard({ modelConfig }) {
   const [resultA, setResultA] = useState(null)
   const [configA, setConfigA] = useState(null)
   const [abMode, setAbMode] = useState(false)
+  const [pptLoading, setPptLoading] = useState(false)
   // Auto-run on permalink
   const [autoRun, setAutoRun] = useState(() => window.location.hash.includes('run=1'))
 
@@ -799,7 +805,48 @@ export default function GenericWizard({ modelConfig }) {
     }
   }
 
-  const findings = result ? generateFindings(result, modelId, vocab) : []
+  const handleExportPPT = async () => {
+    if (!result) return
+    setPptLoading(true)
+    try {
+      const insights = getInsights(modelId, result.summary, config)
+      const payload = { ...config, _insights: insights }
+      const resp = await fetch(`${API_BASE}/api/models/${modelId.toLowerCase()}/export-pptx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).detail || `Error ${resp.status}`)
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${modelId.toLowerCase()}_forecast_${new Date().toISOString().slice(0, 10)}.pptx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert('Error exportando PPT: ' + e.message)
+    } finally {
+      setPptLoading(false)
+    }
+  }
+
+  const handleChartPNG = async (chartWrapperId) => {
+    const el = document.getElementById(chartWrapperId)
+    if (!el) return
+    try {
+      const { default: html2canvas } = await import('html2canvas')
+      const canvas = await html2canvas(el, { backgroundColor: '#0f172a', scale: 2 })
+      const url = canvas.toDataURL('image/png')
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${modelId.toLowerCase()}_chart.png`
+      a.click()
+    } catch {
+      // html2canvas not installed — fallback: notify user
+      alert('Para exportar charts como PNG, instala: npm install html2canvas')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -911,20 +958,8 @@ export default function GenericWizard({ modelConfig }) {
               </span>
             </div>
 
-            {/* Key findings */}
-            {findings.length > 0 && (
-              <div className="ds-card p-4 mb-6 bg-gray-900/60">
-                <div className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400 mb-3">Hallazgos Clave</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {findings.map((f, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-blue-500 mt-0.5 flex-shrink-0">•</span>
-                      <span className="text-sm text-gray-300">{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Insights panel */}
+            <InsightsPanel modelId={modelId} result={result} config={config} colors={colors} />
 
             {/* Model-specific results */}
             <ResultsComponent result={result} config={config} vocab={vocab} scenario={scenario} scMultiplier={scMultiplier} />
@@ -953,9 +988,17 @@ export default function GenericWizard({ modelConfig }) {
               <button
                 onClick={handleExportExcel}
                 disabled={excelLoading}
-                className="btn-primary text-xs disabled:opacity-50"
+                className="btn-secondary text-xs disabled:opacity-50"
               >
-                {excelLoading ? 'Generando...' : 'Exportar Excel (CEO) →'}
+                {excelLoading ? 'Generando...' : '↓ Excel'}
+              </button>
+              <button
+                onClick={handleExportPPT}
+                disabled={pptLoading}
+                className="btn-primary text-xs disabled:opacity-50 flex items-center gap-1"
+              >
+                {pptLoading ? 'Generando...' : '↓ PPT'}
+                <HelperTooltip text="Exporta un deck de 5 slides dark-theme: cover, métricas headline, chart, escenarios, e insights. Listo para presentar." side="top" />
               </button>
               <ShareButton config={config} />
               <button
