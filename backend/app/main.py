@@ -654,8 +654,6 @@ async def p5_export_excel(request: EquilibriumRequest):
 
 # ── PPTX Export Routes (D2–P5) ────────────────────────────────────────────────
 
-from .pptx.generic_generator import generate_pptx_generic as _gen_pptx
-
 _MODEL_META = {
     'd2': ('D2', 'Cohort Retention & LTV',             'D', CohortRequest,         run_cohort_forecast),
     'd3': ('D3', 'Funnel Conversion',                   'D', FunnelRequest,          run_funnel_forecast),
@@ -675,6 +673,8 @@ _MODEL_META = {
 
 @app.post("/api/models/{model_id}/export-pptx")
 async def export_pptx(model_id: str, request: _FRequest):
+    from .pptx.generic_generator import generate_pptx_generic as _gen_pptx  # lazy — keeps pptx/lxml off cold-start path
+
     mid = model_id.lower()
     if mid not in _MODEL_META:
         raise HTTPException(status_code=404, detail=f"Model '{model_id}' not found")
