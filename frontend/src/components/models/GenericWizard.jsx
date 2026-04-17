@@ -537,7 +537,7 @@ function StepConfig({ config, setConfig, vocab, modelName, description }) {
           <div className="flex items-center justify-between mb-2">
             <label className="ds-label flex items-center">
               Take Rate
-              <HelperTooltip text="Porcentaje de comisión que retiene la plataforma sobre el GMV. Food Delivery típico: 20–25%. E-commerce: 10–15%. SaaS puro: 70–85%." />
+              <HelperTooltip text="Porcentaje de comisión que retiene la plataforma sobre el GMV. Marketplace típico: 20–25%. E-commerce: 10–15%. SaaS puro: 70–85%." />
             </label>
             <span className="text-blue-400 font-mono font-bold text-sm">{(config.take_rate * 100).toFixed(1)}%</span>
           </div>

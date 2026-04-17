@@ -88,7 +88,7 @@ export default function Wizard() {
             <span className="text-xl">📊</span>
             <div>
               <h1 className="text-sm font-semibold text-gray-200 font-mono">Forecast Studio</h1>
-              <p className="text-xs text-gray-500">Food Delivery Operations Forecasting</p>
+              <p className="text-xs text-gray-500">Modelos cuantitativos para cualquier vertical</p>
             </div>
           </div>
 
