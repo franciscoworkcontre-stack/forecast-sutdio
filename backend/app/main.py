@@ -617,3 +617,153 @@ async def p5_export_excel(request: EquilibriumRequest):
     filename = f"p5_equilibrium_{datetime.now().strftime('%Y%m%d')}.xlsx"
     return Response(content=excel_bytes, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+# ── Feedback Endpoint ──────────────────────────────────────────────────────────
+
+from pydantic import BaseModel as _BM
+from typing import Optional as _Opt
+
+class FeedbackPayload(_BM):
+    nps: int
+    message: str = ""
+    email: _Opt[str] = None
+    company: _Opt[str] = None
+
+@app.post("/api/feedback")
+async def submit_feedback(payload: FeedbackPayload):
+    try:
+        import resend
+        resend.api_key = os.environ.get("RESEND_API_KEY", "")
+        if not resend.api_key:
+            raise HTTPException(status_code=503, detail="Servicio de email no configurado")
+
+        nps_label = "Promotor 😊" if payload.nps >= 9 else "Neutro 😐" if payload.nps >= 7 else "Detractor 😞"
+        body_lines = [
+            f"<h2>Nuevo Feedback — Forecast Studio</h2>",
+            f"<p><strong>NPS:</strong> {payload.nps}/10 — {nps_label}</p>",
+        ]
+        if payload.message:
+            body_lines.append(f"<p><strong>Mensaje:</strong><br>{payload.message.replace(chr(10), '<br>')}</p>")
+        if payload.email:
+            body_lines.append(f"<p><strong>Email:</strong> {payload.email}</p>")
+        if payload.company:
+            body_lines.append(f"<p><strong>Empresa:</strong> {payload.company}</p>")
+        body_lines.append(f"<p style='color:#888;font-size:12px'>Enviado: {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>")
+
+        params = {
+            "from": "Forecast Studio <onboarding@resend.dev>",
+            "to": ["tusalario.io@gmail.com"],
+            "subject": f"[Forecast Studio] NPS {payload.nps}/10 — {'Nuevo feedback'}",
+            "html": "\n".join(body_lines),
+        }
+        resend.Emails.send(params)
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Sensitivity / Tornado Analysis ────────────────────────────────────────────
+
+from fastapi import Request as _FRequest
+
+_SENSITIVITY_MAP = {
+    'd2': (CohortRequest,      run_cohort_forecast,      'total_revenue'),
+    'd3': (FunnelRequest,       run_funnel_forecast,      'total_orders'),
+    'd4': (FrequencyRequest,    run_frequency_forecast,   'total_orders'),
+    'd5': (WinbackRequest,      run_winback_forecast,     'total_orders'),
+    's1': (OnboardingRequest,   run_onboarding_forecast,  'total_orders'),
+    's2': (PortfolioRequest,    run_portfolio_forecast,   'total_revenue'),
+    's3': (EngagementRequest,   run_engagement_forecast,  'total_orders'),
+    's4': (S4HealthRequest,     run_health_forecast,      'revenue_at_risk'),
+    'p1': (NetworkRequest,      run_network_forecast,     'total_orders'),
+    'p2': (IncrementalityRequest, run_incrementality_forecast, 'blended_roi'),
+    'p3': (DeliveryRequest,     run_delivery_forecast,    'total_orders'),
+    'p4': (CompetitiveRequest,  run_competitive_forecast, 'total_orders'),
+    'p5': (EquilibriumRequest,  run_equilibrium_forecast, 'total_revenue'),
+}
+
+_SENSITIVITY_LABELS = {
+    'horizon_weeks':        'Horizonte (semanas)',
+    'aov':                  'AOV (valor por orden)',
+    'take_rate':            'Take Rate',
+    'weekly_new_users':     'Nuevos usuarios/semana',
+    'uplift_observed_pct':  'Uplift observado',
+    'organic_baseline':     'Baseline orgánico',
+    'promoted_orders_per_week': 'Órdenes promovidas/sem',
+    'orders_per_active_per_week': 'Órdenes/usuario activo',
+    'churn_rate':           'Tasa de churn',
+    'reactivation_rate':    'Tasa de reactivación',
+    'dormant_base':         'Base dormida',
+    'weekly_new_restaurants': 'Nuevos restaurantes/sem',
+    'avg_orders_per_restaurant': 'Órdenes/restaurante',
+    'fleet_size':           'Tamaño de flota',
+    'orders_per_courier_per_week': 'Órdenes/courier/sem',
+    'market_size_weekly_orders': 'Tamaño de mercado',
+    'your_share_pct':       'Market share actual',
+    'competitor_share_pct': 'Share de competidores',
+}
+
+@app.post("/api/models/{model_id}/sensitivity")
+async def model_sensitivity(model_id: str, raw: _FRequest):
+    mid = model_id.lower()
+    if mid not in _SENSITIVITY_MAP:
+        raise HTTPException(status_code=404, detail=f"Modelo {model_id} no encontrado")
+
+    RequestClass, engine_fn, kpi_key = _SENSITIVITY_MAP[mid]
+    try:
+        body = await raw.json()
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid JSON body")
+
+    # Base run
+    try:
+        base_req = RequestClass(**body)
+        base_result = engine_fn(base_req)
+        if not isinstance(base_result, dict):
+            base_result = base_result.model_dump()
+        base_kpi = float(base_result.get('summary', {}).get(kpi_key, 0) or 0)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error en modelo base: {e}")
+
+    SKIP_KEYS = {'palette', 'currency', 'country'}
+    results = []
+
+    for field, value in body.items():
+        if field in SKIP_KEYS:
+            continue
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        if value == 0:
+            continue
+
+        row = {'param': field, 'label': _SENSITIVITY_LABELS.get(field, field.replace('_', ' ').title()), 'base_value': value}
+        for label, delta in [('low', 0.8), ('high', 1.2)]:
+            modified = dict(body)
+            modified[field] = value * delta
+            try:
+                mod_req = RequestClass(**modified)
+                mod_result = engine_fn(mod_req)
+                if not isinstance(mod_result, dict):
+                    mod_result = mod_result.model_dump()
+                mod_kpi = float(mod_result.get('summary', {}).get(kpi_key, 0) or 0)
+                pct = (mod_kpi - base_kpi) / abs(base_kpi) * 100 if base_kpi != 0 else 0
+                row[f'kpi_{label}'] = round(mod_kpi, 2)
+                row[f'pct_{label}'] = round(pct, 1)
+            except Exception:
+                row[f'kpi_{label}'] = base_kpi
+                row[f'pct_{label}'] = 0.0
+        results.append(row)
+
+    # Sort by max absolute impact, take top 5
+    results.sort(key=lambda r: max(abs(r.get('pct_low', 0)), abs(r.get('pct_high', 0))), reverse=True)
+    results = results[:5]
+
+    return {
+        'model_id': mid,
+        'kpi_key': kpi_key,
+        'base_kpi': round(base_kpi, 2),
+        'tornado': results,
+    }

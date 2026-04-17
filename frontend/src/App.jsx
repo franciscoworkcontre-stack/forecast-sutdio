@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import Wizard from './components/Wizard'
 import HomePage from './components/HomePage'
+import FeedbackModal from './components/ui/FeedbackModal'
 import ResultsDashboard from './components/ResultsDashboard'
 import MarkovWizard from './components/markov/MarkovWizard'
 import D2CohortWizard from './components/models/D2CohortWizard'
@@ -521,11 +522,30 @@ function SettingsPage() {
   )
 }
 
+// ── Global Feedback Button ────────────────────────────────────────────────────
+
+function GlobalFeedback() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-5 right-5 z-40 bg-gray-800 hover:bg-blue-700 border border-gray-700 hover:border-blue-600 text-gray-300 hover:text-white text-xs font-mono font-semibold px-3 py-2 rounded-full shadow-lg transition-all flex items-center gap-1.5"
+        title="Enviar feedback"
+      >
+        Feedback
+      </button>
+      {open && <FeedbackModal onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
 // ── App root ─────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
     <BrowserRouter>
+      <GlobalFeedback />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/new" element={<NewForecastPage />} />
