@@ -255,6 +255,21 @@ class ChartErrorBoundary extends React.Component {
   }
 }
 
+// ── Level Chip ────────────────────────────────────────────────────────────────
+
+function LevelChip({ level }) {
+  const map = {
+    foundational: { label: 'CORE',       bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' },
+    mid:          { label: 'INTERMEDIO', bg: 'bg-amber-50',   border: 'border-amber-300',   text: 'text-amber-700'   },
+    advanced:     { label: 'AVANZADO',   bg: 'bg-violet-50',  border: 'border-violet-300',  text: 'text-violet-700'  },
+  }[level] || { label: level, bg: 'bg-slate-100', border: 'border-slate-300', text: 'text-slate-500' }
+  return (
+    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${map.bg} ${map.border} ${map.text}`}>
+      {map.label}
+    </span>
+  )
+}
+
 // ── Slider Component ──────────────────────────────────────────────────────────
 
 function ModelSlider({ label, value, min, max, step = 1, format, explanation, onChange }) {
@@ -1195,7 +1210,7 @@ const TAXONOMY = {
         question: '¿Cuántas órdenes el próximo trimestre y de dónde vienen?',
         context: 'Usuarios en estados discretos (nuevos, activos, baja/alta frecuencia, dormidos, churned). Cada semana transicionan entre estados con probabilidades medibles. Las iniciativas modifican esas probabilidades.',
         insight: 'Descompone "+20% en órdenes" en acciones concretas: mueve 3k usuarios de baja a alta frecuencia, reduce churn 5pp, atrae 2k nuevos por semana. Cada iniciativa tiene un costo y un ROI separado.',
-        status: 'full', demoId: null, link: '/markov', linkLabel: 'Abrir Wizard de 7 pasos →', level: 'advanced',
+        status: 'full', demoId: null, link: '/markov', linkLabel: 'Abrir Wizard de 7 pasos →', level: 'advanced', rec: true,
       },
       {
         id: 'D2', name: 'Cohort Retention & LTV',
@@ -1242,7 +1257,7 @@ const TAXONOMY = {
         question: '¿Más proveedores o mejores proveedores? ¿Volumen o variedad de oferta?',
         context: 'La demanda responde al tamaño del catálogo con rendimientos decrecientes por segmento. El proveedor #100 del mismo tipo genera mucho menos demanda incremental que el primero de un segmento nuevo.',
         insight: 'Dos puntos de inflexión: "mínimo viable" (densidad suficiente para que el usuario encuentre lo que busca) y "techo de variedad" (donde agregar más no mueve conversión). Entre ellos, cada proveedor tiene ROI medible.',
-        status: 'full', demoId: 'S2', link: '/models/s2', linkLabel: 'Abrir Wizard →', level: 'mid',
+        status: 'full', demoId: 'S2', link: '/models/s2', linkLabel: 'Abrir Wizard →', level: 'mid', rec: true,
       },
       {
         id: 'S3', name: 'Provider Engagement & Performance',
@@ -1275,7 +1290,7 @@ const TAXONOMY = {
         question: '¿Cuántas de mis órdenes promovidas habrían pasado de todas formas?',
         context: 'Descompone órdenes observadas en: orgánicas (sin promo), verdaderamente incrementales, adelantadas de la semana siguiente, y canibalizadas entre promos activas.',
         insight: 'Todas las empresas sobreestiman el impacto de sus promos en 40-70%. Cupones broadcast tienen 80%+ de canibalización orgánica. El ROI real de promos es 2-3x más bajo que el análisis naive. La solución: promos trigger-based y segmentadas.',
-        status: 'full', demoId: 'A3', link: '/models/p2', linkLabel: 'Abrir Wizard →', level: 'mid',
+        status: 'full', demoId: 'A3', link: '/models/p2', linkLabel: 'Abrir Wizard →', level: 'mid', rec: true,
       },
       {
         id: 'P3', name: 'Delivery Economics & Capacity',
@@ -2622,20 +2637,23 @@ export default function HomePage() {
                       key={model.id}
                       onClick={() => handleModelSelect(model)}
                       className={`w-full text-left px-4 py-3 border-b border-slate-100 last:border-0 transition-all hover:bg-slate-50 ${
-                        selectedModel === model.id ? 'bg-slate-100' : 'bg-white'
+                        selectedModel === model.id ? 'bg-slate-100' : model.rec ? 'bg-slate-50/60' : 'bg-white'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             <span className={`font-mono text-[11px] font-bold ${cs.text} flex-shrink-0`}>{model.id}</span>
                             <span className="text-gray-800 text-xs font-semibold leading-tight">{model.name}</span>
+                            {model.rec && (
+                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border bg-emerald-700 text-white border-emerald-600">★ REC</span>
+                            )}
                           </div>
                           <p className="text-gray-400 text-[11px] leading-snug">{model.question}</p>
                         </div>
                         <div className="flex-shrink-0 mt-0.5 flex flex-col gap-0.5 items-end">
                           {model.status === 'full' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-violet-50 text-violet-600 border-violet-200">WIZARD</span>
+                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-600 text-white border-blue-500">WIZARD</span>
                           )}
                           {model.status === 'demo' && (
                             <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-50 text-blue-600 border-blue-200">DEMO</span>
@@ -2643,15 +2661,7 @@ export default function HomePage() {
                           {model.status === 'roadmap' && (
                             <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-400 border-slate-200">PRONTO</span>
                           )}
-                          {model.level === 'foundational' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-500 border-slate-200">Base</span>
-                          )}
-                          {model.level === 'mid' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-blue-50 text-blue-500 border-blue-200">Mid</span>
-                          )}
-                          {model.level === 'advanced' && (
-                            <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">Advanced</span>
-                          )}
+                          <LevelChip level={model.level} />
                         </div>
                       </div>
                     </button>

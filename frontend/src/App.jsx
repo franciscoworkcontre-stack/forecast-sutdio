@@ -549,7 +549,7 @@ function GlobalFeedback() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 bg-gray-800 hover:bg-blue-700 border border-gray-700 hover:border-blue-600 text-gray-300 hover:text-white text-xs font-mono font-semibold px-3 py-2 rounded-full shadow-lg transition-all flex items-center gap-1.5"
+        className="fixed bottom-5 right-5 z-40 bg-blue-600 hover:bg-blue-500 border border-blue-500 text-white text-xs font-mono font-semibold px-3.5 py-2 rounded-full shadow-lg shadow-blue-500/30 transition-all flex items-center gap-1.5"
         title="Enviar feedback"
       >
         Feedback
