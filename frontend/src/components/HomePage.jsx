@@ -1009,9 +1009,9 @@ const MODEL_SHORT_NAMES = {
 // ── Taxonomy Data (MBB Consulting Framework) ──────────────────────────────────
 
 const COLOR_STYLES = {
-  blue:    { headerBg: 'bg-blue-950/30',    text: 'text-blue-400',    active: 'bg-blue-900/20 border-blue-700' },
-  emerald: { headerBg: 'bg-emerald-950/30', text: 'text-emerald-400', active: 'bg-emerald-900/20 border-emerald-700' },
-  purple:  { headerBg: 'bg-purple-950/30',  text: 'text-purple-400',  active: 'bg-purple-900/20 border-purple-700' },
+  blue:    { headerBg: 'bg-blue-50',    text: 'text-blue-700',    active: 'bg-blue-50 border-blue-300' },
+  emerald: { headerBg: 'bg-emerald-50', text: 'text-emerald-700', active: 'bg-emerald-50 border-emerald-300' },
+  purple:  { headerBg: 'bg-purple-50',  text: 'text-purple-700',  active: 'bg-purple-50 border-purple-300' },
 }
 
 // ── 20 Industries ────────────────────────────────────────────────────────────
@@ -1181,9 +1181,9 @@ const INDUSTRIES = [
 
 const IND_CATEGORIES = {
   marketplace: { label: 'Marketplace & Delivery', color: 'text-orange-400' },
-  saas:        { label: 'SaaS & Plataformas B2B', color: 'text-blue-400' },
-  consumer:    { label: 'Consumer Tech', color: 'text-purple-400' },
-  financial:   { label: 'Fintech, Salud & Viajes', color: 'text-emerald-400' },
+  saas:        { label: 'SaaS & Plataformas B2B', color: 'text-blue-600' },
+  consumer:    { label: 'Consumer Tech', color: 'text-purple-600' },
+  financial:   { label: 'Fintech, Salud & Viajes', color: 'text-emerald-600' },
 }
 
 const TAXONOMY = {
@@ -2470,7 +2470,7 @@ export default function HomePage() {
             {/* Right side bullets */}
             <div className="space-y-6">
               <div className="space-y-1 mb-2">
-                <div className="text-[10px] font-mono text-blue-400 uppercase tracking-widest mb-2">Excel · 9 tabs</div>
+                <div className="text-[10px] font-mono text-blue-600 uppercase tracking-widest mb-2">Excel · 9 tabs</div>
                 {[
                   '9 tabs automáticos (Cover → Assumptions Log)',
                   'Conditional formatting verde/rojo',
@@ -2478,14 +2478,14 @@ export default function HomePage() {
                   'Assumptions Log para auditoría',
                 ].map((text) => (
                   <div key={text} className="flex items-start gap-3">
-                    <span className="font-bold mt-0.5 text-emerald-400">✓</span>
+                    <span className="font-bold mt-0.5 text-emerald-600">✓</span>
                     <span className="text-sm text-gray-600">{text}</span>
                   </div>
                 ))}
               </div>
 
               <div className="space-y-1 mb-4">
-                <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-2">PPT · 5 slides</div>
+                <div className="text-[10px] font-mono text-violet-600 uppercase tracking-widest mb-2">PPT · 5 slides</div>
                 {[
                   'Cover con nombre del modelo y perspectiva',
                   'KPI cards headline (4 métricas)',
@@ -2494,7 +2494,7 @@ export default function HomePage() {
                   'Insights — títulos Minto Pyramid',
                 ].map((text) => (
                   <div key={text} className="flex items-start gap-3">
-                    <span className="font-bold mt-0.5 text-violet-400">✓</span>
+                    <span className="font-bold mt-0.5 text-violet-600">✓</span>
                     <span className="text-sm text-gray-600">{text}</span>
                   </div>
                 ))}
