@@ -73,7 +73,7 @@ def run_incrementality_forecast(req: IncrementalityRequest) -> dict:
     for w in range(horizon):
         weekly.append({
             "week": w + 1,
-            "total_promoted_orders": round(sum(c["promoted_orders_per_week"] for c in req.campaigns), 0),
+            "total_promoted_orders": round(sum(c.promoted_orders_per_week for c in req.campaigns), 0),
             "true_incremental_orders": round(total_incremental, 1),
             "cannibalized_orders": round(sum(c["cannibalized_per_week"] for c in by_campaign), 1),
             "incremental_revenue": round(total_revenue, 2),
@@ -81,13 +81,13 @@ def run_incrementality_forecast(req: IncrementalityRequest) -> dict:
             "net_contribution": round(total_revenue - total_cost, 2),
         })
 
-    blended_cannib = sum(c["cannibalized_per_week"] for c in by_campaign) / sum(c["promoted_orders_per_week"] for c in req.campaigns) if req.campaigns else 0
+    blended_cannib = sum(c["cannibalized_per_week"] for c in by_campaign) / sum(c.promoted_orders_per_week for c in req.campaigns) if req.campaigns else 0
 
     return {
         "by_campaign": by_campaign,
         "weekly": weekly,
         "summary": {
-            "total_promoted_per_week": round(sum(c["promoted_orders_per_week"] for c in req.campaigns), 0),
+            "total_promoted_per_week": round(sum(c.promoted_orders_per_week for c in req.campaigns), 0),
             "total_true_incremental_per_week": round(total_incremental, 1),
             "blended_cannibalization_rate_pct": round(blended_cannib * 100, 1),
             "total_weekly_cost": round(total_cost, 2),
