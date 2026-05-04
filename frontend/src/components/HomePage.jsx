@@ -342,7 +342,7 @@ function ModelA1({ inputs, onChange }) {
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
           <p className="text-gray-200 text-sm leading-relaxed">Calcula las órdenes adicionales que genera una campaña promocional semana a semana, incluyendo la fatiga (el efecto se reduce si la promo dura mucho) y lo que queda después de que termina.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Tienes un set de restaurantes activos y vas a lanzar una promo. Quieres saber cuántas órdenes incrementales esperar.</p>
+          <p className="text-gray-400 text-sm">Tienes una base de proveedores activos y vas a lanzar una promo. Quieres saber cuántas órdenes incrementales esperar.</p>
         </div>
         <ModelSlider
           label="Órdenes base/semana"
@@ -423,44 +423,44 @@ function ModelA2({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Proyecta las órdenes que generarán los restaurantes nuevos que estás onboarding. Cada restaurante arranca lento y tarda varias semanas en llegar a su potencial máximo.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Proyecta las transacciones que generarán los proveedores nuevos que estás activando. Cada proveedor arranca lento y tarda varias semanas en llegar a su potencial máximo.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Tienes un plan de adquisición (X restaurantes por mes) y necesitas saber cuándo verás el impacto en órdenes.</p>
+          <p className="text-gray-400 text-sm">Tienes un plan de incorporación (X proveedores por mes) y necesitas saber cuándo verás el impacto en transacciones.</p>
         </div>
         <ModelSlider
-          label="Restaurantes nuevos por semana"
+          label="Proveedores nuevos por semana"
           value={restosPerWeek} min={1} max={50} step={1}
-          format={v => `${v} restos`}
-          explanation="¿Cuántos restaurantes nuevos activarás cada semana? 10/semana = ~40/mes = ~500/año."
+          format={v => `${v} provs`}
+          explanation="¿Cuántos proveedores nuevos activarás cada semana? 10/semana = ~40/mes = ~500/año."
           onChange={v => onChange({ ...inputs, restosPerWeek: v })}
         />
         <ModelSlider
-          label="Steady-state órdenes/semana por restaurante"
+          label="Steady-state transacciones/semana por proveedor"
           value={steadyState} min={40} max={250} step={5}
           format={v => v.toLocaleString('es-MX')}
-          explanation="Cuántas órdenes hace un restaurante maduro (después de 12 semanas). Dark kitchen grande: 180-250. Restaurante tradicional promedio: 40-80."
+          explanation="Cuántas transacciones genera un proveedor maduro (después de 12 semanas). Proveedor tipo A: 180-250. Proveedor estándar promedio: 40-80."
           onChange={v => onChange({ ...inputs, steadyState: v })}
         />
         <div className="ds-card p-4 mb-3">
-          <label className="text-gray-300 text-sm font-medium block mb-2">Tipo de restaurante</label>
+          <label className="text-gray-300 text-sm font-medium block mb-2">Tipo de proveedor</label>
           <select
             value={tipo}
             onChange={e => onChange({ ...inputs, tipo: e.target.value })}
             className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
           >
-            <option value="dark_kitchen">Dark Kitchen (madura en 8 semanas)</option>
-            <option value="tradicional">Tradicional (madura en 12 semanas)</option>
-            <option value="grocery">Grocery (madura en 10 semanas)</option>
+            <option value="dark_kitchen">Tipo A — madura en 8 semanas</option>
+            <option value="tradicional">Tipo estándar (madura en 12 semanas)</option>
+            <option value="grocery">Tipo B (madura en 10 semanas)</option>
           </select>
-          <p className="text-xs text-gray-500 italic mt-2">Las dark kitchens maduran más rápido porque nacen optimizadas para delivery. Los tradicionales necesitan ajustar menú y operación.</p>
+          <p className="text-xs text-gray-500 italic mt-2">Los proveedores tipo A maduran más rápido porque arrancan optimizados para operar desde el inicio. Los de tipo estándar necesitan más tiempo para ajustar su operación.</p>
         </div>
         <ResultCallout results={[
           { label: 'Órdenes totales semana 16', value: week16.toLocaleString('es-MX'), color: 'text-emerald-400' },
-          { label: 'Restaurantes ya maduros (plateau)', value: `${matureCount.toLocaleString('es-MX')} de ${(16 * restosPerWeek).toLocaleString('es-MX')} activados`, color: 'text-blue-400' },
+          { label: 'Proveedores ya maduros (plateau)', value: `${matureCount.toLocaleString('es-MX')} de ${(16 * restosPerWeek).toLocaleString('es-MX')} activados`, color: 'text-blue-400' },
         ]} />
       </div>
       <div className="ds-card p-4">
-        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES ACUMULADAS — COHORTS DE NUEVOS RESTAURANTES</p>
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">ÓRDENES ACUMULADAS — COHORTS DE NUEVOS PROVEEDORES</p>
         <ChartErrorBoundary>
           <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
@@ -471,7 +471,7 @@ function ModelA2({ inputs, onChange }) {
               formatter={(v) => [v.toLocaleString('es-MX'), 'Órdenes']}
               contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }}
             />
-            <Area type="monotone" dataKey="ordenes" name="Órdenes de nuevos restaurantes" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2.5} isAnimationActive={false} />
+            <Area type="monotone" dataKey="ordenes" name="Transacciones de nuevos proveedores" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2.5} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </ChartErrorBoundary></div>
@@ -503,7 +503,7 @@ function ModelA3({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Cuando corres dos promos al mismo tiempo, el efecto real NO es la suma de ambas. Un usuario que ya decidió pedir por el 2x1 no genera una orden extra por el free delivery — ya estaba convencido.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Cuando corres dos promos al mismo tiempo, el efecto real NO es la suma de ambas. Un usuario que ya decidió comprar por el 2x1 no genera una transacción extra por el incentivo de conversión — ya estaba convencido.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
           <p className="text-gray-400 text-sm">Tienes múltiples promos activas simultáneamente y quieres saber el efecto neto real, no la suma optimista.</p>
         </div>
@@ -692,7 +692,7 @@ function ModelA5({ inputs, onChange }) {
           label="TAM (usuarios potenciales)"
           value={tam} min={50000} max={2000000} step={50000}
           format={v => `${(v / 1000).toFixed(0)}k usuarios`}
-          explanation="Adultos con smartphone en la zona de cobertura que podrían pedir delivery. No es la ciudad completa — es tu área de entrega realista."
+          explanation="Usuarios potenciales en la zona de cobertura que podrían usar la plataforma. No es el mercado completo — es tu área de operación realista."
           onChange={v => onChange({ ...inputs, tam: v })}
         />
         <ModelSlider
@@ -733,7 +733,7 @@ function ModelA5({ inputs, onChange }) {
             <Legend wrapperStyle={{ fontSize: 10 }} />
             <Area type="monotone" dataKey="demanda" name="Demanda potencial" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} strokeWidth={2} isAnimationActive={false} />
             <Area type="monotone" dataKey="real" name="Órdenes reales" stroke="#34d399" fill="#34d399" fillOpacity={0.25} strokeWidth={2.5} isAnimationActive={false} />
-            <Line type="monotone" dataKey="capacidad" name="Capacity couriers" stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={2} dot={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="capacidad" name="Capacity supply" stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={2} dot={false} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </ChartErrorBoundary></div>
@@ -774,28 +774,28 @@ function ModelB1({ inputs, onChange }) {
           label="Ticket promedio — AOV ($)"
           value={aov} min={5} max={50} step={0.5}
           format={v => `$${v.toFixed(1)}`}
-          explanation="El valor promedio de cada orden. Restaurantes: $15-25. Grocery: $30-50. Farmacia: $20-35."
+          explanation="El valor promedio de cada transacción. Proveedores estándar: $15-25. Grocery: $30-50. Farmacia: $20-35."
           onChange={v => onChange({ ...inputs, aov: v })}
         />
         <ModelSlider
           label="Comisión de la plataforma (%)"
           value={commission} min={15} max={35} step={0.5}
           format={v => `${v}%`}
-          explanation="El porcentaje del AOV que retiene la plataforma. Típicamente 20-30% para restaurantes, puede ser menor para grandes cadenas."
+          explanation="El porcentaje del AOV que retiene la plataforma. Típicamente 20-30% para marketplaces, puede ser menor para proveedores de alto volumen."
           onChange={v => onChange({ ...inputs, commission: v })}
         />
         <ModelSlider
-          label="Costo de courier por orden ($)"
+          label="Costo de entrega por transacción ($)"
           value={courierCost} min={1} max={8} step={0.1}
           format={v => `$${v.toFixed(1)}`}
-          explanation="El costo variable de cada entrega. Incluye pago al courier, combustible y costo de matching. Varía mucho por ciudad y distancia promedio."
+          explanation="El costo variable de cada entrega. Incluye pago al operador, logística y costo de matching. Varía mucho por zona y distancia promedio."
           onChange={v => onChange({ ...inputs, courierCost: v })}
         />
         <ModelSlider
           label="Subsidio de promo por orden ($)"
           value={subsidy} min={0} max={10} step={0.1}
           format={v => `$${v.toFixed(1)}`}
-          explanation="Cuánto le 'devuelves' al usuario por cada orden en forma de descuento, cashback o free delivery. Es tu costo directo de la promo."
+          explanation="Cuánto le 'devuelves' al usuario por cada transacción en forma de descuento, cashback o incentivo de conversión. Es tu costo directo de la promo."
           onChange={v => onChange({ ...inputs, subsidy: v })}
         />
         <ResultCallout results={[
@@ -1282,7 +1282,7 @@ const TAXONOMY = {
         id: 'P1', name: 'Network Effects & Liquidity',
         question: '¿Está este mercado en fase de oferta, demanda, o ya es maduro?',
         context: 'Cuatro fases: pre-liquidez (supply-led), liquidez temprana (balanced), madurez (demand-led), saturación (eficiencia). La estrategia de inversión correcta depende de la fase actual.',
-        insight: 'El error más caro en food delivery: invertir en adquisición de usuarios en un mercado Fase 1. Los usuarios bajan la app, ven 5 restaurantes con 50 minutos de entrega, y nunca vuelven. Regla: nunca >20% del presupuesto de ciudad en demanda antes de 15 restaurantes/km².',
+        insight: 'El error más caro en marketplaces: invertir en adquisición de usuarios en un mercado Fase 1. Los usuarios abren la app, ven 5 proveedores con tiempos de espera altos, y nunca vuelven. Regla: nunca >20% del presupuesto de ciudad en demanda antes de tener densidad mínima de proveedores.',
         status: 'full', demoId: 'A5', link: '/models/p1', linkLabel: 'Abrir Wizard →', level: 'advanced',
       },
       {
@@ -1294,8 +1294,8 @@ const TAXONOMY = {
       },
       {
         id: 'P3', name: 'Delivery Economics & Capacity',
-        question: '¿En qué punto la flota de couriers se convierte en el cuello de botella de crecimiento?',
-        context: 'Loop de equilibrio: supply de couriers → tiempo de entrega → conversión → demanda → earnings → supply. Tiene dos equilibrios posibles: virtuoso y colapso (doom loop).',
+        question: '¿En qué punto la flota de operadores se convierte en el cuello de botella de crecimiento?',
+        context: 'Loop de equilibrio: supply de operadores → tiempo de entrega → conversión → demanda → earnings → supply. Tiene dos equilibrios posibles: virtuoso y colapso (doom loop).',
         insight: '10 minutos menos en entrega promedio = +15-25% en órdenes, sin promo alguna. En la mayoría de mercados LATAM, este impacto supera el de todo el presupuesto combinado de marketing.',
         status: 'full', demoId: 'P3', link: '/models/p3', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
@@ -1309,7 +1309,7 @@ const TAXONOMY = {
       {
         id: 'P5', name: 'Marketplace Equilibrium',
         question: '¿Es mi negocio sostenible o estoy subsidiando demanda artificial?',
-        context: 'Test simultáneo de los tres lados: usuarios (retención orgánica, NPS), restaurantes (churn, promos auto-financiadas), couriers (earnings vs alternativas). Más unit economics de la plataforma.',
+        context: 'Test simultáneo de los tres lados: usuarios (retención orgánica, NPS), proveedores (churn, promos auto-financiadas), operadores (earnings vs alternativas). Más unit economics de la plataforma.',
         insight: 'La prueba definitiva: ¿qué pasa si eliminas todas las promos mañana? Empresa saludable: -10-20% de órdenes. Empresa no-saludable: -30-50%. La brecha es la "burbuja de subsidios" — no es un marketplace real.',
         status: 'full', demoId: 'B1', link: '/models/p5', linkLabel: 'Abrir Wizard →', level: 'mid',
       },
@@ -1368,7 +1368,7 @@ function ModelD2({ inputs, onChange }) {
         <ModelSlider label="CAC por usuario ($)" value={cac} min={1} max={30} step={0.5} format={v => `$${v.toFixed(1)}`} explanation="Costo de adquisición promedio por usuario. Incluye marketing, promos de primer pedido y costo de onboarding." onChange={v => onChange({ ...inputs, cac: v })} />
         <ModelSlider label="Retención en Semana 4 (%)" value={retW4} min={10} max={70} step={1} format={v => `${v}%`} explanation="El % de usuarios del cohorte que siguen activos en la semana 4. Benchmark LATAM: 25-40%. Usuarios adquiridos con cupón: 15-25%." onChange={v => onChange({ ...inputs, retW4: v })} />
         <ModelSlider label="Frecuencia máxima (órd/usuario/sem)" value={maxFreq} min={0.5} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="La frecuencia a la que converge un usuario habituado. Power users: 3-4x. Usuarios ocasionales: 0.5-1x." onChange={v => onChange({ ...inputs, maxFreq: v })} />
-        <ModelSlider label="Contribución por orden ($)" value={contribution} min={0.5} max={15} step={0.5} format={v => `$${v.toFixed(1)}`} explanation="Ingresos netos por orden después de costos de courier y soporte. El punto de equilibrio de unit economics." onChange={v => onChange({ ...inputs, contribution: v })} />
+        <ModelSlider label="Contribución por orden ($)" value={contribution} min={0.5} max={15} step={0.5} format={v => `$${v.toFixed(1)}`} explanation="Ingresos netos por transacción después de costos de entrega y soporte. El punto de equilibrio de unit economics." onChange={v => onChange({ ...inputs, contribution: v })} />
         <ResultCallout results={[
           { label: 'LTV por usuario (acumulado)', value: `$${ltvPerUser.toFixed(2)}`, color: ltvPerUser >= cac ? 'text-emerald-400' : 'text-red-400' },
           { label: 'Semana de payback del CAC', value: paybackWeek ? `Semana ${paybackWeek}` : `No recuperas en ${horizon} semanas`, color: paybackWeek ? 'text-emerald-400' : 'text-red-400' },
@@ -1440,7 +1440,7 @@ function ModelD4({ inputs, onChange }) {
           <p className="text-gray-300 text-sm font-medium mb-3">Levers de frecuencia a activar</p>
           {[
             { key: 'desayuno', label: 'Desayunos / Morning', uplift: '+0.25 órd/sem', hint: 'Requiere supply en horas 6-10am. Bajo take-rate inicial pero alta frecuencia potencial.' },
-            { key: 'latNight', label: 'Late Night (>9pm)', uplift: '+0.15 órd/sem', hint: 'Segmento joven urbano. Requiere couriers nocturnos y restaurantes con horario extendido.' },
+            { key: 'latNight', label: 'Late Night (>9pm)', uplift: '+0.15 órd/sem', hint: 'Segmento joven urbano. Requiere operadores nocturnos y proveedores con horario extendido.' },
             { key: 'suscripcion', label: 'Membresía / Suscripción', uplift: '+0.40 órd/sem', hint: 'El lever de frecuencia más potente. Suscriptores piden 1.5-2x más que no-suscriptores.' },
             { key: 'precio', label: 'Reducción precio/min. order', uplift: '+0.20 órd/sem', hint: 'Desbloquea ocasiones de monto bajo (snacks, café). Reduce barrera de entrada por conveniencia.' },
           ].map(({ key, label, uplift, hint }) => (
@@ -1584,33 +1584,33 @@ function ModelS2({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Modela el efecto de rendimientos decrecientes al agregar restaurantes por categoría. El restaurante #50 de pizza genera mucho menos demanda incremental que el primero. La velocidad de saturación varía dramáticamente por categoría.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el efecto de rendimientos decrecientes al agregar proveedores por categoría. El proveedor #50 de la misma categoría genera mucho menos demanda incremental que el primero. La velocidad de saturación varía dramáticamente por categoría.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">El equipo de BD pregunta en qué categoría priorizar. La respuesta depende de cuántos restaurantes ya hay y dónde estás en la curva de saturación.</p>
+          <p className="text-gray-400 text-sm">El equipo de BD pregunta en qué categoría priorizar. La respuesta depende de cuántos proveedores ya hay y dónde estás en la curva de saturación.</p>
         </div>
         <div className="ds-card p-4 mb-3">
           <label className="text-gray-300 text-sm font-medium block mb-2">Categoría</label>
           <select value={categoria} onChange={e => onChange({ ...inputs, categoria: e.target.value })} className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
             {Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
-          <p className="text-xs text-gray-500 italic mt-2">k={k.toFixed(2)} — Velocidad de saturación. Pizza satura en ~20 restaurantes. Grocery puede seguir creciendo con 150+.</p>
+          <p className="text-xs text-gray-500 italic mt-2">k={k.toFixed(2)} — Velocidad de saturación. Categorías de alta densidad saturan en ~20 proveedores. Otras pueden seguir creciendo con 150+.</p>
         </div>
-        <ModelSlider label="Restaurantes actuales en esta categoría" value={nRestaurants} min={1} max={100} step={1} format={v => `${v} restos`} explanation="Cuántos restaurantes de esta categoría ya tienes activos en la zona que analizas." onChange={v => onChange({ ...inputs, nRestaurants: v })} />
-        <ModelSlider label="Usuarios en la zona" value={usuarios} min={10000} max={500000} step={10000} format={v => `${(v / 1000).toFixed(0)}k`} explanation="Usuarios activos de delivery en el área de cobertura de los restaurantes de esta categoría." onChange={v => onChange({ ...inputs, usuarios: v })} />
+        <ModelSlider label="Proveedores actuales en esta categoría" value={nRestaurants} min={1} max={100} step={1} format={v => `${v} provs`} explanation="Cuántos proveedores de esta categoría ya tienes activos en la zona que analizas." onChange={v => onChange({ ...inputs, nRestaurants: v })} />
+        <ModelSlider label="Usuarios en la zona" value={usuarios} min={10000} max={500000} step={10000} format={v => `${(v / 1000).toFixed(0)}k`} explanation="Usuarios activos en el área de cobertura de los proveedores de esta categoría." onChange={v => onChange({ ...inputs, usuarios: v })} />
         <ModelSlider label="Propensión a esta categoría (%)" value={propension} min={5} max={60} step={1} format={v => `${v}%`} explanation="% de usuarios que tienen interés en este tipo de comida. Pizza: ~40%. Sushi: ~20%. Saludable: ~15%." onChange={v => onChange({ ...inputs, propension: v })} />
         <ResultCallout results={[
-          { label: 'Demanda actual (con tus restaurantes)', value: `${currentDemand.toLocaleString('es-MX')} órd/sem`, color: 'text-gray-200' },
-          { label: 'Impacto marginal del próximo restaurante', value: `+${marginalImpact.toLocaleString('es-MX')} órd/sem`, color: marginalImpact > 10 ? 'text-emerald-400' : 'text-amber-400' },
-          { label: `Saturación al 95% (requiere ~${saturationN} restaurantes)`, value: `${saturationDemand.toLocaleString('es-MX')} órd/sem máx`, color: 'text-blue-400' },
+          { label: 'Demanda actual (con tus proveedores)', value: `${currentDemand.toLocaleString('es-MX')} órd/sem`, color: 'text-gray-200' },
+          { label: 'Impacto marginal del próximo proveedor', value: `+${marginalImpact.toLocaleString('es-MX')} órd/sem`, color: marginalImpact > 10 ? 'text-emerald-400' : 'text-amber-400' },
+          { label: `Saturación al 95% (requiere ~${saturationN} proveedores)`, value: `${saturationDemand.toLocaleString('es-MX')} órd/sem máx`, color: 'text-blue-400' },
         ]} />
       </div>
       <div className="ds-card p-4">
-        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CURVA DE SATURACIÓN — DEMANDA VS # DE RESTAURANTES</p>
+        <p className="text-xs text-gray-400 uppercase font-mono mb-3 tracking-widest">CURVA DE SATURACIÓN — DEMANDA VS # DE PROVEEDORES</p>
         <ChartErrorBoundary>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={chartData} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="n" tick={{ fontSize: 9 }} label={{ value: 'Restaurantes', position: 'insideBottom', offset: -2, fill: '#6b7280', fontSize: 10 }} />
+              <XAxis dataKey="n" tick={{ fontSize: 9 }} label={{ value: 'Proveedores', position: 'insideBottom', offset: -2, fill: '#6b7280', fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={v => [v.toLocaleString('es-MX'), 'Órdenes/sem']} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6, fontSize: 11 }} />
               <ReferenceLine x={String(Math.min(nRestaurants, 96))} stroke="#facc15" strokeWidth={2} label={{ value: 'Hoy', fill: '#facc15', fontSize: 10 }} />
@@ -1623,7 +1623,7 @@ function ModelS2({ inputs, onChange }) {
   )
 }
 
-// ── Model S3: Restaurant Engagement & Performance ─────────────────────────────
+// ── Model S3: Provider Engagement & Performance ─────────────────────────────
 
 function ModelS3({ inputs, onChange }) {
   const { baseOrders, fotos, horarios, prepTime, promoRestaurant, ads, menuComplete } = inputs
@@ -1632,8 +1632,8 @@ function ModelS3({ inputs, onChange }) {
     { key: 'fotos', label: 'Fotos profesionales de menú', uplift: 0.22, cost: 'Costo bajo', hint: 'El lever más subestimado. Un menú con fotos profesionales genera 22% más clics. Sin costo para la plataforma.' },
     { key: 'horarios', label: 'Extensión de horarios', uplift: 0.18, cost: 'Sin costo plataforma', hint: 'Abrir desayunos o late-night agrega nuevas sesiones de demanda que antes no existían.' },
     { key: 'prepTime', label: 'Optimización tiempo de preparación', uplift: 0.09, cost: 'Sin costo plataforma', hint: 'Reducir 5 minutos de prep tiempo mejora ranking algorítmico y experiencia de usuario.' },
-    { key: 'promoRestaurant', label: 'Promo auto-financiada (20% off)', uplift: 0.35, cost: 'Lo paga el restaurante', hint: 'El restaurante asume el descuento. Alta visibilidad en la plataforma. Roi claro para el restaurante.' },
-    { key: 'ads', label: 'Anuncio patrocinado en la app', uplift: 0.22, cost: 'Lo paga el restaurante', hint: 'Aumenta impresiones 40-60%. El restaurante paga por click/conversión.' },
+    { key: 'promoRestaurant', label: 'Promo auto-financiada (20% off)', uplift: 0.35, cost: 'Lo paga el proveedor', hint: 'El proveedor asume el descuento. Alta visibilidad en la plataforma. ROI claro para el proveedor.' },
+    { key: 'ads', label: 'Anuncio patrocinado en la app', uplift: 0.22, cost: 'Lo paga el proveedor', hint: 'Aumenta impresiones 40-60%. El proveedor paga por click/conversión.' },
     { key: 'menuComplete', label: 'Completitud de menú (descripciones, alérgenos, personalización)', uplift: 0.09, cost: 'Sin costo', hint: 'Menús completos aumentan add-to-cart rate. Reduce abandono por falta de información.' },
   ]
 
@@ -1655,11 +1655,11 @@ function ModelS3({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Cuantifica el impacto de mejorar la performance de restaurantes existentes sin costo para la plataforma. La mayoría de los levers los paga el restaurante o no tienen costo directo.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Cuantifica el impacto de mejorar la performance de proveedores existentes sin costo para la plataforma. La mayoría de los levers los paga el proveedor o no tienen costo directo.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Cuando el mercado tiene suficientes restaurantes pero están subutilizados. El "Restaurant Success Program" típicamente da 15-25% de crecimiento en órdenes de same-store.</p>
+          <p className="text-gray-400 text-sm">Cuando el mercado tiene suficientes proveedores pero están subutilizados. El "Provider Success Program" típicamente da 15-25% de crecimiento en transacciones de same-store.</p>
         </div>
-        <ModelSlider label="Órdenes base del restaurante/semana" value={baseOrders} min={10} max={500} step={5} format={v => `${v} órd/sem`} explanation="El volumen actual del restaurante sin mejoras. Mediana en LATAM: 60-80. Cadenas grandes: 200-400." onChange={v => onChange({ ...inputs, baseOrders: v })} />
+        <ModelSlider label="Transacciones base del proveedor/semana" value={baseOrders} min={10} max={500} step={5} format={v => `${v} tx/sem`} explanation="El volumen actual del proveedor sin mejoras. Mediana en LATAM: 60-80. Proveedores grandes: 200-400." onChange={v => onChange({ ...inputs, baseOrders: v })} />
         <div className="ds-card p-4 mb-3">
           <p className="text-gray-300 text-sm font-medium mb-3">Levers a activar</p>
           {LEVERS.map(lever => (
@@ -1734,20 +1734,20 @@ function ModelS4({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Calcula un score de salud 0-100 para cada restaurante basado en señales de riesgo de churn. Predice la probabilidad de que el restaurante deje la plataforma y cuántas órdenes perderías.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Calcula un score de salud 0-100 para cada proveedor basado en señales de riesgo de churn. Predice la probabilidad de que el proveedor deje la plataforma y cuántas transacciones perderías.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Cuando el churn de restaurantes supera el 20% anual. Prioriza el equipo de retención en los restaurantes con mayor "churn-adjusted order value".</p>
+          <p className="text-gray-400 text-sm">Cuando el churn de proveedores supera el 20% anual. Prioriza el equipo de retención en los proveedores con mayor "churn-adjusted transaction value".</p>
         </div>
         <ModelSlider label="Tendencia de órdenes últimas 4 semanas (%)" value={orderTrend} min={-30} max={30} step={1} format={v => `${v >= 0 ? '+' : ''}${v}%`} explanation="Crecimiento (o caída) de órdenes en las últimas 4 semanas vs las 4 anteriores. El predictor #1 de churn." onChange={v => onChange({ ...inputs, orderTrend: v })} />
         <ModelSlider label="Acceptance rate (%)" value={acceptanceRate} min={60} max={100} step={1} format={v => `${v}%`} explanation="% de órdenes aceptadas automáticamente. Por debajo de 80% la plataforma degrada el ranking. Benchmark: >95%." onChange={v => onChange({ ...inputs, acceptanceRate: v })} />
         <ModelSlider label="Tasa de cancelación (%)" value={cancelRate} min={0} max={15} step={0.5} format={v => `${v}%`} explanation="Órdenes canceladas post-aceptación. >5% es señal de alerta. >10% suele resultar en suspensión." onChange={v => onChange({ ...inputs, cancelRate: v })} />
-        <ModelSlider label="Horas online semanales (%)" value={onlineHours} min={50} max={100} step={1} format={v => `${v}%`} explanation="% del horario disponible en que el restaurante está activo en la plataforma. <70% indica desenganche." onChange={v => onChange({ ...inputs, onlineHours: v })} />
-        <ModelSlider label="Órdenes actuales/semana" value={weeklyOrders} min={5} max={500} step={5} format={v => `${v} órd/sem`} explanation="El volumen actual del restaurante — determina cuántas órdenes están en riesgo si churna." onChange={v => onChange({ ...inputs, weeklyOrders: v })} />
+        <ModelSlider label="Horas online semanales (%)" value={onlineHours} min={50} max={100} step={1} format={v => `${v}%`} explanation="% del horario disponible en que el proveedor está activo en la plataforma. <70% indica desenganche." onChange={v => onChange({ ...inputs, onlineHours: v })} />
+        <ModelSlider label="Transacciones actuales/semana" value={weeklyOrders} min={5} max={500} step={5} format={v => `${v} tx/sem`} explanation="El volumen actual del proveedor — determina cuántas transacciones están en riesgo si churna." onChange={v => onChange({ ...inputs, weeklyOrders: v })} />
         <div className="ds-card p-4 mb-3">
           <div className="flex items-center justify-between">
             <div>
               <label className="text-gray-300 text-sm font-medium block">¿Está en otras plataformas también?</label>
-              <p className="text-xs text-gray-500 mt-0.5">Restaurantes en múltiples plataformas tienen más alternativas y churnan más fácil.</p>
+              <p className="text-xs text-gray-500 mt-0.5">Proveedores en múltiples plataformas tienen más alternativas y churnan más fácil.</p>
             </div>
             <button onClick={() => onChange({ ...inputs, multiPlatform: !multiPlatform })} className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ml-4 ${multiPlatform ? 'bg-amber-600' : 'bg-gray-700'}`}>
               <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${multiPlatform ? 'left-6' : 'left-0.5'}`} />
@@ -1822,15 +1822,15 @@ function ModelP3({ inputs, onChange }) {
       <div>
         <div className="ds-card p-4 mb-4">
           <p className="text-emerald-400 text-xs font-mono uppercase mb-1 tracking-widest">QUÉ HACE</p>
-          <p className="text-gray-200 text-sm leading-relaxed">Modela el equilibrio entre supply de couriers y demanda de órdenes. La capacidad limitada genera tiempos de espera que reducen la conversión, creando un "doom loop" si no se gestiona.</p>
+          <p className="text-gray-200 text-sm leading-relaxed">Modela el equilibrio entre supply de operadores y demanda de transacciones. La capacidad limitada genera tiempos de espera que reducen la conversión, creando un "doom loop" si no se gestiona.</p>
           <p className="text-amber-400 text-xs font-mono uppercase mt-3 mb-1 tracking-widest">CUÁNDO USARLO</p>
-          <p className="text-gray-400 text-sm">Cuando el tiempo promedio de entrega sube 2+ semanas consecutivas o cuando recibes quejas de "no hay couriers". Antes de lanzar campañas grandes en horas pico.</p>
+          <p className="text-gray-400 text-sm">Cuando el tiempo promedio de entrega sube 2+ semanas consecutivas o cuando recibes quejas de "no hay operadores disponibles". Antes de lanzar campañas grandes en horas pico.</p>
         </div>
-        <ModelSlider label="Couriers registrados" value={couriers} min={100} max={5000} step={50} format={v => v.toLocaleString('es-MX')} explanation="Total de couriers en la plataforma. No todos estarán online al mismo tiempo — la tasa de activación varía por hora." onChange={v => onChange({ ...inputs, couriers: v })} />
-        <ModelSlider label="Tasa online en hora pico (%)" value={onlineRate} min={50} max={100} step={1} format={v => `${v}%`} explanation="% de couriers que están activos durante la hora pico (almuerzo o cena). Benchmark: 75-90%." onChange={v => onChange({ ...inputs, onlineRate: v })} />
-        <ModelSlider label="Entregas por courier por hora" value={ordersPerCourier} min={1.0} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="Depende de la densidad de la zona. Ciudad densa: 2.5-3.5. Zona dispersa: 1.5-2.0." onChange={v => onChange({ ...inputs, ordersPerCourier: v })} />
-        <ModelSlider label="Tiempo de preparación promedio (min)" value={prepTime} min={5} max={30} step={1} format={v => `${v} min`} explanation="El tiempo que tarda el restaurante en preparar el pedido. El mayor driver de tiempo total de entrega." onChange={v => onChange({ ...inputs, prepTime: v })} />
-        <ModelSlider label="Tiempo de tránsito promedio (min)" value={transitTime} min={5} max={40} step={1} format={v => `${v} min`} explanation="De la puerta del restaurante a la del cliente. Depende de distancia media y tráfico de la ciudad." onChange={v => onChange({ ...inputs, transitTime: v })} />
+        <ModelSlider label="Operadores registrados" value={couriers} min={100} max={5000} step={50} format={v => v.toLocaleString('es-MX')} explanation="Total de operadores en la plataforma. No todos estarán online al mismo tiempo — la tasa de activación varía por hora." onChange={v => onChange({ ...inputs, couriers: v })} />
+        <ModelSlider label="Tasa online en hora pico (%)" value={onlineRate} min={50} max={100} step={1} format={v => `${v}%`} explanation="% de operadores que están activos durante la hora pico. Benchmark: 75-90%." onChange={v => onChange({ ...inputs, onlineRate: v })} />
+        <ModelSlider label="Entregas por operador por hora" value={ordersPerCourier} min={1.0} max={4.0} step={0.1} format={v => `${v.toFixed(1)}x`} explanation="Depende de la densidad de la zona. Ciudad densa: 2.5-3.5. Zona dispersa: 1.5-2.0." onChange={v => onChange({ ...inputs, ordersPerCourier: v })} />
+        <ModelSlider label="Tiempo de preparación promedio (min)" value={prepTime} min={5} max={30} step={1} format={v => `${v} min`} explanation="El tiempo que tarda el proveedor en preparar el pedido. El mayor driver de tiempo total de fulfillment." onChange={v => onChange({ ...inputs, prepTime: v })} />
+        <ModelSlider label="Tiempo de tránsito promedio (min)" value={transitTime} min={5} max={40} step={1} format={v => `${v} min`} explanation="Del punto de origen al cliente. Depende de distancia media y condiciones logísticas de la zona." onChange={v => onChange({ ...inputs, transitTime: v })} />
         <ModelSlider label="Demanda sin restricción (órd/hora pico)" value={demanda} min={100} max={5000} step={50} format={v => v.toLocaleString('es-MX')} explanation="Cuántas órdenes se harían si no hubiera ningún constraint de capacidad ni tiempo de espera." onChange={v => onChange({ ...inputs, demanda: v })} />
         <ResultCallout results={[
           { label: 'Capacidad máxima en hora pico', value: `${capacity.toLocaleString('es-MX')} órd/hora`, color: 'text-gray-300' },
@@ -1919,9 +1919,9 @@ function InteractiveWaterfall() {
               hint: 'Órdenes adicionales de campañas activas esta semana',
             },
             {
-              key: 'acquisition', icon: '🏪', label: '+Nuevos Restaurantes',
+              key: 'acquisition', icon: '🏪', label: '+Nuevos Proveedores',
               min: 0, max: 20000, step: 500,
-              hint: 'Órdenes de restaurantes en curva de maduración',
+              hint: 'Transacciones de proveedores en curva de maduración',
             },
             {
               key: 'canib', icon: '⚡', label: '−Canibalización',

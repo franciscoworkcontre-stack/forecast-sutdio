@@ -124,20 +124,20 @@ export function interpretD5(summary = {}, config = {}) {
   return lines.slice(0, 4)
 }
 
-// ── S1 — Restaurant Onboarding & Maturation ──────────────────────────────────
+// ── S1 — Provider Onboarding & Maturation ──────────────────────────────────
 export function interpretS1(summary = {}, config = {}) {
   const c = config.currency || 'MXN'
   const h = config.horizon_weeks || 12
   const lines = []
 
   if (summary.total_restaurants_added != null)
-    lines.push(`${fmtN(summary.total_restaurants_added)} restaurantes activados en ${h} semanas`)
+    lines.push(`${fmtN(summary.total_restaurants_added)} proveedores activados en ${h} semanas`)
 
   if (summary.total_revenue != null)
-    lines.push(`Revenue acumulado de nuevos restaurantes: ${fmt(summary.total_revenue, c)}`)
+    lines.push(`Revenue acumulado de nuevos proveedores: ${fmt(summary.total_revenue, c)}`)
 
   if (summary.total_gmv != null)
-    lines.push(`GMV total generado por nuevos restaurantes: ${fmt(summary.total_gmv, c)}`)
+    lines.push(`GMV total generado por nuevos proveedores: ${fmt(summary.total_gmv, c)}`)
 
   if (summary.final_week_gmv != null)
     lines.push(`GMV en la última semana del horizonte: ${fmt(summary.final_week_gmv, c)}`)
@@ -165,13 +165,14 @@ export function interpretS2(summary = {}, config = {}) {
   return lines.slice(0, 4)
 }
 
-// ── S3 — Restaurant Engagement ───────────────────────────────────────────────
+// ── S3 — Provider Engagement ───────────────────────────────────────────────
 export function interpretS3(summary = {}, config = {}) {
   const c = config.currency || 'MXN'
   const lines = []
 
-  if (summary.restaurants_in_program != null)
-    lines.push(`${fmtN(summary.restaurants_in_program)} restaurantes incluidos en el programa de engagement`)
+  const inProgram = summary.providers_in_program ?? summary.restaurants_in_program
+  if (inProgram != null)
+    lines.push(`${fmtN(inProgram)} proveedores incluidos en el programa de engagement`)
 
   if (summary.roi != null)
     lines.push(`ROI del programa: ${summary.roi.toFixed(2)}x`)
@@ -185,13 +186,14 @@ export function interpretS3(summary = {}, config = {}) {
   return lines.slice(0, 4)
 }
 
-// ── S4 — Restaurant Health Score ─────────────────────────────────────────────
+// ── S4 — Provider Health Score ─────────────────────────────────────────────
 export function interpretS4(summary = {}, config = {}) {
   const c = config.currency || 'MXN'
   const lines = []
 
-  if (summary.at_risk_count != null && summary.total_restaurants != null)
-    lines.push(`${summary.at_risk_count} de ${summary.total_restaurants} restaurantes por debajo del umbral de riesgo (score < ${config.churn_threshold_score || 40})`)
+  const totalProviders = summary.total_providers ?? summary.total_restaurants
+  if (summary.at_risk_count != null && totalProviders != null)
+    lines.push(`${summary.at_risk_count} de ${totalProviders} proveedores por debajo del umbral de riesgo (score < ${config.churn_threshold_score || 40})`)
 
   if (summary.revenue_at_risk != null)
     lines.push(`Revenue en riesgo si churnan los proveedores críticos: ${fmt(summary.revenue_at_risk, c)}`)
@@ -261,7 +263,7 @@ export function interpretP3(summary = {}, config = {}) {
     lines.push(`Contribución neta del periodo: ${fmt(summary.total_contribution, c)}`)
 
   if (summary.final_couriers != null)
-    lines.push(`Flota final: ${fmtN(summary.final_couriers)} repartidores activos`)
+    lines.push(`Flota final: ${fmtN(summary.final_couriers)} operadores activos`)
 
   return lines.slice(0, 4)
 }

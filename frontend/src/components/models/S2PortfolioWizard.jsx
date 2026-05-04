@@ -215,7 +215,7 @@ const modelConfig = {
     {
       key: 'restaurant_tiers',
       filename: 's2_tiers_template.csv',
-      description: 'Tiers de restaurantes (uno por fila)',
+      description: 'Tiers de proveedores (uno por fila)',
       headers: ['name', 'count', 'traffic_share', 'conversion_rate', 'avg_aov_multiplier'],
       exampleRows: [
         ['Premium', 500, 0.30, 0.18, 1.4],

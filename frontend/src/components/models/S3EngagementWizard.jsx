@@ -159,7 +159,7 @@ function S3Results({ result, config, vocab, scenario, scMultiplier }) {
         <div className="grid grid-cols-2 gap-4 p-2">
           <div>
             <div className="text-xs text-gray-500 mb-1">{vocab.supply}s en el programa</div>
-            <div className="text-lg font-mono text-gray-200">{(s.restaurants_in_program || 0).toLocaleString()}</div>
+            <div className="text-lg font-mono text-gray-200">{(s.providers_in_program ?? s.restaurants_in_program ?? 0).toLocaleString()}</div>
           </div>
           <div>
             <div className="text-xs text-gray-500 mb-1">Tier objetivo</div>
@@ -181,7 +181,7 @@ function S3Results({ result, config, vocab, scenario, scMultiplier }) {
 
 const modelConfig = {
   modelId: 'S3',
-  modelName: 'Restaurant Engagement',
+  modelName: 'Provider Engagement',
   perspective: 'S',
   apiPath: '/api/models/s3/calculate',
   description: 'Calcula el ROI de programas de engagement para aumentar el volumen de proveedores existentes sin incrementar el subsidio de la plataforma.',
@@ -203,8 +203,8 @@ const modelConfig = {
   csvTemplates: [
     {
       key: 'restaurants',
-      filename: 's3_restaurants_template.csv',
-      description: 'Tiers de restaurantes (high / medium / low)',
+      filename: 's3_proveedores_template.csv',
+      description: 'Tiers de proveedores (high / medium / low)',
       headers: ['tier', 'count', 'avg_weekly_orders', 'engagement_score'],
       exampleRows: [
         ['high', 300, 250, 80],

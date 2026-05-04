@@ -9,7 +9,7 @@
 
 export const FIELD_BENCHMARKS = {
   take_rate: {
-    food_delivery:  { min: 0.15, max: 0.30, benchmark: 0.22, unit: '%', tip: 'Food Delivery LATAM: 18–28%. > 30% es inusual.' },
+    food_delivery:  { min: 0.15, max: 0.30, benchmark: 0.22, unit: '%', tip: 'Marketplaces LATAM: 18–28%. > 30% es inusual.' },
     rideshare:      { min: 0.18, max: 0.32, benchmark: 0.25, unit: '%', tip: 'Rideshare LATAM: 20–30%.' },
     ecommerce:      { min: 0.06, max: 0.20, benchmark: 0.12, unit: '%', tip: 'E-commerce: 8–18%. GMV comisión.' },
     saas_b2b:       { min: 0.60, max: 0.90, benchmark: 0.78, unit: '%', tip: 'SaaS: 65–85% gross margin.' },
@@ -66,7 +66,7 @@ export const FIELD_BENCHMARKS = {
 
   // S1 Onboarding
   new_restaurants_per_week: {
-    default: { min: 1, max: 2000, benchmark: 50, unit: 'rest/sem', tip: 'Ritmo de activación. > 200/sem requiere operaciones de onboarding robustas.' },
+    default: { min: 1, max: 2000, benchmark: 50, unit: 'provs/sem', tip: 'Ritmo de activación de proveedores. > 200/sem requiere operaciones de onboarding robustas.' },
   },
 
   // S4 Health

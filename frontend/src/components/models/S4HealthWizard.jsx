@@ -70,7 +70,7 @@ function S4Inputs({ config, setConfig, vocab, mode = 'base' }) {
           <div className="space-y-2">
             {[
               { key: 'w_order_trend', label: 'Tendencia de órdenes (4 sem)', default: 0.35 },
-              { key: 'w_rating', label: 'Rating del restaurante', default: 0.25 },
+              { key: 'w_rating', label: 'Rating del proveedor', default: 0.25 },
               { key: 'w_menu_update', label: 'Días desde última actualización de menú', default: 0.15 },
               { key: 'w_response_rate', label: 'Tasa de respuesta / aceptación', default: 0.15 },
               { key: 'w_promo_activity', label: 'Actividad en promos', default: 0.05 },
@@ -109,7 +109,7 @@ function S4Results({ result, config, vocab, scenario, scMultiplier }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="metric-card">
           <div className="metric-label">{vocab.supply}s en Riesgo</div>
-          <div className="metric-value text-lg text-red-400">{s.at_risk_count} / {s.total_restaurants}</div>
+          <div className="metric-value text-lg text-red-400">{s.at_risk_count} / {s.total_providers ?? s.total_restaurants}</div>
         </div>
         <div className="metric-card">
           <div className="metric-label">Revenue en Riesgo</div>
@@ -177,7 +177,7 @@ function S4Results({ result, config, vocab, scenario, scMultiplier }) {
 
 const modelConfig = {
   modelId: 'S4',
-  modelName: 'Restaurant Health Score',
+  modelName: 'Provider Health Score',
   perspective: 'S',
   apiPath: '/api/models/s4/calculate',
   description: 'Identifica qué proveedores están en riesgo de churn y cuánto revenue perderías si se van.',
@@ -197,8 +197,8 @@ const modelConfig = {
   csvTemplates: [
     {
       key: 'restaurants',
-      filename: 's4_restaurantes_salud_template.csv',
-      description: 'Restaurantes con métricas de salud (uno por fila)',
+      filename: 's4_proveedores_salud_template.csv',
+      description: 'Proveedores con métricas de salud (uno por fila)',
       headers: ['name', 'weekly_orders', 'order_trend_pct', 'rating', 'days_since_menu_update', 'response_rate'],
       exampleRows: [
         ['El Rancho', 180, -15, 3.8, 90, 0.70],

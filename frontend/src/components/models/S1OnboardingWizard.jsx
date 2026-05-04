@@ -175,10 +175,10 @@ function S1Results({ result, config, vocab, scenario, scMultiplier }) {
 
 const modelConfig = {
   modelId: 'S1',
-  modelName: 'Restaurant Onboarding & Maturation',
+  modelName: 'Provider Onboarding & Maturation',
   perspective: 'S',
   apiPath: '/api/models/s1/calculate',
-  description: 'Proyecta el GMV y revenue que generarán los restaurantes que estás activando hoy, considerando su curva de maduración.',
+  description: 'Proyecta el GMV y revenue que generarán los proveedores que estás activando hoy, considerando su curva de maduración.',
   InputsComponent: S1Inputs,
   ResultsComponent: S1Results,
   defaultConfig: {

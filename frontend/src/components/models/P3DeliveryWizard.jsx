@@ -9,13 +9,13 @@ function P3Inputs({ config, setConfig, vocab, mode = 'base' }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="ds-card p-4">
-          <label className="ds-label block mb-2">Couriers activos</label>
+          <label className="ds-label block mb-2">Operadores de entrega activos</label>
           <input type="number" value={config.couriers || 2000}
             onChange={e => setConfig(p => ({ ...p, couriers: Number(e.target.value) }))}
             className="ds-input w-full" />
         </div>
         <div className="ds-card p-4">
-          <label className="ds-label block mb-2">Nuevos couriers/semana</label>
+          <label className="ds-label block mb-2">Nuevos operadores/semana</label>
           <input type="number" value={config.new_couriers_per_week || 20}
             onChange={e => setConfig(p => ({ ...p, new_couriers_per_week: Number(e.target.value) }))}
             className="ds-input w-full" />
@@ -83,7 +83,7 @@ function P3Inputs({ config, setConfig, vocab, mode = 'base' }) {
             onChange={e => setConfig(p => ({ ...p, delivery_time_elasticity: Number(e.target.value) }))}
             className="w-full accent-amber-500" />
           <p className="text-xs text-gray-500 mt-2">
-            Benchmark: food delivery LATAM 10-20%, rideshare 5-15%. Cada 10 minutos adicionales reduce conversión en este %.
+            Benchmark: marketplaces LATAM 10-20%, rideshare 5-15%. Cada 10 minutos adicionales reduce conversión en este %.
           </p>
         </div>
       )}

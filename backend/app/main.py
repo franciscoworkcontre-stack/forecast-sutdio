@@ -1,5 +1,5 @@
 """
-Food Delivery Forecast Studio — FastAPI Backend
+Forecast Studio — FastAPI Backend
 """
 import json
 import os
@@ -23,9 +23,9 @@ from .excel.generator import generate_excel
 # ── App setup ──────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="Food Delivery Forecast Studio",
+    title="Forecast Studio",
     version="1.0.0",
-    description="Backend API for forecasting food delivery operations.",
+    description="Backend API for operations forecasting.",
 )
 
 _ON_VERCEL = bool(os.environ.get("VERCEL"))
@@ -782,8 +782,8 @@ _SENSITIVITY_LABELS = {
     'churn_rate':           'Tasa de churn',
     'reactivation_rate':    'Tasa de reactivación',
     'dormant_base':         'Base dormida',
-    'weekly_new_restaurants': 'Nuevos restaurantes/sem',
-    'avg_orders_per_restaurant': 'Órdenes/restaurante',
+    'weekly_new_restaurants': 'Nuevos proveedores/sem',
+    'avg_orders_per_restaurant': 'Transacciones/proveedor',
     'fleet_size':           'Tamaño de flota',
     'orders_per_courier_per_week': 'Órdenes/courier/sem',
     'market_size_weekly_orders': 'Tamaño de mercado',
